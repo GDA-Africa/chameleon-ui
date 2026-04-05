@@ -78,6 +78,7 @@ const LandingPage = () => {
 
 const ComponentsPage = () => {
   const { textPrimary, textMuted, cardClass, theme } = useThemeClasses();
+  const { mode } = useChameleon();
 
   return (
     <div className="pb-20 space-y-16">
@@ -251,7 +252,7 @@ const ComponentsPage = () => {
             value="auth"
             className={cn(
               "rounded-3xl border border-dashed border-[var(--border)] flex items-center justify-center p-4",
-              theme === "glassy" ? "bg-white/5 backdrop-blur-sm" : "bg-[var(--muted)]/20",
+              theme === "glassy" ? (mode === "dark" ? "bg-white/5 backdrop-blur-sm" : "bg-black/5 backdrop-blur-sm") : "bg-[var(--muted)]/20",
             )}
           >
             <AuthTemplate />
@@ -260,7 +261,7 @@ const ComponentsPage = () => {
             value="settings"
             className={cn(
               "rounded-3xl border border-dashed border-[var(--border)] p-4",
-              theme === "glassy" ? "bg-white/5 backdrop-blur-sm" : "bg-[var(--muted)]/20",
+              theme === "glassy" ? (mode === "dark" ? "bg-white/5 backdrop-blur-sm" : "bg-black/5 backdrop-blur-sm") : "bg-[var(--muted)]/20",
             )}
           >
             <SettingsTemplate />
@@ -393,7 +394,10 @@ function Workshop() {
         : "bg-white border-r border-gray-100",
     minimalist:
       mode === "dark" ? "bg-black border-r border-[#262626]" : "bg-white border-r border-black",
-    glassy: "bg-[#0d0a1a]/85 border-r border-white/15",
+    glassy:
+      mode === "dark" 
+        ? "bg-[#0d0a1a]/85 border-r border-white/15" 
+        : "bg-white/85 border-r border-black/10",
     liquid:
       mode === "dark"
         ? "bg-[rgba(30,20,60,0.8)] border-r border-[rgba(167,139,250,0.2)]"
@@ -656,7 +660,7 @@ function Workshop() {
           <div
             className={cn(
               "flex items-center gap-3 p-3 rounded-2xl border border-[var(--border)]",
-              theme === "glassy" ? "bg-white/5" : "bg-[var(--muted)]/40",
+              theme === "glassy" ? (mode === "dark" ? "bg-white/5" : "bg-black/5") : "bg-[var(--muted)]/40",
             )}
           >
             <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[var(--primary)] to-violet-600 flex items-center justify-center text-white font-black text-xs shadow-xl">
@@ -683,7 +687,9 @@ function Workshop() {
           className={cn(
             "h-16 border-b border-[var(--border)] flex items-center justify-between px-8 sticky top-0 z-40",
             theme === "glassy"
-              ? "bg-[#0d0a1a]/90"
+              ? mode === "dark" 
+                ? "bg-[#0d0a1a]/90" 
+                : "bg-white/90"
               : theme === "liquid"
                 ? mode === "dark"
                   ? "bg-[#030014]/90"
@@ -722,7 +728,9 @@ function Workshop() {
                 className={cn(
                   "h-9 pl-9 pr-4 text-xs font-medium w-56 focus:outline-none transition-all",
                   theme === "glassy"
-                    ? "bg-white/10 border border-white/20 rounded-xl text-white placeholder:text-white/40 focus:bg-white/15"
+                    ? mode === "dark" 
+                      ? "bg-white/10 border border-white/20 rounded-xl text-white placeholder:text-white/40 focus:bg-white/15"
+                      : "bg-black/5 border border-black/10 rounded-xl text-black placeholder:text-black/40 focus:bg-black/10"
                     : "bg-[var(--muted)] rounded-full text-[var(--foreground)] placeholder:text-[var(--muted-foreground)] focus:ring-2 focus:ring-[var(--primary)]/20",
                 )}
               />
@@ -761,7 +769,9 @@ function Workshop() {
         <footer
           className={cn(
             "border-t border-[var(--border)] py-16 mt-10",
-            theme === "glassy" ? "bg-[#0d0a1a]/60" : "bg-[var(--muted)]/10",
+            theme === "glassy" 
+              ? mode === "dark" ? "bg-[#0d0a1a]/60" : "bg-white/60"
+              : "bg-[var(--muted)]/10",
           )}
         >
           <div className="max-w-7xl mx-auto px-10 grid grid-cols-2 md:grid-cols-4 gap-10">
