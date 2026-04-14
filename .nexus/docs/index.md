@@ -4,7 +4,7 @@ id: "project_index"
 title: "Project Index — AI Agent Brain"
 status: populated
 confidence: high
-last_updated: "2026-04-14"
+last_updated: "2026-04-15"
 ---
 
 # Chameleon UI — Project Index
@@ -16,14 +16,14 @@ last_updated: "2026-04-14"
 **Framework:** React 19 + Vite 6
 **Package Manager:** pnpm
 **Created:** 2026-04-04
-**Status:** 🟢 v0.0.2 released — Workshop UI polished, CLI complete, performance fixed
+**Status:** 🟢 v0.0.3 released — full mobile responsiveness baked into every component, composite, and template
 
 ---
 
 ## 🎯 Current Objective
 
-**Current Phase:** Phase 5 — Polish & Ship
-**Active Task:** None — all known bugs resolved, UI production-ready
+**Current Phase:** Phase 6 — Distribution & Ecosystem
+**Active Task:** None — v0.0.3 released, all components fully responsive
 **Blocked:** None
 **Next Up:** See "What's Next" section below
 
@@ -210,19 +210,26 @@ last_updated: "2026-04-14"
 - ✅ `dist/` built with Vite lib mode — `index.js` (805 kB), `index.cjs` (571 kB), types emitted
 - ✅ Git commit `feat: release v0.0.2`, tag `v0.0.2` created and pushed
 
+### 2026-04-15 — Full Mobile Responsiveness (v0.0.3)
+- ✅ `App.tsx` shell — `lg:` sidebar breakpoint, `h-dvh`, AnimatePresence overlay, body scroll lock, `lg:ml-72`, responsive padding
+- ✅ `molecules.tsx` — `DialogContent` no edge-clip, `CardHeader`/`CardContent` `p-4 sm:p-6`, `TabsList` wraps, `StatCard`/`PricingCard` scaled padding
+- ✅ `composites.tsx` — `KanbanBoard` columns `w-[280px] sm:w-72` for horizontal scroll on mobile
+- ✅ `comprehensive-templates.tsx` — all 4 templates fully responsive (hero h1 scales, all grids `grid-cols-1 sm:grid-cols-2 lg:grid-cols-3`, CTA padding scales, table `overflow-x-auto`, forms stack on mobile)
+- ✅ `comprehensive-templates-part2.tsx` — AdminDashboard header wraps, EcommerceProduct titles/reviews responsive, Settings h1 + name fields responsive, DocsTemplate h1 + component grid responsive
+- ✅ `templates.tsx` — SettingsTemplate sidebar stacks on mobile (`grid-cols-1 md:grid-cols-[200px_1fr]`)
+- ✅ `CHANGELOG.md` updated with full [0.0.3] entry
+- ✅ Git commit `feat: v0.0.3`, tag `v0.0.3` created and pushed
+
 ---
 
 ## 🎯 What's Next (Prioritized)
 
-### 🟡 Phase 5 Polish (v0.0.3 candidates)
+### 🟡 Phase 6 — Distribution & Ecosystem
 1. **Expand test coverage** — add molecule and composite tests (currently only atoms + utils)
-2. **Mobile sidebar** — fixed `w-72` sidebar has no mobile drawer; add responsive collapse for production
-3. **CLIMockup update** — the `CLIMockup` component in `cli.tsx` still shows 4 original commands; update to reflect all 13
-4. **Liquid theme light mode audit** — same light mode visibility patterns as glassy may exist; verify
-
-### 🟢 Phase 6 (When Ready)
-5. **Publish to npm** — run `npm publish` with v0.0.2 (or bump to `0.1.0` for first stable public release)
-6. **Documentation site** — standalone docs site separate from the workshop app
+2. **CLIMockup update** — the `CLIMockup` component in `cli.tsx` still shows 4 original commands; update to reflect all 13
+3. **Liquid theme light mode audit** — same light mode visibility patterns as glassy may exist; verify
+4. **Publish to npm** — run `npm publish` with v0.0.3 (or bump to `0.1.0` for first stable public release)
+5. **Documentation site** — standalone docs site separate from the workshop app
 
 ---
 

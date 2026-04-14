@@ -145,3 +145,11 @@ Optional: Brief supporting detail (1-2 sentences max).
 ### [convention] CLI binary lives in bin/chameleon.js — no external framework
 
 **2026-04-14** — The CLI (`bin/chameleon.js`) is a plain ESM Node.js script using only native `fs`, `path`, `child_process`, and `url`. No Commander.js or chalk installed. ANSI colors are hand-written escape codes. Registered in `package.json` `bin` field as both `chameleon` and `chameleon-cli`. Accessible after `npm link` in the repo root. 13 commands, all real FS operations against the `COMPONENTS` (28 entries) and `TEMPLATES` (14 entries) registries.
+
+### [pattern] Mobile-first responsive grid pattern for this project
+
+**2026-04-15** — Standard pattern: `grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3`. Standard padding: `p-4 sm:p-6`. Standard hero heading: `text-3xl sm:text-5xl md:text-6xl`. Standard page content: `px-4 sm:px-6 lg:px-10`. Sidebar collapse breakpoint is `lg:` (1024px), not `md:`, so tablets get the mobile drawer experience.
+
+### [gotcha] replace_string_in_file truncates array literals that share array-start syntax
+
+**2026-04-15** — When an array `[{ ... }]` is inlined in JSX and the oldString starts mid-array (after the `[`), the tool can accidentally drop the first array element. Always include at least the opening `[` and the first element in the oldString to avoid silent data loss. If the replacement breaks JSX parsing, re-read the region and restore the full array.
