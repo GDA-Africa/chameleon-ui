@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   Palette,
   Layers,
@@ -20,6 +20,7 @@ import {
   Code,
   Menu,
   X,
+  ChevronDown,
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import {
@@ -74,12 +75,27 @@ function Workshop() {
   const { textPrimary, textMuted, theme: currentTheme } = useThemeClasses();
   const [activePage, setActivePage] = useState<Page>("landing");
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [themeSwitcherOpen, setThemeSwitcherOpen] = useState(false);
+  const themeSwitcherRef = useRef<HTMLDivElement>(null);
   const t = translations[lang];
 
   // Close sidebar on navigation
   useEffect(() => {
     setSidebarOpen(false);
   }, [activePage]);
+
+  // Close theme switcher on outside click
+  useEffect(() => {
+    const handleClick = (e: MouseEvent) => {
+      if (themeSwitcherRef.current && !themeSwitcherRef.current.contains(e.target as Node)) {
+        setThemeSwitcherOpen(false);
+      }
+    };
+    if (themeSwitcherOpen) {
+      document.addEventListener("mousedown", handleClick);
+    }
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, [themeSwitcherOpen]);
 
   // Lock body scroll when mobile sidebar is open
   useEffect(() => {
@@ -403,12 +419,65 @@ function Workshop() {
                 </>
               ) : null;
             })()}
-            <span className={cn(
-              "text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full shrink-0",
-              "bg-[var(--primary)]/10 text-[var(--primary)]",
-            )}>
-              {theme.toUpperCase()}
-            </span>
+
+            {/* Theme Switcher Dropdown */}
+            <div className="relative shrink-0" ref={themeSwitcherRef}>
+              <button
+                onClick={() => setThemeSwitcherOpen(!themeSwitcherOpen)}
+                className={cn(
+                  "flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full transition-all",
+                  "bg-[var(--primary)]/10 text-[var(--primary)] hover:bg-[var(--primary)]/20",
+                )}
+              >
+                {(() => {
+                  const t = themes.find((th) => th.id === theme);
+                  const Icon = t?.icon || Palette;
+                  return <Icon className="w-3 h-3" />;
+                })()}
+                {theme.toUpperCase()}
+                <ChevronDown className={cn("w-3 h-3 transition-transform", themeSwitcherOpen && "rotate-180")} />
+              </button>
+
+              <AnimatePresence>
+                {themeSwitcherOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -4, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: -4, scale: 0.95 }}
+                    transition={{ duration: 0.15 }}
+                    className={cn(
+                      "absolute top-full left-0 mt-2 z-50 rounded-xl border border-[var(--border)] shadow-xl overflow-hidden min-w-[160px]",
+                      theme === "glassy"
+                        ? mode === "dark" ? "bg-[#1a1430]/95 backdrop-blur-sm" : "bg-white/95 backdrop-blur-sm"
+                        : "bg-[var(--card)]",
+                    )}
+                  >
+                    {themes.map((thm) => {
+                      const isActive = theme === thm.id;
+                      return (
+                        <button
+                          key={thm.id}
+                          onClick={() => {
+                            setTheme(thm.id);
+                            setThemeSwitcherOpen(false);
+                          }}
+                          className={cn(
+                            "w-full flex items-center gap-2.5 px-3.5 py-2.5 text-xs font-bold transition-colors text-left",
+                            isActive
+                              ? "bg-[var(--primary)] text-[var(--primary-foreground)]"
+                              : cn("hover:bg-[var(--muted)]", textMuted, "hover:text-[var(--foreground)]"),
+                          )}
+                        >
+                          <thm.icon className="w-3.5 h-3.5 shrink-0" />
+                          <span className="flex-1">{thm.label}</span>
+                          {isActive && <div className="w-1.5 h-1.5 rounded-full bg-current animate-pulse shrink-0" />}
+                        </button>
+                      );
+                    })}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
           </div>
 
           {/* Right controls */}
