@@ -141,9 +141,9 @@ export const LandingPageTemplate: React.FC = () => {
   ];
 
   return (
-    <div className="space-y-24 pb-20">
+    <div className="space-y-16 sm:space-y-24 pb-20">
       {/* Hero Section */}
-      <section className="relative text-center space-y-8 pt-20 pb-16">
+      <section className="relative text-center space-y-6 sm:space-y-8 pt-12 sm:pt-20 pb-10 sm:pb-16 px-4">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-[500px] bg-gradient-to-b from-[var(--primary)]/15 to-transparent blur-3xl -z-10 opacity-60" />
 
         <Badge className="mx-auto">
@@ -153,14 +153,14 @@ export const LandingPageTemplate: React.FC = () => {
 
         <h1
           className={cn(
-            "text-6xl md:text-7xl font-black tracking-tighter max-w-4xl mx-auto leading-[1.1]",
+            "text-4xl sm:text-6xl md:text-7xl font-black tracking-tighter max-w-4xl mx-auto leading-[1.1]",
             textPrimary,
           )}
         >
           Build Better Products <span className="text-[var(--primary)]">10x Faster</span>
         </h1>
 
-        <p className={cn("text-xl md:text-2xl max-w-2xl mx-auto leading-relaxed", textMuted)}>
+        <p className={cn("text-lg sm:text-xl md:text-2xl max-w-2xl mx-auto leading-relaxed px-4", textMuted)}>
           The all-in-one platform for modern teams. Ship features faster, collaborate better, and
           scale effortlessly.
         </p>
@@ -179,15 +179,15 @@ export const LandingPageTemplate: React.FC = () => {
           </Button>
         </div>
 
-        <div className="pt-12">
-          <p className={cn("text-sm font-bold uppercase tracking-widest mb-6", textMuted)}>
+        <div className="pt-8 sm:pt-12">
+          <p className={cn("text-sm font-bold uppercase tracking-widest mb-4 sm:mb-6", textMuted)}>
             Trusted by
           </p>
-          <div className="flex flex-wrap justify-center gap-8 md:gap-16 opacity-50">
+          <div className="flex flex-wrap justify-center gap-6 sm:gap-8 md:gap-16 opacity-50">
             {["STRIPE", "VERCEL", "LINEAR", "GITHUB", "FIGMA"].map((company) => (
               <div
                 key={company}
-                className={cn("text-2xl font-black tracking-tighter", textPrimary)}
+                className={cn("text-xl sm:text-2xl font-black tracking-tighter", textPrimary)}
               >
                 {company}
               </div>
@@ -207,14 +207,14 @@ export const LandingPageTemplate: React.FC = () => {
           </p>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
           {features.map((feature, i) => (
             <Card
               key={i}
               className="group hover:border-[var(--primary)]/40 transition-all cursor-default"
               animated
             >
-              <CardContent className="p-8 space-y-4">
+              <CardContent className="p-6 sm:p-8 space-y-4">
                 <div
                   className={cn(
                     "w-14 h-14 flex items-center justify-center text-[var(--primary)] transition-transform group-hover:scale-110",
@@ -248,7 +248,7 @@ export const LandingPageTemplate: React.FC = () => {
           </p>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {testimonials.map((testimonial, i) => (
             <Card key={i}>
               <CardContent className="p-6 space-y-4">
@@ -274,7 +274,7 @@ export const LandingPageTemplate: React.FC = () => {
       {/* CTA Section */}
       <section
         className={cn(
-          "text-center space-y-8 p-16 rounded-3xl border border-[var(--border)]",
+          "text-center space-y-6 sm:space-y-8 p-6 sm:p-12 md:p-16 rounded-3xl border border-[var(--border)]",
           theme === "glassy" ? "bg-white/8" : "bg-[var(--muted)]/20",
         )}
       >
@@ -336,7 +336,7 @@ export const BlogArticleTemplate: React.FC = () => {
 
         <h1
           className={cn(
-            "text-5xl md:text-6xl font-black tracking-tight leading-tight",
+            "text-3xl sm:text-5xl md:text-6xl font-black tracking-tight leading-tight",
             textPrimary,
           )}
         >
@@ -454,7 +454,7 @@ export const BlogArticleTemplate: React.FC = () => {
       {/* Related Posts */}
       <section className="pt-12 border-t border-[var(--border)]">
         <h3 className={cn("text-2xl font-bold mb-6", textPrimary)}>Related Articles</h3>
-        <div className="grid md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {relatedPosts.map((post, i) => (
             <Card
               key={i}
@@ -486,7 +486,7 @@ export const BlogArticleTemplate: React.FC = () => {
           <Mail className="w-12 h-12 mx-auto text-[var(--primary)]" />
           <h3 className={cn("text-2xl font-bold", textPrimary)}>Never Miss an Update</h3>
           <p className={textMuted}>Get the latest articles delivered straight to your inbox</p>
-          <div className="flex gap-3 max-w-md mx-auto">
+          <div className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto w-full">
             <Input placeholder="your@email.com" type="email" className="flex-1" />
             <Button animated>Subscribe</Button>
           </div>
@@ -550,8 +550,7 @@ export const PricingPageTemplate: React.FC = () => {
     <div className="space-y-20 pb-20">
       {/* Header */}
       <section className="text-center space-y-6 pt-12">
-        <h1 className={cn("text-5xl md:text-6xl font-black tracking-tight", textPrimary)}>
-          Simple, Transparent Pricing
+        <h1 className={cn("text-3xl sm:text-5xl md:text-6xl font-black tracking-tight", textPrimary)}>
         </h1>
         <p className={cn("text-xl max-w-2xl mx-auto", textMuted)}>
           Choose the perfect plan for your needs. Always know what you'll pay.
@@ -589,7 +588,7 @@ export const PricingPageTemplate: React.FC = () => {
       </section>
 
       {/* Pricing Cards */}
-      <section className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+      <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
         {plans.map((plan) => (
           <PricingCard
             key={plan.tier}
@@ -607,8 +606,8 @@ export const PricingPageTemplate: React.FC = () => {
         <h2 className={cn("text-3xl font-bold text-center", textPrimary)}>Feature Comparison</h2>
 
         <Card>
-          <CardContent className="p-0">
-            <table className="w-full">
+          <CardContent className="p-0 overflow-x-auto">
+            <table className="w-full min-w-[480px]">
               <thead>
                 <tr className="border-b border-[var(--border)]">
                   <th className={cn("text-left p-4 font-bold", textPrimary)}>Feature</th>
@@ -712,8 +711,7 @@ export const ContactSupportTemplate: React.FC = () => {
     <div className="max-w-6xl mx-auto space-y-16 pb-20">
       {/* Header */}
       <section className="text-center space-y-4">
-        <h1 className={cn("text-5xl md:text-6xl font-black tracking-tight", textPrimary)}>
-          Get in Touch
+        <h1 className={cn("text-3xl sm:text-5xl md:text-6xl font-black tracking-tight", textPrimary)}>
         </h1>
         <p className={cn("text-xl max-w-2xl mx-auto", textMuted)}>
           Have a question? We're here to help and answer any questions you might have.
@@ -721,7 +719,7 @@ export const ContactSupportTemplate: React.FC = () => {
       </section>
 
       {/* Contact Methods */}
-      <section className="grid md:grid-cols-3 gap-6">
+      <section className="grid grid-cols-1 sm:grid-cols-3 gap-6">
         {[
           { icon: Mail, title: "Email Us", desc: "support@example.com", action: "Send Email" },
           { icon: Phone, title: "Call Us", desc: "+1 (555) 123-4567", action: "Call Now" },
@@ -743,14 +741,14 @@ export const ContactSupportTemplate: React.FC = () => {
       </section>
 
       {/* Contact Form + Info */}
-      <section className="grid md:grid-cols-2 gap-12">
+      <section className="grid grid-cols-1 md:grid-cols-2 gap-12">
         {/* Form */}
         <Card>
           <CardHeader>
             <CardTitle>Send us a Message</CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <label className={cn("text-sm font-bold", textPrimary)}>First Name</label>
                 <Input placeholder="John" />
@@ -855,7 +853,7 @@ export const ContactSupportTemplate: React.FC = () => {
           <p className={textMuted}>Quick answers to questions you may have</p>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
           {[
             {
               q: "How do I reset my password?",

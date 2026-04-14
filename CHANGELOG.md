@@ -5,6 +5,36 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.0.3] - 2026-04-15
+
+### Added
+- **Full mobile responsiveness** — complete media query implementation across the entire Workshop UI
+- **Dynamic viewport height** — `h-dvh` on the sidebar for correct iOS Safari rendering (prevents the url-bar shrink bug)
+- **Body scroll lock** — `document.body.style.overflow = "hidden"` applied when mobile drawer is open to prevent background scroll
+- **`AnimatePresence` backdrop** — animated semi-transparent overlay behind the mobile drawer with `lg:hidden` guard
+- **`vite.config.app.ts`** — new separate Vite config in app-mode that outputs to `dist-app/` for cPanel static deployment
+- `build:app` npm script for producing a deployable static site without touching the library build
+
+### Changed
+- **Sidebar breakpoint** — switched from `md:` (768px) to `lg:` (1024px) so tablets also get the mobile drawer experience
+- **Sidebar animation** — `translate-x-full` → `translate-x-0` slide-in; `lg:translate-x-0` always visible on desktop
+- **Main layout** — `ml-72` → `lg:ml-72` so content fills full width on mobile/tablet
+- **Header** — `h-14 sm:h-16`, `px-4 sm:px-6`; hamburger `<Menu>` button visible only on `lg:hidden`
+- **Content area** — `px-4 sm:px-6 lg:px-10 py-6 lg:py-10`
+- **Footer** — `grid-cols-1 sm:grid-cols-2 lg:grid-cols-4`, `px-4 sm:px-6 lg:px-10`
+- **Landing hero section** — spacing `space-y-32` → `space-y-16 sm:space-y-24 lg:space-y-32`; section padding scales with viewport; trust-badge row gains `flex-wrap`
+- **Theme showcase grid** — `md:grid-cols-5` → `grid-cols-2 sm:grid-cols-3 md:grid-cols-5` for narrow screens
+- **Features grid** — `md:grid-cols-3` → `grid-cols-1 sm:grid-cols-2 lg:grid-cols-3`
+- **Testimonials grid** — `md:grid-cols-3` → `grid-cols-1 md:grid-cols-3`
+- **CTA card padding** — `p-12 md:p-16` → `p-8 sm:p-12 md:p-16`
+- **Component Docs page** — page `h1` scales `text-3xl sm:text-4xl lg:text-5xl`; `SectionHeader h2` scales `text-2xl sm:text-3xl`; all preview card containers use `p-4 sm:p-8`; PricingCard demo grid `md:grid-cols-3` → `grid-cols-1 sm:grid-cols-2 lg:grid-cols-3`
+- **CLI Docs page** — page `h1` scales `text-3xl sm:text-4xl lg:text-5xl`; Quick Reference table wrapped in `overflow-x-auto` with `min-w-[480px]` inner container to prevent column collapse on mobile
+- **`molecules.tsx`** — `DialogContent` constrained with `w-[calc(100%-2rem)] sm:w-full` to prevent edge-clipping on phones; `CardHeader`/`CardContent` padding `p-6` → `p-4 sm:p-6`; `TabsList` gains `flex flex-wrap` + `rounded-2xl` so tabs stack on narrow screens; `StatCard` `p-4 sm:p-6`; `PricingCard` `p-5 sm:p-8`
+- **`composites.tsx`** — `KanbanBoard` columns `w-72` → `w-[280px] sm:w-72` for phone-width boards with horizontal scroll
+- **`comprehensive-templates.tsx`** — all four templates (`LandingPage`, `BlogArticle`, `PricingPage`, `ContactSupport`) fully responsive: hero h1 `text-3xl sm:text-5xl md:text-6xl`, all `md:grid-cols-3` → `grid-cols-1 sm:grid-cols-2 lg:grid-cols-3`, CTA `p-6 sm:p-12 md:p-16`, feature comparison table `overflow-x-auto min-w-[480px]`, newsletter input row stacks `flex-col sm:flex-row`, contact form name fields `grid-cols-1 sm:grid-cols-2`
+- **`comprehensive-templates-part2.tsx`** — AdminDashboard header wraps `flex-col sm:flex-row gap-4`, h1 `text-3xl sm:text-4xl`; EcommerceProduct h1 and price `text-3xl sm:text-4xl`, reviews grid `grid-cols-1 sm:grid-cols-2`; Settings h1 scaled, name fields `grid-cols-1 sm:grid-cols-2`; DocsTemplate h1 `text-3xl sm:text-5xl`, components grid `grid-cols-1 sm:grid-cols-2`
+- **`templates.tsx`** — `SettingsTemplate` sidebar/content split `md:grid-cols-[200px_1fr]` → `grid-cols-1 md:grid-cols-[200px_1fr]` so nav stacks above content on mobile
+
 ## [0.0.2] - 2026-04-14
 
 ### Added

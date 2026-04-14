@@ -44,7 +44,7 @@ export const Card: React.FC<CardProps> = ({ className, animated = false, elevati
 export const CardHeader: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({
   className,
   ...props
-}) => <div className={cn("flex flex-col space-y-1.5 p-6", className)} {...props} />;
+}) => <div className={cn("flex flex-col space-y-1.5 p-4 sm:p-6", className)} {...props} />;
 
 export const CardTitle: React.FC<React.HTMLAttributes<HTMLHeadingElement>> = ({
   className,
@@ -67,7 +67,7 @@ export const CardDescription: React.FC<React.HTMLAttributes<HTMLParagraphElement
 export const CardContent: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({
   className,
   ...props
-}) => <div className={cn("p-6 pt-0", className)} {...props} />;
+}) => <div className={cn("p-4 sm:p-6 pt-0", className)} {...props} />;
 
 export const CardFooter: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({
   className,
@@ -85,11 +85,11 @@ export const TabsList = React.forwardRef<
   const { theme, mode } = useThemeClasses();
 
   const listClass = {
-    material: "flex border-b border-[var(--border)] bg-transparent gap-0 w-full",
-    simple: "flex bg-[var(--muted)] rounded-lg p-1 gap-1",
-    minimalist: "flex border-b border-[var(--border)] bg-transparent gap-0",
-    glassy: "flex bg-white/8 rounded-full p-1.5 gap-1 border border-white/10",
-    liquid: "flex bg-[var(--muted)]/60 rounded-full p-1.5 gap-1",
+    material: "flex flex-wrap border-b border-[var(--border)] bg-transparent gap-0 w-full",
+    simple: "flex flex-wrap bg-[var(--muted)] rounded-lg p-1 gap-1",
+    minimalist: "flex flex-wrap border-b border-[var(--border)] bg-transparent gap-0",
+    glassy: "flex flex-wrap bg-white/8 rounded-2xl p-1.5 gap-1 border border-white/10",
+    liquid: "flex flex-wrap bg-[var(--muted)]/60 rounded-2xl p-1.5 gap-1",
   }[theme];
 
   return (
@@ -207,7 +207,7 @@ export const DialogContent = React.forwardRef<
       <DialogPrimitive.Content
         ref={ref}
         className={cn(
-          "fixed left-[50%] top-[50%] z-50 w-full max-w-lg translate-x-[-50%] translate-y-[-50%] p-6 shadow-2xl",
+          "fixed left-[50%] top-[50%] z-50 w-[calc(100%-2rem)] sm:w-full max-w-lg translate-x-[-50%] translate-y-[-50%] p-5 sm:p-6 shadow-2xl",
           "data-[state=open]:animate-in data-[state=closed]:animate-out",
           "data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
           "data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",
@@ -295,13 +295,13 @@ export const StatCard = ({
   if (animated) {
     const preset = animationPresets[theme];
     return (
-      <motion.div className={cn(cardClass, "p-6 space-y-2", className)} whileHover={preset.hover}>
+      <motion.div className={cn(cardClass, "p-4 sm:p-6 space-y-2", className)} whileHover={preset.hover}>
         {inner}
       </motion.div>
     );
   }
 
-  return <div className={cn(cardClass, "p-6 space-y-2", className)}>{inner}</div>;
+  return <div className={cn(cardClass, "p-4 sm:p-6 space-y-2", className)}>{inner}</div>;
 };
 
 // ─── Pricing Card ─────────────────────────────────────────────────────────────
@@ -363,7 +363,7 @@ export const PricingCard = ({
       <motion.div
         className={cn(
           cardClass,
-          "relative flex flex-col p-8",
+          "relative flex flex-col p-5 sm:p-8",
           recommended && "ring-2 ring-[var(--primary)]",
           className,
         )}
@@ -378,7 +378,7 @@ export const PricingCard = ({
     <div
       className={cn(
         cardClass,
-        "relative flex flex-col p-8",
+        "relative flex flex-col p-5 sm:p-8",
         recommended && "ring-2 ring-[var(--primary)]",
         className,
       )}

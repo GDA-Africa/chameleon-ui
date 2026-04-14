@@ -371,7 +371,7 @@ export const CLIDocsPage: React.FC = () => {
             CLI Reference
           </Badge>
         </div>
-        <h1 className={cn("text-5xl font-black tracking-tight mb-3", textPrimary)}>
+        <h1 className={cn("text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight mb-3", textPrimary)}>
           Chameleon CLI
         </h1>
         <p className={cn("text-xl max-w-2xl leading-relaxed", textMuted)}>
@@ -550,7 +550,8 @@ export const CLIDocsPage: React.FC = () => {
         <h2 className={cn("text-2xl font-black tracking-tight mb-6", textPrimary)}>
           Quick Reference
         </h2>
-        <div className="rounded-2xl bg-[#0d1117] border border-white/10 overflow-hidden">
+        <div className="rounded-2xl bg-[#0d1117] border border-white/10 overflow-hidden overflow-x-auto">
+          <div className="min-w-[480px]">
           <div className="grid grid-cols-[1fr_2fr_auto] text-[10px] font-black uppercase tracking-widest text-white/20 px-5 py-3 border-b border-white/5">
             <span>Command</span>
             <span>Description</span>
@@ -584,6 +585,7 @@ export const CLIDocsPage: React.FC = () => {
               </button>
             );
           })}
+        </div>
         </div>
       </div>
     </div>

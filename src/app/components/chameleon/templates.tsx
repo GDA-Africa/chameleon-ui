@@ -142,7 +142,7 @@ export const SettingsTemplate = () => {
         </div>
       </div>
 
-      <div className="grid md:grid-cols-[200px_1fr] gap-8">
+      <div className="grid grid-cols-1 md:grid-cols-[200px_1fr] gap-8">
         <aside className="space-y-1">
           {[
             { id: "general", label: t.general, icon: User },

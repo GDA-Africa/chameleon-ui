@@ -250,9 +250,9 @@ export const EnhancedLandingPage: React.FC = () => {
   ];
 
   return (
-    <div className="space-y-32 pb-32">
+    <div className="space-y-16 sm:space-y-24 lg:space-y-32 pb-16 sm:pb-24 lg:pb-32">
       {/* Hero Section */}
-      <section className="relative pt-24 pb-20 px-6 text-center space-y-10">
+      <section className="relative pt-16 sm:pt-24 pb-12 sm:pb-20 px-4 sm:px-6 text-center space-y-8 sm:space-y-10">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-4xl h-[600px] bg-gradient-to-b from-[var(--primary)]/20 via-[var(--primary)]/5 to-transparent blur-3xl -z-10 opacity-70" />
 
         <Animated type="fadeUp" delay={0}>
@@ -319,7 +319,7 @@ export const EnhancedLandingPage: React.FC = () => {
 
         <Animated type="fadeUp" delay={0.4}>
           <div className="pt-8 space-y-4">
-            <div className={cn("flex items-center justify-center gap-3 text-sm", textMuted)}>
+            <div className={cn("flex flex-wrap items-center justify-center gap-3 text-sm", textMuted)}>
               <div className="flex items-center gap-2">
                 <CheckCircle2 className="w-4 h-4 text-emerald-500" />
                 <span>MIT Licensed</span>
@@ -370,7 +370,7 @@ export const EnhancedLandingPage: React.FC = () => {
       </section>
 
       {/* Stats Section */}
-      <section className="px-6 max-w-7xl mx-auto">
+      <section className="px-4 sm:px-6 max-w-7xl mx-auto">
         <AnimatedList className="grid grid-cols-2 md:grid-cols-4 gap-6">
           {stats.map((stat, i) => (
             <StatCard
@@ -387,7 +387,7 @@ export const EnhancedLandingPage: React.FC = () => {
       </section>
 
       {/* Live Theme Switcher */}
-      <section className="px-6 max-w-7xl mx-auto space-y-12">
+      <section className="px-4 sm:px-6 max-w-7xl mx-auto space-y-8 sm:space-y-12">
         <Animated type="fadeUp">
           <div className="text-center space-y-4">
             <h2
@@ -405,7 +405,7 @@ export const EnhancedLandingPage: React.FC = () => {
           </div>
         </Animated>
 
-        <div className="grid md:grid-cols-5 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 sm:gap-4">
           {themeShowcase.map((t, i) => (
             <Animated key={t.id} type="scaleIn" delay={i * 0.08}>
               <button
@@ -500,7 +500,7 @@ export const EnhancedLandingPage: React.FC = () => {
       </section>
 
       {/* Features Grid */}
-      <section className="px-6 max-w-7xl mx-auto space-y-12">
+      <section className="px-4 sm:px-6 max-w-7xl mx-auto space-y-8 sm:space-y-12">
         <Animated type="fadeUp">
           <div className="text-center space-y-4">
             <h2
@@ -517,7 +517,7 @@ export const EnhancedLandingPage: React.FC = () => {
           </div>
         </Animated>
 
-        <AnimatedList className="grid md:grid-cols-3 gap-6">
+        <AnimatedList className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {features.map((feature, i) => (
             <Card
               key={i}
@@ -551,7 +551,7 @@ export const EnhancedLandingPage: React.FC = () => {
       </section>
 
       {/* Architecture Overview */}
-      <section className="px-6 max-w-7xl mx-auto space-y-12">
+      <section className="px-4 sm:px-6 max-w-7xl mx-auto space-y-8 sm:space-y-12">
         <Animated type="fadeUp">
           <div className="text-center space-y-4">
             <h2
@@ -612,7 +612,7 @@ export const EnhancedLandingPage: React.FC = () => {
       </section>
 
       {/* Comparison Table */}
-      <section className="px-6 max-w-5xl mx-auto space-y-12">
+      <section className="px-4 sm:px-6 max-w-5xl mx-auto space-y-8 sm:space-y-12">
         <Animated type="fadeUp">
           <div className="text-center space-y-4">
             <h2 className={cn("text-4xl md:text-5xl font-black tracking-tight", textPrimary)}>
@@ -663,7 +663,7 @@ export const EnhancedLandingPage: React.FC = () => {
       </section>
 
       {/* Testimonials */}
-      <section className="px-6 max-w-7xl mx-auto space-y-12">
+      <section className="px-4 sm:px-6 max-w-7xl mx-auto space-y-8 sm:space-y-12">
         <Animated type="fadeUp">
           <div className="text-center space-y-4">
             <h2 className={cn("text-4xl md:text-5xl font-black tracking-tight", textPrimary)}>
@@ -675,7 +675,7 @@ export const EnhancedLandingPage: React.FC = () => {
           </div>
         </Animated>
 
-        <div className="grid md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {testimonials.map((testimonial, i) => (
             <Animated key={i} type="scaleIn" delay={i * 0.1}>
               <Card className="hover:border-[var(--primary)]/40 transition-all" animated>
@@ -707,10 +707,10 @@ export const EnhancedLandingPage: React.FC = () => {
       </section>
 
       {/* CTA Section */}
-      <section className="px-6 max-w-5xl mx-auto">
+      <section className="px-4 sm:px-6 max-w-5xl mx-auto">
         <Animated type="scaleIn">
           <Card className="overflow-hidden">
-            <CardContent className="p-12 md:p-16 text-center space-y-8 relative">
+            <CardContent className="p-8 sm:p-12 md:p-16 text-center space-y-8 relative">
               <div className="absolute inset-0 bg-gradient-to-br from-[var(--primary)]/5 via-transparent to-[var(--primary)]/5" />
 
               <div className="relative space-y-6">

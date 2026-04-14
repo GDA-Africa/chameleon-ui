@@ -1006,12 +1006,12 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
   };
 
   return (
-    <div className={cn("flex gap-4 overflow-x-auto pb-4", className)}>
+    <div className={cn("flex gap-4 overflow-x-auto pb-4 -mx-1 px-1", className)}>
       {columns.map((col) => (
         <div
           key={col.id}
           className={cn(
-            "flex-shrink-0 w-72 flex flex-col gap-3",
+            "flex-shrink-0 w-[280px] sm:w-72 flex flex-col gap-3",
             dragOver === col.id && "opacity-90",
           )}
           onDragOver={(e) => {

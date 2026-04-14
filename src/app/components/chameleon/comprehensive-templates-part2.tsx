@@ -247,9 +247,9 @@ export const AdminDashboardTemplate: React.FC = () => {
   return (
     <div className="space-y-8 pb-20">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className={cn("text-4xl font-black", textPrimary)}>Dashboard</h1>
+          <h1 className={cn("text-3xl sm:text-4xl font-black", textPrimary)}>Dashboard</h1>
           <p className={textMuted}>Welcome back, Admin</p>
         </div>
         <div className="flex gap-3">
@@ -449,7 +449,7 @@ export const EcommerceProductTemplate: React.FC = () => {
               ))}
               <span className={cn("text-sm", textMuted)}>(128 reviews)</span>
             </div>
-            <h1 className={cn("text-4xl font-black mb-2", textPrimary)}>Premium Cotton T-Shirt</h1>
+            <h1 className={cn("text-3xl sm:text-4xl font-black mb-2", textPrimary)}>Premium Cotton T-Shirt</h1>
             <p className={cn("text-xl", textMuted)}>Comfortable, stylish, sustainable</p>
           </div>
 
@@ -536,7 +536,7 @@ export const EcommerceProductTemplate: React.FC = () => {
       {/* Reviews */}
       <section className="space-y-6">
         <h2 className={cn("text-3xl font-bold", textPrimary)}>Customer Reviews</h2>
-        <div className="grid md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
           {[...Array(4)].map((_, i) => (
             <Card key={i}>
               <CardContent className="p-6 space-y-3">
@@ -578,7 +578,7 @@ export const SettingsPanelTemplate: React.FC = () => {
   return (
     <div className="max-w-4xl mx-auto space-y-8 pb-20">
       <div>
-        <h1 className={cn("text-4xl font-black mb-2", textPrimary)}>Settings</h1>
+        <h1 className={cn("text-3xl sm:text-4xl font-black mb-2", textPrimary)}>Settings</h1>
         <p className={textMuted}>Manage your account settings and preferences</p>
       </div>
 
@@ -607,7 +607,7 @@ export const SettingsPanelTemplate: React.FC = () => {
               <Separator />
 
               <div className="grid gap-6">
-                <div className="grid md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                   <div className="space-y-2">
                     <label className={cn("text-sm font-bold", textPrimary)}>First Name</label>
                     <Input defaultValue="John" />
@@ -885,7 +885,7 @@ export const DocumentationTemplate: React.FC = () => {
         {/* Getting Started */}
         <section id="getting-started" className="space-y-6">
           <div>
-            <h1 className={cn("text-5xl font-black mb-3", textPrimary)}>Documentation</h1>
+            <h1 className={cn("text-3xl sm:text-5xl font-black mb-3", textPrimary)}>Documentation</h1>
             <p className={cn("text-xl", textMuted)}>Learn how to get started with Chameleon UI</p>
           </div>
 
@@ -935,7 +935,7 @@ pnpm add chameleon-ui`}</code>
         <section id="components" className="space-y-6">
           <h2 className={cn("text-4xl font-black", textPrimary)}>Components</h2>
 
-          <div className="grid md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             {[
               { name: "Button", category: "Atom", desc: "Interactive button with variants" },
               { name: "Card", category: "Molecule", desc: "Container for content" },

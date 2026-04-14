@@ -101,7 +101,7 @@ const SectionHeader: React.FC<{
   return (
     <div className="space-y-1">
       <div className="flex items-center gap-3">
-        <h2 className={cn("text-3xl font-black tracking-tight", textPrimary)}>{title}</h2>
+        <h2 className={cn("text-2xl sm:text-3xl font-black tracking-tight", textPrimary)}>{title}</h2>
         {count && (
           <span className="text-xs font-black bg-[var(--primary)]/10 text-[var(--primary)] px-2.5 py-1 rounded-full">
             {count}
@@ -136,7 +136,7 @@ const AtomsTab: React.FC = () => {
         <p className={cn("text-sm max-w-xl", textMuted)}>
           Fully themed, accessible button with animation support. Adapts to all 5 themes automatically.
         </p>
-        <div className={cn(cardClass, "p-8")}>
+        <div className={cn(cardClass, "p-4 sm:p-8")}>
           <ButtonShowcaseExample />
         </div>
         <CodeSnippet code={`import { Button } from "@chameleon-ui-lib/react";
@@ -161,7 +161,7 @@ const AtomsTab: React.FC = () => {
         <p className={cn("text-sm max-w-xl", textMuted)}>
           Animated progress bar with optional label and value display.
         </p>
-        <div className={cn(cardClass, "p-8")}>
+        <div className={cn(cardClass, "p-4 sm:p-8")}>
           <ProgressShowcaseExample />
         </div>
         <CodeSnippet code={`import { Progress } from "@chameleon-ui-lib/react";
@@ -183,7 +183,7 @@ const AtomsTab: React.FC = () => {
         <p className={cn("text-sm max-w-xl", textMuted)}>
           Semantic status indicator. Use semantic color classes for context-aware styling.
         </p>
-        <div className={cn(cardClass, "p-8 flex flex-wrap gap-3")}>
+        <div className={cn(cardClass, "p-4 sm:p-8 flex flex-wrap gap-3")}>
           <Badge>Default</Badge>
           <Badge className="bg-emerald-500/10 text-emerald-600 border-emerald-500/30">Success</Badge>
           <Badge className="bg-amber-500/10 text-amber-600 border-amber-500/30">Warning</Badge>
@@ -210,7 +210,7 @@ const AtomsTab: React.FC = () => {
         <p className={cn("text-sm max-w-xl", textMuted)}>
           Theme-aware text input. Supports all standard HTML input types.
         </p>
-        <div className={cn(cardClass, "p-8 space-y-4 max-w-xl")}>
+        <div className={cn(cardClass, "p-4 sm:p-8 space-y-4 max-w-xl")}>
           <Input placeholder="Search your project..." />
           <div className="flex gap-3">
             <Input type="email" placeholder="Email address" />
@@ -282,7 +282,7 @@ const MoleculesTab: React.FC = () => {
         <p className={cn("text-sm max-w-xl", textMuted)}>
           Elevated surface with header, title, and content slots. Adapts border radius and shadow to each theme.
         </p>
-        <div className="grid md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           <PricingCard
             tier="Professional"
             price="$49"
@@ -317,7 +317,7 @@ const MoleculesTab: React.FC = () => {
         <p className={cn("text-sm max-w-xl", textMuted)}>
           Accessible modal dialog with animated enter/exit. Adapts to theme — Glassy gets frosted glass, Minimalist gets pure typography.
         </p>
-        <div className={cn(cardClass, "p-8 flex flex-col items-center gap-4")}>
+        <div className={cn(cardClass, "p-4 sm:p-8 flex flex-col items-center gap-4")}>
           <Dialog>
             <DialogTrigger asChild>
               <Button animated>Open Dialog</Button>
@@ -361,7 +361,7 @@ const MoleculesTab: React.FC = () => {
         <p className={cn("text-sm max-w-xl", textMuted)}>
           Keyboard-navigable tab component with animated indicator. Themes style the active pill differently.
         </p>
-        <div className={cn(cardClass, "p-8")}>
+        <div className={cn(cardClass, "p-4 sm:p-8")}>
           <Tabs defaultValue="overview">
             <TabsList className="mb-6">
               <TabsTrigger value="overview">Overview</TabsTrigger>
@@ -403,7 +403,7 @@ const MoleculesTab: React.FC = () => {
         <p className={cn("text-sm max-w-xl", textMuted)}>
           Motion primitives powered by Framer Motion. Wrap any content in an <code className="font-mono text-[var(--primary)]">&lt;Animated&gt;</code> for entrance animations.
         </p>
-        <div className={cn(cardClass, "p-8")}>
+        <div className={cn(cardClass, "p-4 sm:p-8")}>
           <AnimationShowcaseExample />
         </div>
         <CodeSnippet code={`import { Animated, AnimatedList } from "@chameleon-ui-lib/react";
@@ -506,7 +506,7 @@ export const ComponentDocsPage: React.FC = () => {
             Component Library
           </Badge>
         </div>
-        <h1 className={cn("text-5xl font-black tracking-tight mb-3", textPrimary)}>
+        <h1 className={cn("text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight mb-3", textPrimary)}>
           Component Docs
         </h1>
         <p className={cn("text-xl max-w-2xl leading-relaxed", textMuted)}>
