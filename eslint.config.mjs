@@ -11,6 +11,15 @@ export default ts.config(
     ignores: ["dist", "node_modules", "dist-ssr", "src/app/components/ui/sidebar.tsx"],
   },
   {
+    files: ["**/*.js", "bin/**/*.js", "packages/**/*.js"],
+    languageOptions: {
+      ecmaVersion: 2020,
+      globals: {
+        ...globals.node,
+      },
+    },
+  },
+  {
     files: ["**/*.{ts,tsx}"],
     plugins: {
       react,
