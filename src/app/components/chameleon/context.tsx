@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, ReactNode, useMemo, useCallback } from "react";
+import { generateVariations, getContrastColor } from "./utils";
 
 export type ChameleonTheme = "material" | "simple" | "minimalist" | "glassy" | "liquid";
 export type ChameleonMode = "light" | "dark";
@@ -11,6 +12,8 @@ interface ThemeContextType {
   setMode: (mode: ChameleonMode) => void;
   lang: ChameleonLang;
   setLang: (lang: ChameleonLang) => void;
+  customBrandColor: string | null;
+  setCustomBrandColor: (color: string | null) => void;
   // Intensity controls (0-100)
   glassyIntensity: number;
   setGlassyIntensity: (intensity: number) => void;
@@ -402,11 +405,24 @@ export function ChameleonProvider({
   const [theme, setTheme] = useState<ChameleonTheme>(initialTheme);
   const [mode, setMode] = useState<ChameleonMode>(initialMode);
   const [lang, setLang] = useState<ChameleonLang>(initialLang);
+  const [customBrandColor, setCustomBrandColor] = useState<string | null>(null);
   const [glassyIntensity, setGlassyIntensity] = useState<number>(70); // 0-100
   const [liquidIntensity, setLiquidIntensity] = useState<number>(60); // 0-100
 
   const cssVars = useMemo(() => {
     const vars = { ...themeTokens[theme][mode] } as Record<string, string>;
+
+    // Apply custom brand color if set
+    if (customBrandColor) {
+      const varsLight = generateVariations(customBrandColor).light;
+      const primary = mode === "dark" ? varsLight : customBrandColor;
+      vars["--primary"] = primary;
+      vars["--primary-foreground"] = getContrastColor(primary);
+      
+      const varsSecondary = mode === "dark" ? generateVariations(customBrandColor).dark : varsLight;
+      vars["--secondary"] = varsSecondary;
+      vars["--secondary-foreground"] = getContrastColor(varsSecondary);
+    }
 
     // Apply intensity-based adjustments for glassy theme
     if (theme === "glassy") {
@@ -415,7 +431,7 @@ export function ChameleonProvider({
     }
 
     return vars as React.CSSProperties;
-  }, [theme, mode, glassyIntensity]);
+  }, [theme, mode, glassyIntensity, customBrandColor]);
 
   // Apply dark class to document root for Tailwind dark mode
   React.useEffect(() => {
@@ -435,6 +451,8 @@ export function ChameleonProvider({
         setMode,
         lang,
         setLang,
+        customBrandColor,
+        setCustomBrandColor,
         glassyIntensity,
         setGlassyIntensity,
         liquidIntensity,

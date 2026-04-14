@@ -1,9 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Copy, Check, Palette, RefreshCw, Sparkles } from "lucide-react";
 import { Button, Input, Badge } from "./atoms";
-import { cn } from "./utils";
+import { cn, generateVariations, getContrastColor } from "./utils";
 import { Card, CardHeader, CardTitle, CardContent } from "./molecules";
-import { useThemeClasses } from "./context";
+import { useThemeClasses, useChameleon } from "./context";
 
 interface ColorPalette {
   primary: string;
@@ -15,42 +15,11 @@ interface ColorPalette {
   border: string;
 }
 
-function hexToRgb(hex: string): { r: number; g: number; b: number } | null {
-  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-  return result
-    ? {
-        r: parseInt(result[1]!, 16),
-        g: parseInt(result[2]!, 16),
-        b: parseInt(result[3]!, 16),
-      }
-    : null;
-}
-
-function generateVariations(baseColor: string): { light: string; dark: string } {
-  const rgb = hexToRgb(baseColor);
-  if (!rgb) return { light: baseColor, dark: baseColor };
-
-  // Generate lighter and darker versions
-  const lighten = (val: number) => Math.min(255, Math.floor(val + (255 - val) * 0.3));
-  const darken = (val: number) => Math.max(0, Math.floor(val * 0.7));
-
-  const light = `#${lighten(rgb.r).toString(16).padStart(2, "0")}${lighten(rgb.g).toString(16).padStart(2, "0")}${lighten(rgb.b).toString(16).padStart(2, "0")}`;
-  const dark = `#${darken(rgb.r).toString(16).padStart(2, "0")}${darken(rgb.g).toString(16).padStart(2, "0")}${darken(rgb.b).toString(16).padStart(2, "0")}`;
-
-  return { light, dark };
-}
-
-function getContrastColor(hex: string): string {
-  const rgb = hexToRgb(hex);
-  if (!rgb) return "#000000";
-
-  // Calculate relative luminance
-  const luminance = (0.299 * rgb.r + 0.587 * rgb.g + 0.114 * rgb.b) / 255;
-  return luminance > 0.5 ? "#000000" : "#ffffff";
-}
-
 export const ThemeVisualizer = () => {
-  const [brandColor, setBrandColor] = useState("#6366f1");
+  const { customBrandColor, setCustomBrandColor } = useChameleon();
+  const brandColor = customBrandColor || "#6366f1";
+  const setBrandColor = setCustomBrandColor;
+  
   const [copied, setCopied] = useState(false);
   const { textPrimary, textMuted, cardClass } = useThemeClasses();
 
@@ -152,10 +121,17 @@ ${generateCSSVariables(darkTheme, true)}`;
                   className="absolute right-2 top-1/2 -translate-y-1/2 w-10 h-8 rounded-lg border border-border cursor-pointer"
                 />
               </div>
-              <Button onClick={randomColor} variant="outline" className="gap-2">
-                <RefreshCw className="w-4 h-4" />
-                Random
-              </Button>
+              <div className="flex gap-2">
+                <Button onClick={randomColor} variant="outline" className="gap-2">
+                  <RefreshCw className="w-4 h-4" />
+                  Random
+                </Button>
+                {customBrandColor && (
+                  <Button onClick={() => setBrandColor(null)} variant="outline" className="gap-2 shrink-0 text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20">
+                    Reset
+                  </Button>
+                )}
+              </div>
             </div>
 
             {/* Color Preview */}
