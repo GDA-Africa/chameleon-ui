@@ -55,7 +55,7 @@ import {
   Send,
 } from "lucide-react";
 import { motion } from "motion/react";
-import { Button, Input, Badge, Progress, Avatar } from "./atoms";
+import { Button, Input, Badge, Progress, Avatar } from "../app/components/chameleon/atoms";
 import {
   Card,
   CardHeader,
@@ -71,9 +71,9 @@ import {
   Breadcrumb,
   Select,
   Textarea,
-} from "./molecules";
-import { useThemeClasses, useChameleon } from "./context";
-import { cn } from "./utils";
+} from "../app/components/chameleon/molecules";
+import { useThemeClasses, useChameleon } from "../app/components/chameleon/context";
+import { cn } from "../app/components/chameleon/utils";
 
 // ═══════════════════════════════════════════════════════════════════════════
 // 5. USER PROFILE TEMPLATE

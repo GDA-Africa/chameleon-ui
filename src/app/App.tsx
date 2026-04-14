@@ -373,7 +373,7 @@ function Workshop() {
         Mobile (<lg): full width (no offset)
         Desktop (lg+): offset by sidebar width (lg:ml-72)
       */}
-      <main className="flex-1 lg:ml-72 min-h-dvh flex flex-col">
+      <main className="flex-1 lg:ml-72 min-w-0 min-h-dvh flex flex-col">
 
         {/* Header */}
         <header className={cn(

@@ -64,7 +64,7 @@ const CodeSnippet: React.FC<{ code: string }> = ({ code }) => {
   };
 
   return (
-    <div className="relative group rounded-xl overflow-hidden border border-[var(--border)] bg-[var(--muted)]/40">
+    <div className="relative group rounded-xl overflow-hidden border border-[var(--border)] bg-[var(--muted)]/40 w-full min-w-0 max-w-full">
       <div className="flex items-center justify-between px-4 py-2 border-b border-[var(--border)] bg-[var(--muted)]/60">
         <div className="flex items-center gap-2">
           <Code className="w-3.5 h-3.5 text-[var(--muted-foreground)]" />

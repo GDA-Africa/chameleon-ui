@@ -2,6 +2,13 @@
 @import "./tailwind.css";
 @import "./theme.css";
 
+/* ─── Base Styles ────────────────────────────────────────────────────────── */
+
+html, body {
+  overflow-x: hidden; /* Prevent horizontal scroll tearing on mobile devices */
+  width: 100%;
+}
+
 /* ─── Chameleon Theme Ambient Styles ─────────────────────────────────────── */
 
 /* Glassy: ensure the fixed backgrounds show through */

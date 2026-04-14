@@ -88,7 +88,7 @@ const CodeBlock: React.FC<{ code: string; language?: string; className?: string 
     .replace(/"/g, "&quot;");
 
   return (
-    <div className={cn("relative group", className)}>
+    <div className={cn("relative group w-full min-w-0 max-w-full", className)}>
       <div className="absolute top-3 right-3 z-10 flex items-center gap-2">
         <span
           className={cn(
@@ -118,7 +118,7 @@ const CodeBlock: React.FC<{ code: string; language?: string; className?: string 
         </Button>
       </div>
 
-      <pre className="bg-slate-950 text-slate-50 p-6 pt-14 rounded-xl overflow-x-auto max-h-[600px] overflow-y-auto border border-white/10 shadow-2xl">
+      <pre className="bg-slate-950 text-slate-50 p-6 pt-14 rounded-xl overflow-x-auto max-h-[600px] overflow-y-auto border border-white/10 shadow-2xl w-full max-w-full">
         <code
           className="text-sm leading-relaxed font-mono"
           dangerouslySetInnerHTML={{ __html: highlightCode(escapedCode) }}
@@ -211,8 +211,8 @@ export const ComponentShowcase: React.FC<ComponentShowcaseProps> = ({
       </div>
 
       {/* View Mode Toggle */}
-      <div className="flex items-center justify-between">
-        <div className="flex gap-2">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div className="flex flex-wrap gap-2">
           {examples.map((example, i) => (
             <Button
               key={i}
@@ -227,7 +227,7 @@ export const ComponentShowcase: React.FC<ComponentShowcaseProps> = ({
           ))}
         </div>
 
-        <div className={cn("flex gap-1 p-1 rounded-xl", "bg-[var(--muted)]")}>
+        <div className={cn("flex gap-1 p-1 rounded-xl shrink-0 overflow-x-auto max-w-full", "bg-[var(--muted)]")}>
           {[
             { id: "preview", icon: Eye, label: "Preview" },
             { id: "code", icon: Code, label: "Code" },
@@ -270,16 +270,16 @@ export const ComponentShowcase: React.FC<ComponentShowcaseProps> = ({
 
           {/* Preview & Code Display */}
           {viewMode === "both" && (
-            <div className="grid lg:grid-cols-2 gap-6">
+            <div className="grid lg:grid-cols-2 gap-6 min-w-0">
               {/* Preview */}
-              <div>
+              <div className="min-w-0">
                 <p className={cn("text-xs font-black uppercase tracking-widest mb-3", textMuted)}>
                   Live Preview
                 </p>
                 <div
                   className={cn(
                     cardClass,
-                    "p-8 min-h-[300px] flex items-center justify-center",
+                    "p-8 min-h-[300px] flex items-center justify-center overflow-x-auto",
                     theme === "glassy" ? "relative overflow-hidden" : "",
                   )}
                 >
@@ -288,7 +288,7 @@ export const ComponentShowcase: React.FC<ComponentShowcaseProps> = ({
               </div>
 
               {/* Code */}
-              <div>
+              <div className="min-w-0">
                 <p className={cn("text-xs font-black uppercase tracking-widest mb-3", textMuted)}>
                   Source Code
                 </p>
@@ -298,14 +298,14 @@ export const ComponentShowcase: React.FC<ComponentShowcaseProps> = ({
           )}
 
           {viewMode === "preview" && (
-            <div>
+            <div className="min-w-0">
               <p className={cn("text-xs font-black uppercase tracking-widest mb-3", textMuted)}>
                 Live Preview
               </p>
               <div
                 className={cn(
                   cardClass,
-                  "p-12 min-h-[400px] flex items-center justify-center",
+                  "p-12 min-h-[400px] flex items-center justify-center overflow-x-auto",
                   theme === "glassy" ? "relative overflow-hidden" : "",
                 )}
               >
@@ -315,7 +315,7 @@ export const ComponentShowcase: React.FC<ComponentShowcaseProps> = ({
           )}
 
           {viewMode === "code" && (
-            <div>
+            <div className="min-w-0">
               <p className={cn("text-xs font-black uppercase tracking-widest mb-3", textMuted)}>
                 Source Code
               </p>
