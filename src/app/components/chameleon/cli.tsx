@@ -16,10 +16,10 @@ export const CLIMockup = () => {
   const [activeCmd, setActiveCmd] = useState(0);
 
   const commands = [
-    { cmd: "npx chameleon init", desc: "Initialize your project with Chameleon UI" },
-    { cmd: "npx chameleon add button", desc: "Add the Button atom to your components" },
-    { cmd: "npx chameleon add auth-form", desc: "Install the complete authentication template" },
-    { cmd: "npx chameleon list", desc: "Browse all available components" },
+    { cmd: "chameleon init", desc: "Initialize your project with Chameleon UI (interactive)" },
+    { cmd: "chameleon add button", desc: "Scaffold the Button atom into your project" },
+    { cmd: "chameleon add auth-form", desc: "Scaffold the authentication template (login/signup)" },
+    { cmd: "chameleon list", desc: "List available components and templates" },
   ];
 
   const handleCopy = (text: string) => {
@@ -47,13 +47,13 @@ export const CLIMockup = () => {
       {/* Content */}
       <div className="p-6 space-y-6 text-[#c9d1d9]">
         <div className="space-y-1">
-          <p className="text-white/40"># Install the CLI globally</p>
+          <p className="text-white/40"># Install the official CLI</p>
           <div className="flex items-center justify-between group bg-white/5 p-3 rounded-lg border border-white/10">
             <code className="text-indigo-400">
-              <span className="text-emerald-400">npm install -g</span> chameleon
+              <span className="text-emerald-400">npm i -g</span> @chameleon-ui-lib/react
             </code>
             <button
-              onClick={() => handleCopy("npm install -g chameleon")}
+              onClick={() => handleCopy("npm i -g @chameleon-ui-lib/react")}
               className="opacity-0 group-hover:opacity-100 transition-opacity p-1.5 hover:bg-white/10 rounded"
             >
               {copied ? (

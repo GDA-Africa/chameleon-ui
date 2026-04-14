@@ -114,9 +114,11 @@ export const DocumentationPage: React.FC = () => {
                     <span>Terminal</span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <code>npm install -g chameleon</code>
+                    <code>npm i -g @chameleon-ui-lib/react</code>
                     <button
-                      onClick={() => copyToClipboard("npm install -g chameleon", "install-cli")}
+                      onClick={() =>
+                        copyToClipboard("npm i -g @chameleon-ui-lib/react", "install-cli")
+                      }
                       className="px-2 py-1 rounded hover:bg-white/10 transition-colors"
                     >
                       {copiedCode === "install-cli" ? (
@@ -125,6 +127,10 @@ export const DocumentationPage: React.FC = () => {
                         <Copy className="w-4 h-4" />
                       )}
                     </button>
+                  </div>
+                  <div className="text-xs opacity-60 mt-2">
+                    Or run without installing globally:
+                    <div className="mt-1 font-mono">npx @chameleon-cli/chameleon init</div>
                   </div>
                 </div>
               </CardContent>
@@ -864,7 +870,7 @@ function ThemeSelector() {
                     <span>Terminal</span>
                   </div>
                   {[
-                    { cmd: "npm install -g chameleon", desc: "Install CLI globally" },
+                    { cmd: "npm i -g @chameleon-ui-lib/react", desc: "Install CLI globally" },
                     { cmd: "chameleon init", desc: "Initialize in your project" },
                     { cmd: "chameleon add button card table", desc: "Add specific components" },
                   ].map((item, i) => (
@@ -907,9 +913,9 @@ function ThemeSelector() {
                 </p>
                 <div className="bg-slate-950 text-slate-50 p-4 rounded-xl font-mono text-sm border border-white/10">
                   <div className="flex items-center justify-between">
-                    <code>npm install @chameleon-ui/react</code>
+                    <code>npm i -g @chameleon-ui-lib/react</code>
                     <button
-                      onClick={() => copyToClipboard("npm install @chameleon-ui/react", "npm")}
+                      onClick={() => copyToClipboard("npm i -g @chameleon-ui-lib/react", "npm")}
                       className="px-2 py-1 rounded hover:bg-white/10 transition-colors"
                     >
                       {copiedCode === "npm" ? (

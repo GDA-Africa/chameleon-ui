@@ -121,3 +121,27 @@ Optional: Brief supporting detail (1-2 sentences max).
 ### [package] React 19 ref callbacks must return void
 
 **2026-04-05** — In React 19 + @types/react 19, ref callbacks must return `void` or a cleanup function. The pattern `ref={el => array[i] = el}` fails because the assignment expression returns the value. Fix: `ref={el => { array[i] = el; }}` (wrap in block statement).
+
+### [performance] backdrop-filter on fixed/sticky elements kills scroll performance
+
+**2026-04-14** — `backdrop-filter: blur()` on `position: fixed` or `position: sticky` elements forces the browser to re-composite the entire layer on EVERY scroll event. With a fixed sidebar (h-screen) + sticky header both using `backdrop-blur-xl`, glassy mode became completely unscrollable. Fix: remove `backdrop-blur` from all shell layout elements (sidebar, header, footer). The orb glow from box-shadow spread provides the glassy visual without any backdrop sampling.
+
+### [gotcha] CSS contain:strict blocks scrolling in child elements
+
+**2026-04-14** — `contain: strict` implies `contain: size layout paint style` — the `size` containment makes the element act as a scroll container. When applied to a `position: fixed` full-viewport background div, it silently blocked scrolling in the main content area. Fix: use `contain: paint` instead, which restricts overflow painting without creating a scroll container.
+
+### [architecture] Workshop UI navigation — 7 pages, 4 sidebar groups
+
+**2026-04-14** — App.tsx was reorganised from 9 scattered pages (831 lines) to 7 purposeful pages (558 lines). Page type: `"landing" | "component-docs" | "cli-docs" | "docs" | "visualizer" | "animations" | "templates"`. Sidebar has 4 named groups: Overview, Components, Documentation, Theme Tools. Two new page files created: `cli-docs-page.tsx` and `component-docs-page.tsx`.
+
+### [gotcha] Glassy light mode — all shell values were hardcoded dark
+
+**2026-04-14** — The original glassy sidebar/header/footer/userCard/searchInput strings were single dark-only values (e.g. `"bg-[#0d0a1a]/85 backdrop-blur-2xl"`). With no mode branch, switching to light mode left the sidebar black. Fix: all 5 glassy shell strings in App.tsx are now ternary-branched on `mode === "dark"`. Also strengthened `--muted` token from `rgba(255,255,255,0.5)` (invisible) to `rgba(237,230,255,0.85)` and `--border` from `0.25` to `0.30` opacity for visible tab demarcation.
+
+### [performance] React.memo + useMemo on GlassyBackground and LiquidBackground
+
+**2026-04-14** — Both ambient background components were re-rendering on every parent state change. Wrapped both in `React.memo()` and moved `spreadSize`, `baseOpacity`, and the `orbs` array into `useMemo` with appropriate dependency arrays. Combined with removing `will-change: transform` (previously forced 6 GPU layers) and fixing `color-scheme: dark` being applied to both modes (caused style recalc storm on light mode).
+
+### [convention] CLI binary lives in bin/chameleon.js — no external framework
+
+**2026-04-14** — The CLI (`bin/chameleon.js`) is a plain ESM Node.js script using only native `fs`, `path`, `child_process`, and `url`. No Commander.js or chalk installed. ANSI colors are hand-written escape codes. Registered in `package.json` `bin` field as both `chameleon` and `chameleon-cli`. Accessible after `npm link` in the repo root. 13 commands, all real FS operations against the `COMPONENTS` (28 entries) and `TEMPLATES` (14 entries) registries.

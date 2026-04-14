@@ -4,7 +4,7 @@ id: "07_implementation"
 title: "Implementation Plan"
 status: populated
 confidence: high
-last_updated: "2026-04-05"
+last_updated: "2026-04-14"
 ---
 
 # Implementation Plan
@@ -15,9 +15,9 @@ last_updated: "2026-04-05"
 
 ## 🎯 Current Phase
 
-**Active Phase:** Phase 4 — CLI Tool
+**Active Phase:** Phase 5 — Polish & Ship
 **Blocked:** None
-**Next Up:** Scaffold `packages/cli`!
+**Next Up:** Expand test coverage, mobile sidebar, CLIMockup update
 
 ---
 
@@ -70,16 +70,38 @@ last_updated: "2026-04-05"
 | CHANGELOG                 | CHANGELOG.md                  | ✅ Done | Semantic versioning          |
 | npm publish workflow      | .github/workflows/publish.yml | ✅ Done | CI publish on tag            |
 
-### Phase 4: CLI Tool
+### Phase 4: CLI Tool ✅ COMPLETE
 
 **Goal:** `chameleon` CLI for scaffolding and adding components
 
-| Task                      | File(s)       | Status  | Notes                     |
-| ------------------------- | ------------- | ------- | ------------------------- |
-| CLI scaffold              | packages/cli/ | 🔴 TODO | Commander.js or similar   |
-| `chameleon init` command  | —             | 🔴 TODO | Create new project        |
-| `chameleon add` command   | —             | 🔴 TODO | Add individual components |
-| `chameleon theme` command | —             | 🔴 TODO | Switch/configure themes   |
+| Task                       | File(s)              | Status  | Notes                                              |
+| -------------------------- | -------------------- | ------- | -------------------------------------------------- |
+| CLI binary scaffold        | `bin/chameleon.js`   | ✅ Done | Plain ESM Node.js, no external framework           |
+| `chameleon init`           | `bin/chameleon.js`   | ✅ Done | Interactive setup, writes `chameleon.config.json`  |
+| `chameleon add/remove`     | `bin/chameleon.js`   | ✅ Done | Copies/deletes component files, real FS ops        |
+| `chameleon template`       | `bin/chameleon.js`   | ✅ Done | Copies full-page templates                         |
+| `chameleon list/info`      | `bin/chameleon.js`   | ✅ Done | Discovery commands, COMPONENTS + TEMPLATES registry|
+| `chameleon themes/theme`   | `bin/chameleon.js`   | ✅ Done | Lists themes + writes config                       |
+| `chameleon config`         | `bin/chameleon.js`   | ✅ Done | Shows current config                               |
+| `chameleon doctor`         | `bin/chameleon.js`   | ✅ Done | Health check: package, config, source dir          |
+| `chameleon diff/update`    | `bin/chameleon.js`   | ✅ Done | Compares / overwrites with latest library source   |
+| `chameleon dev`            | `bin/chameleon.js`   | ✅ Done | Spawns actual Vite dev server                      |
+| Register in `bin` field    | `package.json`       | ✅ Done | Global `chameleon` + `chameleon-cli` aliases       |
+| ANSI color polish          | `bin/chameleon.js`   | ✅ Done | emerald/indigo/cyan/yellow/red palette             |
+
+### Phase 5: Workshop UI & Production Polish ✅ COMPLETE
+
+**Goal:** Production-ready workshop app, visibility and performance bug fixes
+
+| Task                                | File(s)                                     | Status  | Notes                                                         |
+| ----------------------------------- | ------------------------------------------- | ------- | ------------------------------------------------------------- |
+| CLI docs page                       | `cli-docs-page.tsx`                         | ✅ Done | 13-command reference, two-panel, search, quick-ref table      |
+| Component docs page                 | `component-docs-page.tsx`                   | ✅ Done | 4-tab unified docs (Atoms/Molecules/Composites/Auth)          |
+| App.tsx rewrite                     | `App.tsx`                                   | ✅ Done | 7 pages, 4 sidebar groups, removed 300+ lines of dead code    |
+| Glassy light mode visibility        | `App.tsx`, `context.tsx`                    | ✅ Done | Mode-branched all 5 shell styles; token improvements          |
+| Glassy scroll lock fix              | `App.tsx`, `context.tsx`, `index.css`       | ✅ Done | backdrop-blur removed from shell; contain:paint; React.memo   |
+| README for npm                      | `README.md`                                 | ✅ Done | Minimal, pure-value copy                                      |
+| Brain + docs updated                | `.nexus/docs/index.md`, `02_architecture.md`| ✅ Done | Reflects full Phase 4+5 state                                 |
 
 ---
 
@@ -101,9 +123,10 @@ last_updated: "2026-04-05"
 
 ## 🧪 Testing Plan
 
-| Test File            | What It Tests                                    | Status  |
-| -------------------- | ------------------------------------------------ | ------- |
-| `utils.test.ts`      | `cn()` class merging                             | 🔴 TODO |
-| `context.test.tsx`   | ChameleonProvider, useChameleon, useThemeClasses | 🔴 TODO |
-| `atoms.test.tsx`     | Button variants/sizes, Input, Badge, Progress    | 🔴 TODO |
-| `molecules.test.tsx` | Card, Tabs, Dialog, Alert, StatCard              | 🔴 TODO |
+| Test File              | What It Tests                                    | Status  |
+| ---------------------- | ------------------------------------------------ | ------- |
+| `utils.test.ts`        | `cn()` class merging                             | ✅ Done |
+| `atoms.test.tsx`       | Button variants/sizes, Input, Badge, Progress    | ✅ Done |
+| `context.test.tsx`     | ChameleonProvider, useChameleon, useThemeClasses | 🔴 TODO |
+| `molecules.test.tsx`   | Card, Tabs, Dialog, Alert, StatCard              | 🔴 TODO |
+| `composites.test.tsx`  | DataTable, Charts, KanbanBoard                   | 🔴 TODO |

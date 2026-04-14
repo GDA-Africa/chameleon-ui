@@ -1,0 +1,9 @@
+{
+  "theme": "material",
+  "mode": "dark",
+  "lang": "en",
+  "dir": "src/components/ui",
+  "pagesDir": "src/pages",
+  "css": "src/styles/theme.css",
+  "version": "0.0.1"
+}

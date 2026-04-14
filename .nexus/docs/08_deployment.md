@@ -3,8 +3,8 @@ nexus_doc: true
 id: "08_deployment"
 title: "Deployment"
 status: populated
-confidence: medium
-last_updated: "2026-04-05"
+confidence: high
+last_updated: "2026-04-14"
 ---
 
 # Deployment
@@ -24,9 +24,10 @@ last_updated: "2026-04-05"
 ### NPM Package (Library)
 
 - **Registry:** npmjs.com
-- **Package name:** `chameleon-ui` (TBD — check availability)
-- **Build:** Vite library mode → ESM output
-- **Publish trigger:** Git tag `v*` → GitHub Actions → `npm publish`
+- **Package name:** `@chameleon-ui-lib/react`
+- **Current version:** `0.0.1`
+- **Build:** Vite library mode → ESM + CJS + type declarations in `dist/`
+- **Publish trigger:** Git tag `v*` → GitHub Actions `publish.yml` → `npm publish`
 
 ## 🔧 Environment Variables
 
@@ -37,31 +38,29 @@ last_updated: "2026-04-05"
 
 ## 📦 CI/CD
 
-### Current Status
+### Current Status ✅
 
-- `.github/workflows/ci.yml` was referenced in index.md but the **file does not actually exist** in `.github/workflows/`
-- Only `.github/copilot-instructions.md` exists
+Both workflows are live in `.github/workflows/`:
 
-### Planned Pipeline (ci.yml)
+**`ci.yml`** — triggers on push/PR to `main`:
+- Install (`pnpm install`)
+- Lint (`pnpm lint`)
+- Format check (`pnpm format`)
+- Typecheck (`pnpm typecheck` = `tsc --noEmit`)
+- Tests (`pnpm test` = Vitest run)
+- Build (`pnpm build`)
 
-```yaml
-# Trigger: push/PR to main
-# Steps: install → typecheck → lint → test → build
-```
+**`publish.yml`** — triggers on tag `v*`:
+- Install → typecheck → test → lib build → `npm publish` using `NODE_AUTH_TOKEN` (set as `NPM_TOKEN` secret in repo settings)
 
-### Planned Publish Pipeline (publish.yml)
+## 📝 Build Scripts
 
-```yaml
-# Trigger: tag v*
-# Steps: install → typecheck → test → build (lib) → npm publish
-```
-
-## 📝 Build Scripts (Current)
-
-| Script      | Command          | Status   |
-| ----------- | ---------------- | -------- |
-| `dev`       | `vite`           | ✅ Works |
-| `build`     | `vite build`     | ✅ Works |
-| `test`      | (not configured) | 🔴 TODO  |
-| `lint`      | (not configured) | 🔴 TODO  |
-| `typecheck` | (not configured) | 🔴 TODO  |
+| Script        | Command             | Status     |
+| ------------- | ------------------- | ---------- |
+| `dev`         | `vite`              | ✅ Works   |
+| `build`       | `vite build`        | ✅ Works   |
+| `typecheck`   | `tsc --noEmit`      | ✅ Works   |
+| `test`        | `vitest run`        | ✅ Works   |
+| `test:watch`  | `vitest`            | ✅ Works   |
+| `lint`        | `eslint .`          | ✅ Works   |
+| `format`      | `prettier --write .`| ✅ Works   |

@@ -36,10 +36,12 @@
   transition-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-/* Glassy text should always be light on glass backgrounds */
-[data-chameleon-theme="glassy"][data-chameleon-mode="light"],
+/* Glassy text: respect the actual mode instead of forcing dark color-scheme */
 [data-chameleon-theme="glassy"][data-chameleon-mode="dark"] {
   color-scheme: dark;
+}
+[data-chameleon-theme="glassy"][data-chameleon-mode="light"] {
+  color-scheme: light;
 }
 
 /* ─── CSS Keyframe Animations for Ambient Backgrounds ────────────────────── */
@@ -63,7 +65,6 @@
 
 .chameleon-glassy-orb {
   animation: chameleon-glassy-drift 22s ease-in-out infinite;
-  will-change: transform;
 }
 
 @keyframes chameleon-liquid-morph {
@@ -87,5 +88,4 @@
 
 .chameleon-liquid-blob {
   animation: chameleon-liquid-morph 26s ease-in-out infinite;
-  will-change: transform;
 }

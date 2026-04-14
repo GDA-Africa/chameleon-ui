@@ -355,9 +355,13 @@ export const EnhancedLandingPage: React.FC = () => {
               </div>
               <div className="bg-slate-950 text-slate-50 p-6 rounded-xl font-mono text-sm border border-white/10 overflow-x-auto">
                 <div className="space-y-2">
-                  <p className="text-emerald-400">$ npm install -g chameleon</p>
+                  <p className="text-emerald-400">$ npm i -g @chameleon-ui-lib/react</p>
                   <p className="text-blue-400">$ chameleon init</p>
                   <p className="text-purple-400">$ chameleon add button card table</p>
+                  <p className="text-sm mt-2 text-slate-400">
+                    Or run without installing globally:
+                    <span className="ml-2 text-emerald-400">npx @chameleon-cli/chameleon init</span>
+                  </p>
                 </div>
               </div>
             </div>

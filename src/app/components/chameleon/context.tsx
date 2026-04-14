@@ -142,13 +142,13 @@ const themeTokens: Record<
       "--secondary": "rgba(124,58,237,0.15)",
       "--secondary-foreground": "#5b21b6",
       "--background": "transparent",
-      "--foreground": "#2d1b69", // Darker for better contrast on light orbs
-      "--card": "rgba(255,255,255,0.75)", // Much more opaque for readability
-      "--card-foreground": "#2d1b69", // Dark text on light cards
-      "--muted": "rgba(255,255,255,0.5)",
-      "--muted-foreground": "#5b21b6", // Purple instead of transparent white
-      "--border": "rgba(124,58,237,0.25)",
-      "--accent": "rgba(255,255,255,0.6)",
+      "--foreground": "#2d1b69",
+      "--card": "rgba(255,255,255,0.82)",
+      "--card-foreground": "#2d1b69",
+      "--muted": "rgba(237,230,255,0.85)",       // visible lavender surface for tabs/selects
+      "--muted-foreground": "#5b21b6",
+      "--border": "rgba(124,58,237,0.30)",        // stronger border so tabs are demarcated
+      "--accent": "rgba(255,255,255,0.70)",
       "--accent-foreground": "#5b21b6",
       "--ring": "rgba(124,58,237,0.4)",
       "--radius": "1rem",
@@ -213,59 +213,36 @@ const themeTokens: Record<
 
 // ─── Theme Ambient Backgrounds ───────────────────────────────────────────────
 
-const GlassyBackground: React.FC<{ mode: ChameleonMode; intensity: number }> = ({
+const GlassyBackground: React.FC<{ mode: ChameleonMode; intensity: number }> = React.memo(({
   mode,
   intensity,
 }) => {
-  // PERF: No filter:blur — uses box-shadow for glow effect (composited, no paint)
-  const spreadSize = 80 + (intensity / 100) * 40; // 80-120px spread
-  const baseOpacity = 0.1 + (intensity / 100) * 0.08;
+  // Memoize computed values so orb styles only change when intensity actually changes
+  const { spreadSize, baseOpacity } = React.useMemo(() => ({
+    spreadSize: 80 + (intensity / 100) * 40, // 80-120px spread
+    baseOpacity: 0.1 + (intensity / 100) * 0.08,
+  }), [intensity]);
 
-  const orbs =
+  const orbs = React.useMemo(() =>
     mode === "light"
       ? [
-          {
-            x: "12%",
-            y: "18%",
-            size: 8,
-            color: "168,85,247",
-            opacity: baseOpacity * 1.2,
-            delay: "0s",
-          },
+          { x: "12%", y: "18%", size: 8, color: "168,85,247", opacity: baseOpacity * 1.2, delay: "0s" },
           { x: "72%", y: "12%", size: 8, color: "59,130,246", opacity: baseOpacity, delay: "-6s" },
-          {
-            x: "48%",
-            y: "62%",
-            size: 8,
-            color: "236,72,153",
-            opacity: baseOpacity * 0.8,
-            delay: "-12s",
-          },
+          { x: "48%", y: "62%", size: 8, color: "236,72,153", opacity: baseOpacity * 0.8, delay: "-12s" },
         ]
       : [
-          {
-            x: "15%",
-            y: "15%",
-            size: 8,
-            color: "124,58,237",
-            opacity: baseOpacity * 1.2,
-            delay: "0s",
-          },
+          { x: "15%", y: "15%", size: 8, color: "124,58,237", opacity: baseOpacity * 1.2, delay: "0s" },
           { x: "75%", y: "10%", size: 8, color: "29,78,216", opacity: baseOpacity, delay: "-6s" },
-          {
-            x: "45%",
-            y: "65%",
-            size: 8,
-            color: "190,24,93",
-            opacity: baseOpacity * 0.9,
-            delay: "-12s",
-          },
-        ];
+          { x: "45%", y: "65%", size: 8, color: "190,24,93", opacity: baseOpacity * 0.9, delay: "-12s" },
+        ],
+  [mode, baseOpacity]);
 
   return (
     <div
       className="fixed inset-0 -z-20 overflow-hidden pointer-events-none"
-      style={{ contain: "strict" }}
+      // isolation:isolate contains this compositing context so
+      // backdrop-filters on sidebar/header don't have to re-sample through it
+      style={{ contain: "paint", isolation: "isolate" } as React.CSSProperties}
     >
       <div className={`absolute inset-0 ${mode === "dark" ? "bg-[#0d0a1a]" : "bg-[#e5dbff]"}`} />
 
@@ -295,17 +272,16 @@ const GlassyBackground: React.FC<{ mode: ChameleonMode; intensity: number }> = (
       />
     </div>
   );
-};
+});
 
-const LiquidBackground: React.FC<{ mode: ChameleonMode; intensity: number }> = ({
+const LiquidBackground: React.FC<{ mode: ChameleonMode; intensity: number }> = React.memo(({
   mode,
   intensity,
 }) => {
-  // PERF: box-shadow glow instead of filter:blur. CSS-only animation.
-  // borderRadius morphing moved to a STATIC style (not animated) to avoid layout.
-  const spreadSize = 100 + (intensity / 100) * 50; // 100-150px spread
-  const baseOpacity =
-    mode === "dark" ? 0.25 + (intensity / 100) * 0.15 : 0.12 + (intensity / 100) * 0.1;
+  const { spreadSize, baseOpacity } = React.useMemo(() => ({
+    spreadSize: 100 + (intensity / 100) * 50, // 100-150px spread
+    baseOpacity: mode === "dark" ? 0.25 + (intensity / 100) * 0.15 : 0.12 + (intensity / 100) * 0.1,
+  }), [intensity, mode]);
 
   const blobs =
     mode === "light"
@@ -371,7 +347,7 @@ const LiquidBackground: React.FC<{ mode: ChameleonMode; intensity: number }> = (
   return (
     <div
       className="fixed inset-0 -z-20 overflow-hidden pointer-events-none"
-      style={{ contain: "strict" }}
+      style={{ contain: "paint", isolation: "isolate" } as React.CSSProperties}
     >
       {/* Base layer */}
       <div className={`absolute inset-0 ${mode === "dark" ? "bg-[#030014]" : "bg-[#f5f0ff]"}`} />
@@ -408,7 +384,7 @@ const LiquidBackground: React.FC<{ mode: ChameleonMode; intensity: number }> = (
       />
     </div>
   );
-};
+});
 
 // ─── Provider ────────────────────────────────────────────────────────────────
 
@@ -510,7 +486,7 @@ export function useThemeClasses() {
         "text-[var(--card-foreground)] border border-[var(--border)] rounded-2xl shadow-2xl" +
         (isDark
           ? " bg-[rgba(255,255,255,0.08)] shadow-black/30"
-          : " bg-[rgba(255,255,255,0.82)] shadow-purple-500/15"),
+          : " bg-[rgba(255,255,255,0.82)] shadow-purple-300/30"),
       liquid: isDark
         ? "bg-[var(--card)] text-[var(--card-foreground)] rounded-[2rem] border border-[var(--border)] shadow-2xl shadow-purple-900/30"
         : "bg-[var(--card)] text-[var(--card-foreground)] rounded-[2rem] border border-[var(--border)] shadow-xl shadow-purple-400/15",
