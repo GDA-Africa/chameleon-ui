@@ -16,6 +16,7 @@
   },
   "scripts": {
     "build": "vite build",
+    "build:app": "vite build --config vite.config.app.ts",
     "dev": "vite",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
