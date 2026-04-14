@@ -5,6 +5,26 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.0] - 2026-04-14
+
+### Added
+- **Global custom brand color** — select a primary color in the Theme Visualizer and it applies across the entire platform (sidebar, templates, component docs, everything). Resets to theme defaults on clear.
+- **Shared color utilities** (`utils.ts`) — `hexToRgb`, `generateVariations`, and `getContrastColor` extracted to a shared module for reuse across the codebase.
+- **Reset button** in Theme Visualizer — appears when a custom brand color is active; clears the override instantly.
+
+### Changed
+- **`ChameleonProvider` context** — new `customBrandColor` / `setCustomBrandColor` state; `cssVars` memo now derives `--primary`, `--primary-foreground`, `--secondary`, and `--secondary-foreground` from the custom color when set.
+- **Theme Visualizer** — no longer uses local `useState` for the brand color; reads/writes from global context so colour choice persists across page navigation.
+- **Showcase components** — `ComponentShowcase` Live Preview and Source Code panels gain `min-w-0`, `max-w-full`, and `overflow-x-auto` to prevent horizontal overflow on mobile.
+- **`CodeBlock`** (`showcase.tsx`) — `<pre>` constrained with `w-full max-w-full` to stay within its grid cell.
+- **`CodeSnippet`** (`component-docs-page.tsx`) — wrapper div gains `w-full min-w-0 max-w-full`.
+- **`App.tsx` main area** — added `min-w-0` to the flex child so content can shrink below its intrinsic width on mobile.
+
+### Fixed
+- **Horizontal overflow / "two-tone" background** on Material, Simple, and Minimalist themes — added `overflow-x: hidden` on `html, body` in `index.css`.
+- **ESLint CI failure** — added Node.js globals (`process`, `console`) for `**/*.js` files in `eslint.config.mjs`.
+- **`auth-flow.tsx`** import paths — corrected relative imports to point to `../app/components/chameleon/` instead of broken sibling references.
+
 ## [0.0.3] - 2026-04-15
 
 ### Added
