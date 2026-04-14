@@ -59,7 +59,11 @@ import { useThemeClasses, useChameleon, ChameleonTheme } from "./context";
 import { cn } from "./utils";
 import { Animated, AnimatedList } from "./animations";
 
-export const EnhancedLandingPage: React.FC = () => {
+interface EnhancedLandingPageProps {
+  onNavigate?: (page: string) => void;
+}
+
+export const EnhancedLandingPage: React.FC<EnhancedLandingPageProps> = ({ onNavigate }) => {
   const { textPrimary, textMuted, cardClass, theme, mode } = useThemeClasses();
   const { setTheme, setMode } = useChameleon();
   const [email, setEmail] = useState("");
@@ -304,13 +308,19 @@ export const EnhancedLandingPage: React.FC = () => {
             <Button
               size="lg"
               animated
+              onClick={() => onNavigate?.("docs")}
               className="h-16 px-10 text-lg font-black group shadow-2xl shadow-[var(--primary)]/25"
             >
               <Terminal className="w-5 h-5 mr-3" />
               Get Started
               <ArrowRight className="ml-3 w-5 h-5 transition-transform group-hover:translate-x-1" />
             </Button>
-            <Button variant="outline" size="lg" className="h-16 px-10 text-lg font-black">
+            <Button
+              variant="outline"
+              size="lg"
+              className="h-16 px-10 text-lg font-black"
+              onClick={() => window.open("https://github.com/GDA-Africa/chameleon-ui", "_blank")}
+            >
               <Github className="w-5 h-5 mr-3" />
               View on GitHub
             </Button>
@@ -735,7 +745,7 @@ export const EnhancedLandingPage: React.FC = () => {
                       onChange={(e) => setEmail(e.target.value)}
                       className="flex-1 h-14 text-base"
                     />
-                    <Button size="lg" animated className="h-14 px-8 font-black">
+                    <Button size="lg" animated className="h-14 px-8 font-black" onClick={() => onNavigate?.("docs")}>
                       Start Free
                     </Button>
                   </div>

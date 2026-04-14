@@ -41,7 +41,9 @@ import { CLIDocsPage } from "./components/chameleon/cli-docs-page";
 
 // ─── Page Components ──────────────────────────────────────────────────────────
 
-const LandingPage = () => <EnhancedLandingPage />;
+const LandingPage = ({ onNavigate }: { onNavigate: (page: string) => void }) => (
+  <EnhancedLandingPage onNavigate={onNavigate} />
+);
 const TemplatesPage = () => <TemplateShowcase />;
 const DocsPage = () => <DocumentationPage />;
 
@@ -426,7 +428,12 @@ function Workshop() {
                 )}
               />
             </div>
-            <Button size="icon" variant="ghost" className="rounded-full w-9 h-9">
+            <Button
+              size="icon"
+              variant="ghost"
+              className="rounded-full w-9 h-9"
+              onClick={() => window.open("https://github.com/GDA-Africa/chameleon-ui", "_blank")}
+            >
               <Github className="w-4 h-4" />
             </Button>
             <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-orange-400 to-rose-500 shadow-lg shrink-0" />
@@ -443,7 +450,7 @@ function Workshop() {
               exit={{ opacity: 0, y: -8 }}
               transition={{ type: "spring", stiffness: 280, damping: 24 }}
             >
-              {activePage === "landing"        && <LandingPage />}
+              {activePage === "landing"        && <LandingPage onNavigate={(p) => setActivePage(p as Page)} />}
               {activePage === "component-docs" && <ComponentDocsPage />}
               {activePage === "cli-docs"        && <CLIDocsPage />}
               {activePage === "docs"            && <DocsPage />}
@@ -474,15 +481,27 @@ function Workshop() {
               </p>
             </div>
             {[
-              { title: "Product", items: ["Components", "Composites", "Templates", "CLI Tool"] },
-              { title: "Company", items: ["About", "Blog", "Careers", "Privacy"] },
+              { title: "Product", items: [
+                { label: "Components", page: "component-docs" as Page },
+                { label: "Templates", page: "templates" as Page },
+                { label: "CLI Tool", page: "cli-docs" as Page },
+                { label: "Getting Started", page: "docs" as Page },
+              ]},
+              { title: "Tools", items: [
+                { label: "Theme Visualizer", page: "visualizer" as Page },
+                { label: "Animations", page: "animations" as Page },
+              ]},
             ].map((col) => (
               <div key={col.title} className="space-y-3">
                 <h4 className={cn("text-xs font-black uppercase tracking-widest", textPrimary)}>{col.title}</h4>
                 <ul className="space-y-2">
                   {col.items.map((item) => (
-                    <li key={item} className={cn("text-sm font-bold hover:text-[var(--primary)] cursor-pointer transition-colors", textMuted)}>
-                      {item}
+                    <li
+                      key={item.label}
+                      onClick={() => setActivePage(item.page)}
+                      className={cn("text-sm font-bold hover:text-[var(--primary)] cursor-pointer transition-colors", textMuted)}
+                    >
+                      {item.label}
                     </li>
                   ))}
                 </ul>
@@ -494,9 +513,15 @@ function Workshop() {
               © 2026 Chameleon UI. All rights reserved.
             </p>
             <div className="flex gap-6 opacity-40">
-              <Github className={cn("w-4 h-4", textPrimary)} />
-              <Zap className={cn("w-4 h-4", textPrimary)} />
-              <Globe className={cn("w-4 h-4", textPrimary)} />
+              <a href="https://github.com/GDA-Africa/chameleon-ui" target="_blank" rel="noopener noreferrer" className="hover:opacity-100 transition-opacity">
+                <Github className={cn("w-4 h-4", textPrimary)} />
+              </a>
+              <button onClick={() => setActivePage("animations")} className="hover:opacity-100 transition-opacity">
+                <Zap className={cn("w-4 h-4", textPrimary)} />
+              </button>
+              <button onClick={() => setActivePage("landing")} className="hover:opacity-100 transition-opacity">
+                <Globe className={cn("w-4 h-4", textPrimary)} />
+              </button>
             </div>
           </div>
         </footer>
