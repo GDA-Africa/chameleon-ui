@@ -1,0 +1,184 @@
+# Chameleon UI — LLM Context File
+# Following the llms.txt convention: https://llmstxt.org
+# This file gives AI agents, LLMs, and crawlers a machine-readable overview
+# of Chameleon UI so they can help users build with the library correctly.
+
+> Chameleon UI is a React 19 + TypeScript component library.
+> Every component automatically adapts to 5 themes and 2 colour modes.
+> No per-component theme configuration required.
+
+## Package
+
+- NPM: @chameleon-ui-lib/react
+- Version: 1.0.0
+- Framework: React 19 + Vite 6 + TypeScript (strict mode)
+- Styling: Tailwind CSS v4 + CSS custom properties (tokens)
+- Animations: Framer Motion (motion/react)
+
+## Install
+
+```
+npm install @chameleon-ui-lib/react
+```
+
+## Provider Setup
+
+```tsx
+import { ChameleonProvider } from '@chameleon-ui-lib/react';
+
+export default function App() {
+  return (
+    <ChameleonProvider theme="simple" mode="light">
+      {/* your entire app */}
+    </ChameleonProvider>
+  );
+}
+```
+
+## Themes
+
+| Theme      | Visual Style                        |
+|------------|-------------------------------------|
+| material   | Elevated shadows, uppercase text    |
+| simple     | Clean rounded corners, solid colors |
+| minimalist | Sharp edges, border-based styling   |
+| glassy     | Frosted glass, backdrop blur        |
+| liquid     | Gradient fills, pill shapes         |
+
+Both `light` and `dark` modes work for all 5 themes.
+
+## CSS Import
+
+```css
+@import '@chameleon-ui-lib/react/styles';
+```
+
+## CSS Tokens (available in every component)
+
+```
+--primary              --primary-foreground
+--secondary            --secondary-foreground
+--background           --foreground
+--card                 --card-foreground
+--muted                --muted-foreground
+--border               --accent
+--accent-foreground    --ring
+--radius
+```
+
+## Components — Atoms (9)
+
+| Component  | Props (key)                                             |
+|------------|---------------------------------------------------------|
+| Button     | variant, size, animated, asChild                        |
+| Input      | animated (extends HTMLInputElement)                     |
+| Badge      | animated (extends HTMLDivElement)                       |
+| Progress   | value, label, showValue, animated                       |
+| Spinner    | size                                                    |
+| Avatar     | src, fallback, size, animated                           |
+| Toggle     | checked, onChange, label, animated                      |
+| Tooltip    | content, side, children                                 |
+| DatePicker | mode, value, onChange, rangeValue, onRangeChange, minDate, maxDate |
+
+## Components — Molecules (10)
+
+Card, CardHeader, CardTitle, CardContent, CardFooter,
+Tabs, TabsList, TabsTrigger, TabsContent,
+Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogFooter,
+Alert,
+StatCard,
+Select,
+Breadcrumb, BreadcrumbItem,
+Separator,
+Textarea,
+SearchBar
+
+## Components — Composites (10)
+
+DataTable, KanbanBoard, MultiStepForm, NotificationFeed,
+CalendarWidget, FileUploader, MediaGallery, Timeline, ThemeChart, PricingCard
+
+## Auth Components (7)
+
+LoginForm, SignupForm, TwoFactorAuth, MagicLinkForm,
+ForgotPasswordForm, ResetPasswordForm, UserProfile
+
+## Template Pages (14)
+
+Dashboard, Landing, Settings, Analytics, Inbox, ECommerce,
+Profile, Calendar, Auth, Blog, Pricing, Team, Reports, Onboarding
+
+## Hooks
+
+```tsx
+import { useChameleon, useThemeClasses } from '@chameleon-ui-lib/react';
+
+// Read and set the active theme/mode/lang
+const { theme, setTheme, mode, setMode, lang, setLang } = useChameleon();
+
+// Access pre-computed Tailwind class strings per theme
+const {
+  buttonPrimary, buttonSecondary, buttonGhost, buttonOutline,
+  cardClass, inputClass,
+  textPrimary, textMuted,
+  theme, mode,
+} = useThemeClasses();
+```
+
+## Animations
+
+```tsx
+import { Animated, AnimatedList, animationPresets } from '@chameleon-ui-lib/react';
+
+// Wrap any element with theme-specific motion
+<Animated><div>Animated block</div></Animated>
+
+// Staggered list
+<AnimatedList items={items} renderItem={(item) => <div>{item.name}</div>} />
+
+// All interactive atoms/molecules accept animated={true}
+<Button animated>Animated Button</Button>
+```
+
+## CLI
+
+```bash
+npx chameleon init            # auto-configure Tailwind v4 + CSS import
+npx chameleon add button      # scaffold a single component (self-contained)
+npx chameleon add --all-atoms # scaffold all 8 atoms + barrel index.ts
+npx chameleon add --all       # scaffold all 28 components + barrel index.ts
+npx chameleon doctor          # check integration health
+npx chameleon list            # list all available components
+npx chameleon themes          # show all theme tokens
+npx chameleon info button     # get component usage details
+```
+
+Scaffolded files are self-contained — all internal imports are rewritten to
+`@chameleon-ui-lib/react`. A barrel `index.ts` is auto-generated after every add.
+
+## i18n
+
+```tsx
+<ChameleonProvider lang="fr">  // en | es | fr
+```
+
+## TypeScript
+
+Full TypeScript types ship with the package. Zero `any` types.
+All component props are exported: ButtonProps, InputProps, BadgeProps, etc.
+
+## Key Design Principles
+
+1. Theme-first — every component uses CSS variable tokens
+2. Zero configuration — ChameleonProvider is all that's needed
+3. Accessibility — keyboard navigation, ARIA roles, focus rings
+4. Mobile-first — responsive layouts on every component
+5. Self-contained scaffold — chameleon add copies fully standalone files
+
+## Resources
+
+- Workshop / Live Demo: https://chameleon.glenhalton.com
+- NPM Package: https://www.npmjs.com/package/@chameleon-ui-lib/react
+- Full context (Markdown): https://chameleon.glenhalton.com/context.md
+- Machine manifest (this file): https://chameleon.glenhalton.com/llms.txt
+- Component manifest (JSON): https://chameleon.glenhalton.com/manifest.json

@@ -256,6 +256,48 @@ export const CHAMELEON_AI_MANIFEST: AIComponentMetadata[] = [
     a11y: "Uses progressbar role with aria-valuenow",
     keywords: ["progress", "loading", "bar", "indicator", "percentage", "meter"],
   },
+  {
+    id: "datepicker",
+    name: "DatePicker",
+    category: "atom",
+    complexity: 3,
+    description: "Accessible date picker with single date and date range modes. Calendar popup is keyboard navigable and fully theme-aware.",
+    importPath: "./components/chameleon/atoms",
+    props: {
+      mode: { type: "'single' | 'range'", required: false, default: "'single'", description: "Selection mode" },
+      value: { type: "Date | null", required: false, description: "Selected date (single mode)" },
+      onChange: { type: "(date: Date | null) => void", required: false, description: "Callback for single mode" },
+      rangeValue: { type: "DateRange", required: false, description: "Selected range { start, end } (range mode)" },
+      onRangeChange: { type: "(range: DateRange) => void", required: false, description: "Callback for range mode" },
+      minDate: { type: "Date", required: false, description: "Minimum selectable date" },
+      maxDate: { type: "Date", required: false, description: "Maximum selectable date" },
+      placeholder: { type: "string", required: false, default: "'Select date'", description: "Placeholder text" },
+      disabled: { type: "boolean", required: false, default: "false", description: "Disable the picker" },
+    },
+    exampleMinimal: `<DatePicker value={date} onChange={setDate} />`,
+    exampleFull: `// Single date
+const [date, setDate] = useState<Date | null>(null);
+<DatePicker
+  value={date}
+  onChange={setDate}
+  placeholder="Select date"
+  minDate={new Date()}
+/>
+
+// Date range
+const [range, setRange] = useState<DateRange>({ start: null, end: null });
+<DatePicker
+  mode="range"
+  rangeValue={range}
+  onRangeChange={setRange}
+  placeholder="Start → End"
+/>`,
+    useCases: ["Booking forms", "Report date filters", "Event scheduling", "Date of birth input", "Leave request forms"],
+    relatedComponents: ["input", "dialog"],
+    themeCompatibility: ["material", "simple", "minimalist", "glassy", "liquid"],
+    a11y: "Keyboard navigable calendar, ARIA labels on nav buttons, disabled state on out-of-range dates",
+    keywords: ["date", "calendar", "picker", "range", "datepicker", "schedule", "booking"],
+  },
 
   // ─── MOLECULES ──────────────────────────────────────────────────────────
   {

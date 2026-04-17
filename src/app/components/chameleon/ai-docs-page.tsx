@@ -4,7 +4,7 @@
  */
 
 import React, { useState } from "react";
-import { Bot, Code, Zap, CheckCircle, AlertCircle, Sparkles, Copy, Search } from "lucide-react";
+import { Bot, Code, Zap, CheckCircle, AlertCircle, Sparkles, Copy, Search, ClipboardCheck } from "lucide-react";
 import { Button, Input } from "./atoms";
 import {
   Card,
@@ -33,11 +33,158 @@ import {
   COMPLEXITY_GUIDE,
 } from "./ai-helpers";
 
+// ─── AI Agent Writeup ─────────────────────────────────────────────────────────
+// A comprehensive, copy-paste-ready briefing for feeding to any AI agent.
+const CHAMELEON_AI_WRITEUP = `# Chameleon UI — Complete AI Agent Briefing
+> Version: ${CHAMELEON_AI_SUMMARY.version} | Last updated: 2026-04-17 | Package: @chameleon-ui-lib/react
+
+## What Is Chameleon UI?
+Chameleon UI is a React 19 + TypeScript component library that gives every component the ability
+to automatically adapt to 5 distinct visual themes (Material, Simple, Minimalist, Glassy, Liquid)
+and 2 colour modes (light/dark). No per-component theme logic is needed by the consumer — just
+wrap your app in <ChameleonProvider theme="glassy" mode="dark"> and every component adapts.
+
+## Install
+\`\`\`
+npm install @chameleon-ui-lib/react
+# or
+pnpm add @chameleon-ui-lib/react
+\`\`\`
+
+## CLI — Scaffold Components
+\`\`\`bash
+npx chameleon init            # set up Tailwind v4 integration
+npx chameleon add button      # scaffold a single component into your project
+npx chameleon add --all-atoms # scaffold all 8 atom components
+npx chameleon add --all       # scaffold all 28 components + auto-generate barrel index.ts
+npx chameleon doctor          # audit your integration for common issues
+\`\`\`
+
+## Provider Setup
+\`\`\`tsx
+import { ChameleonProvider } from '@chameleon-ui-lib/react';
+
+export default function App() {
+  return (
+    <ChameleonProvider theme="simple" mode="light">
+      {/* your app */}
+    </ChameleonProvider>
+  );
+}
+\`\`\`
+
+## Themes
+| Theme       | Visual Style                        |
+|-------------|-------------------------------------|
+| material    | Elevated shadows, uppercase text    |
+| simple      | Clean rounded corners, solid colors |
+| minimalist  | Sharp edges, border-based styling   |
+| glassy      | Frosted glass, backdrop blur        |
+| liquid      | Gradient fills, pill shapes         |
+
+## Component Categories & Count
+- **Atoms (8):** Button, Input, Badge, Progress, Spinner, Avatar, Toggle, Tooltip, DatePicker
+- **Molecules (10):** Card, Tabs, Dialog, Alert, StatCard, Select, Breadcrumb, Separator, Textarea, SearchBar
+- **Composites (10):** DataTable, KanbanBoard, MultiStepForm, NotificationFeed, CalendarWidget, FileUploader, MediaGallery, Timeline, ThemeChart, PricingCard
+- **Auth (7):** LoginForm, SignupForm, TwoFactorAuth, MagicLinkForm, ForgotPasswordForm, ResetPasswordForm, UserProfile
+- **Templates (14):** Dashboard, Landing, Settings, Analytics, Inbox, E-commerce, Profile, Calendar, Auth, Blog, Pricing, Team, Reports, Onboarding
+
+Total: ${CHAMELEON_AI_SUMMARY.totalComponents}+ components
+
+## Atoms Quick Reference
+\`\`\`tsx
+import { Button, Input, Badge, Progress, Spinner, Avatar, Toggle, Tooltip, DatePicker } from '@chameleon-ui-lib/react';
+
+<Button variant="primary" size="md" animated>Click</Button>
+<Button variant="secondary">Secondary</Button>
+<Button variant="ghost">Ghost</Button>
+<Button variant="outline">Outline</Button>
+<Input placeholder="Type here..." animated />
+<Badge>New</Badge>
+<Progress value={75} label="Upload" showValue animated />
+<Spinner size="md" />
+<Avatar src="/photo.jpg" fallback="JD" size="md" animated />
+<Toggle checked={true} onChange={setChecked} label="Enable" />
+<Tooltip content="Hello!"><span>Hover me</span></Tooltip>
+<DatePicker value={date} onChange={setDate} />
+<DatePicker mode="range" rangeValue={range} onRangeChange={setRange} />
+\`\`\`
+
+## Molecules Quick Reference
+\`\`\`tsx
+import { Card, CardHeader, CardTitle, CardContent, Tabs, TabsList, TabsTrigger, TabsContent, Dialog, Alert } from '@chameleon-ui-lib/react';
+
+<Card><CardHeader><CardTitle>Title</CardTitle></CardHeader><CardContent>Body</CardContent></Card>
+<Tabs defaultValue="tab1"><TabsList><TabsTrigger value="tab1">Tab</TabsTrigger></TabsList><TabsContent value="tab1">Content</TabsContent></Tabs>
+<Alert variant="success">Action completed</Alert>
+<Alert variant="error">Something went wrong</Alert>
+\`\`\`
+
+## Theme Hooks
+\`\`\`tsx
+import { useChameleon, useThemeClasses } from '@chameleon-ui-lib/react';
+
+// Control the theme programmatically
+const { theme, setTheme, mode, setMode } = useChameleon();
+
+// Access pre-computed class strings
+const { buttonPrimary, cardClass, textPrimary, textMuted, inputClass } = useThemeClasses();
+\`\`\`
+
+## Animations
+All components accept an \`animated\` prop. Animations are theme-specific:
+- Material: scale + shadow lift
+- Simple: gentle fade-in
+- Minimalist: opacity transition only
+- Glassy: blur + scale
+- Liquid: spring bounce
+
+\`\`\`tsx
+import { animationPresets, Animated, AnimatedList } from '@chameleon-ui-lib/react';
+// Wrap any element with motion physics
+<Animated><div>Animated block</div></Animated>
+// Staggered list
+<AnimatedList items={items} renderItem={(item) => <div>{item.name}</div>} />
+\`\`\`
+
+## CSS Import
+\`\`\`css
+@import '@chameleon-ui-lib/react/styles';
+\`\`\`
+
+## CSS Variables (tokens)
+The library uses CSS custom properties that change with each theme:
+--primary, --primary-foreground, --secondary, --secondary-foreground,
+--background, --foreground, --card, --card-foreground,
+--muted, --muted-foreground, --border, --accent, --accent-foreground,
+--ring, --radius
+
+## TypeScript
+The library ships full TypeScript types. All components use strict types — no \`any\`.
+
+## i18n
+Supports EN, ES, FR via the \`lang\` prop on \`<ChameleonProvider lang="fr">\`.
+
+## Key Design Principles
+1. **Theme-first** — every component is built around CSS variable tokens
+2. **Zero configuration** — wrapping with ChameleonProvider is all that's needed
+3. **Accessibility** — keyboard navigable, ARIA roles, focus rings on all interactive elements
+4. **Mobile-first** — responsive layouts baked into every component
+5. **Self-contained scaffold** — \`chameleon add\` copies fully self-contained components rewriting all local imports to the npm package
+
+## Resources
+- npm: https://www.npmjs.com/package/@chameleon-ui-lib/react
+- Workshop (live demo): https://chameleon.glenhalton.com
+- Context file (machine-readable): https://chameleon.glenhalton.com/context.md
+- Component manifest: https://chameleon.glenhalton.com/llms.txt
+`;
+
 export const AIDocsPage: React.FC = () => {
   const { textPrimary, textMuted, cardClass } = useThemeClasses();
   const [searchQuery, setSearchQuery] = useState("");
   const [discoveryResult, setDiscoveryResult] = useState<any>(null);
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
+  const [copiedWriteup, setCopiedWriteup] = useState(false);
 
   const handleSearch = () => {
     if (searchQuery.trim()) {
@@ -50,6 +197,12 @@ export const AIDocsPage: React.FC = () => {
     navigator.clipboard.writeText(code);
     setCopiedCode(id);
     setTimeout(() => setCopiedCode(null), 2000);
+  };
+
+  const copyWriteup = () => {
+    navigator.clipboard.writeText(CHAMELEON_AI_WRITEUP);
+    setCopiedWriteup(true);
+    setTimeout(() => setCopiedWriteup(false), 3000);
   };
 
   return (
@@ -68,6 +221,44 @@ export const AIDocsPage: React.FC = () => {
               Optimized for machine-readable integration
             </p>
           </div>
+        </div>
+
+        {/* ── AI Writeup Copy Banner ───────────────────────────────────────── */}
+        <div
+          className={cn(
+            "flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-5 rounded-2xl border-2 border-[var(--primary)]/30 bg-[var(--primary)]/5",
+          )}
+        >
+          <div className="space-y-1">
+            <p className={cn("font-bold text-base", textPrimary)}>
+              📋 Copy a full briefing for any AI agent
+            </p>
+            <p className={cn("text-sm", textMuted)}>
+              Paste this into ChatGPT, Claude, Gemini, or any coding assistant to give it instant,
+              complete context about Chameleon UI — components, themes, CLI, and code examples.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={copyWriteup}
+            className={cn(
+              "shrink-0 inline-flex items-center gap-2 px-5 py-3 rounded-xl font-bold text-sm transition-all",
+              "bg-[var(--primary)] text-[var(--primary-foreground)] hover:opacity-90 active:scale-95",
+              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:ring-offset-2",
+            )}
+          >
+            {copiedWriteup ? (
+              <>
+                <ClipboardCheck className="w-4 h-4" />
+                Copied to clipboard!
+              </>
+            ) : (
+              <>
+                <Copy className="w-4 h-4" />
+                Copy AI Briefing
+              </>
+            )}
+          </button>
         </div>
 
         <div className="flex flex-wrap gap-3">

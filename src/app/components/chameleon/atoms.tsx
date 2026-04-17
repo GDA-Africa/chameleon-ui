@@ -451,3 +451,314 @@ export const Tooltip: React.FC<TooltipProps> = ({ content, children, side = "top
     </div>
   );
 };
+
+// ─── DatePicker ───────────────────────────────────────────────────────────────
+/**
+ * @component DatePicker
+ * @category Atom
+ * @complexity 3
+ *
+ * @description
+ * Accessible date-picker supporting single date selection and date-range selection.
+ * Calendar popup is keyboard navigable, fully theme-aware, and works in both
+ * light and dark modes.
+ *
+ * @example-single
+ * ```tsx
+ * <DatePicker value={date} onChange={setDate} placeholder="Select date" />
+ * ```
+ *
+ * @example-range
+ * ```tsx
+ * <DatePicker
+ *   mode="range"
+ *   rangeValue={range}
+ *   onRangeChange={setRange}
+ *   placeholder="Select date range"
+ * />
+ * ```
+ */
+
+export type DateRange = { start: Date | null; end: Date | null };
+
+export interface DatePickerProps {
+  /** Selection mode */
+  mode?: "single" | "range";
+  /** Selected date (single mode) */
+  value?: Date | null;
+  /** Callback for single mode */
+  onChange?: (date: Date | null) => void;
+  /** Selected range (range mode) */
+  rangeValue?: DateRange;
+  /** Callback for range mode */
+  onRangeChange?: (range: DateRange) => void;
+  /** Minimum selectable date */
+  minDate?: Date;
+  /** Maximum selectable date */
+  maxDate?: Date;
+  placeholder?: string;
+  disabled?: boolean;
+  className?: string;
+}
+
+const DAYS = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
+const MONTHS = [
+  "January", "February", "March", "April", "May", "June",
+  "July", "August", "September", "October", "November", "December",
+];
+
+function isSameDay(a: Date, b: Date) {
+  return a.getFullYear() === b.getFullYear() &&
+    a.getMonth() === b.getMonth() &&
+    a.getDate() === b.getDate();
+}
+
+function isInRange(day: Date, range: DateRange) {
+  if (!range.start || !range.end) return false;
+  const t = day.getTime();
+  return t > range.start.getTime() && t < range.end.getTime();
+}
+
+function startOfMonth(d: Date) {
+  return new Date(d.getFullYear(), d.getMonth(), 1);
+}
+
+export const DatePicker: React.FC<DatePickerProps> = ({
+  mode = "single",
+  value = null,
+  onChange,
+  rangeValue,
+  onRangeChange,
+  minDate,
+  maxDate,
+  placeholder = "Select date",
+  disabled = false,
+  className,
+}) => {
+  const { theme } = useThemeClasses();
+  const [open, setOpen] = React.useState(false);
+  const [viewDate, setViewDate] = React.useState<Date>(
+    (mode === "single" ? value : rangeValue?.start) ?? new Date(),
+  );
+  const [rangePick, setRangePick] = React.useState<"start" | "end">("start");
+  const containerRef = React.useRef<HTMLDivElement>(null);
+
+  // Close on outside click
+  React.useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    };
+    if (open) document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [open]);
+
+  // Build calendar grid
+  const year = viewDate.getFullYear();
+  const month = viewDate.getMonth();
+  const firstDay = startOfMonth(viewDate).getDay();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const cells: Array<Date | null> = [
+    ...Array(firstDay).fill(null),
+    ...Array.from({ length: daysInMonth }, (_, i) => new Date(year, month, i + 1)),
+  ];
+  // Pad to full rows
+  while (cells.length % 7 !== 0) cells.push(null);
+
+  const isDisabled = (day: Date) => {
+    if (minDate && day < minDate) return true;
+    if (maxDate && day > maxDate) return true;
+    return false;
+  };
+
+  const handleDayClick = (day: Date) => {
+    if (isDisabled(day)) return;
+    if (mode === "single") {
+      onChange?.(day);
+      setOpen(false);
+    } else {
+      if (rangePick === "start") {
+        onRangeChange?.({ start: day, end: null });
+        setRangePick("end");
+      } else {
+        const r = rangeValue ?? { start: null, end: null };
+        if (r.start && day < r.start) {
+          onRangeChange?.({ start: day, end: r.start });
+        } else {
+          onRangeChange?.({ start: r.start, end: day });
+        }
+        setRangePick("start");
+        setOpen(false);
+      }
+    }
+  };
+
+  const formatDisplay = () => {
+    if (mode === "single") {
+      return value ? value.toLocaleDateString() : placeholder;
+    }
+    const r = rangeValue;
+    if (!r?.start) return placeholder;
+    if (!r.end) return `${r.start.toLocaleDateString()} → …`;
+    return `${r.start.toLocaleDateString()} → ${r.end.toLocaleDateString()}`;
+  };
+
+  const triggerClass = {
+    material: "h-10 px-3 text-sm rounded-sm border border-[var(--border)] bg-[var(--card)] text-[var(--foreground)] shadow-sm hover:shadow-md transition-shadow",
+    simple: "h-10 px-3 text-sm rounded-md border border-[var(--border)] bg-[var(--card)] text-[var(--foreground)] hover:bg-[var(--muted)] transition-colors",
+    minimalist: "h-10 px-3 text-sm rounded-none border-b-2 border-[var(--border)] bg-transparent text-[var(--foreground)] hover:border-[var(--primary)] transition-colors",
+    glassy: "h-10 px-3 text-sm rounded-xl border border-white/20 bg-white/10 backdrop-blur-sm text-[var(--foreground)] hover:bg-white/20 transition-colors",
+    liquid: "h-10 px-3 text-sm rounded-full border border-[var(--border)] bg-[var(--card)] text-[var(--foreground)] hover:bg-[var(--muted)] transition-colors",
+  }[theme];
+
+  const popupClass = {
+    material: "bg-[var(--card)] border border-[var(--border)] shadow-xl rounded-sm",
+    simple: "bg-[var(--card)] border border-[var(--border)] shadow-lg rounded-lg",
+    minimalist: "bg-[var(--card)] border border-[var(--border)] shadow-md rounded-none",
+    glassy: "bg-white/10 backdrop-blur-xl border border-white/20 shadow-2xl rounded-2xl",
+    liquid: "bg-[var(--card)] border border-[var(--border)] shadow-xl rounded-3xl",
+  }[theme];
+
+  const dayBase = "w-8 h-8 text-xs flex items-center justify-center transition-all select-none";
+  const dayShape = {
+    material: "rounded-sm",
+    simple: "rounded-md",
+    minimalist: "rounded-none",
+    glassy: "rounded-lg",
+    liquid: "rounded-full",
+  }[theme];
+
+  return (
+    <div ref={containerRef} className={cn("relative inline-block", className)}>
+      {/* Trigger */}
+      <button
+        type="button"
+        disabled={disabled}
+        onClick={() => setOpen(v => !v)}
+        className={cn(
+          "inline-flex items-center gap-2 w-full cursor-pointer",
+          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:ring-offset-2",
+          "disabled:opacity-50 disabled:pointer-events-none",
+          triggerClass,
+        )}
+      >
+        <svg className="w-4 h-4 text-[var(--muted-foreground)] shrink-0" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
+          <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+          <line x1="16" y1="2" x2="16" y2="6" />
+          <line x1="8" y1="2" x2="8" y2="6" />
+          <line x1="3" y1="10" x2="21" y2="10" />
+        </svg>
+        <span className={value || rangeValue?.start ? "text-[var(--foreground)]" : "text-[var(--muted-foreground)]"}>
+          {formatDisplay()}
+        </span>
+      </button>
+
+      {/* Calendar popup */}
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ opacity: 0, y: -6, scale: 0.97 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -6, scale: 0.97 }}
+            transition={animationPresets[theme].scaleIn.transition}
+            className={cn("absolute z-50 mt-1 p-3 w-72", popupClass)}
+          >
+            {/* Month nav */}
+            <div className="flex items-center justify-between mb-3">
+              <button
+                type="button"
+                onClick={() => setViewDate(new Date(year, month - 1, 1))}
+                className="p-1 rounded hover:bg-[var(--muted)] text-[var(--foreground)] transition-colors"
+                aria-label="Previous month"
+              >
+                ‹
+              </button>
+              <span className="text-sm font-semibold text-[var(--foreground)]">
+                {MONTHS[month]} {year}
+              </span>
+              <button
+                type="button"
+                onClick={() => setViewDate(new Date(year, month + 1, 1))}
+                className="p-1 rounded hover:bg-[var(--muted)] text-[var(--foreground)] transition-colors"
+                aria-label="Next month"
+              >
+                ›
+              </button>
+            </div>
+
+            {/* Day headers */}
+            <div className="grid grid-cols-7 mb-1">
+              {DAYS.map(d => (
+                <div key={d} className="text-center text-xs font-medium text-[var(--muted-foreground)] py-1">
+                  {d}
+                </div>
+              ))}
+            </div>
+
+            {/* Days grid */}
+            <div className="grid grid-cols-7 gap-0.5">
+              {cells.map((day, i) => {
+                if (!day) return <div key={i} />;
+
+                const isSelected =
+                  mode === "single"
+                    ? value != null && isSameDay(day, value)
+                    : (rangeValue?.start != null && isSameDay(day, rangeValue.start)) ||
+                      (rangeValue?.end != null && isSameDay(day, rangeValue.end));
+
+                const inRange = mode === "range" && rangeValue != null && isInRange(day, rangeValue);
+                const dis = isDisabled(day);
+                const isToday = isSameDay(day, new Date());
+
+                return (
+                  <button
+                    key={i}
+                    type="button"
+                    disabled={dis}
+                    onClick={() => handleDayClick(day)}
+                    className={cn(
+                      dayBase,
+                      dayShape,
+                      "cursor-pointer",
+                      dis && "opacity-30 cursor-not-allowed",
+                      !dis && !isSelected && !inRange && "hover:bg-[var(--muted)] text-[var(--foreground)]",
+                      isToday && !isSelected && "font-bold text-[var(--primary)]",
+                      inRange && "bg-[var(--primary)]/15 text-[var(--foreground)] rounded-none",
+                      isSelected && "bg-[var(--primary)] text-[var(--primary-foreground)] font-semibold",
+                    )}
+                  >
+                    {day.getDate()}
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Range hint */}
+            {mode === "range" && (
+              <p className="mt-2 text-[10px] text-center text-[var(--muted-foreground)]">
+                {rangePick === "start" ? "Click a start date" : "Click an end date"}
+              </p>
+            )}
+
+            {/* Clear */}
+            <div className="mt-2 flex justify-end">
+              <button
+                type="button"
+                onClick={() => {
+                  if (mode === "single") onChange?.(null);
+                  else { onRangeChange?.({ start: null, end: null }); setRangePick("start"); }
+                  setOpen(false);
+                }}
+                className="text-[10px] text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-colors"
+              >
+                Clear
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+};
+DatePicker.displayName = "DatePicker";
