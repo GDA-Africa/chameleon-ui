@@ -22,10 +22,10 @@ last_updated: "2026-04-15"
 
 ## 🎯 Current Objective
 
-**Current Phase:** Phase 7 — Consumer Integration Quality
-**Active Task:** None — F23 complete, Sprint 1 done. Ready to start Sprint 2 (F24).
+**Current Phase:** Phase 7 — Consumer Integration Quality ✅ COMPLETE
+**Active Task:** None — all F21–F27 shipped
 **Blocked:** None
-**Next Up:** F24 — Strict-mode-safe code generation (P1)
+**Next Up:** Phase 8 — NPM publish + version bump, or new backlog items
 
 ---
 
@@ -52,7 +52,7 @@ last_updated: "2026-04-15"
 | 🧪 Tests                       | ✅ Configured + Setup         | Vitest + RTL, utils and atoms tested                         |
 | 📏 Linting                     | ✅ Configured                 | ESLint (flat config) + Prettier                              |
 | 📦 NPM Package                 | ✅ Configured                 | Vite lib mode — ESM + CJS + types in `dist/`                 |
-| 🖥️ CLI Tool                    | 🟡 Needs Integration Fixes   | F21, F22, F25: init, add, doctor improvements planned        |
+| 🖥️ CLI Tool                    | ✅ Phase 7 Complete          | F21–F25 all shipped: Tailwind auto-config, self-contained add, CSS exports, strict types, doctor checks |
 | 🚀 CI/CD Pipeline              | ✅ Configured                 | `.github/workflows/ci.yml` + `publish.yml`                   |
 | 🖼️ Workshop UI                 | ✅ Production-ready           | 7 pages, 4 sidebar groups, clean navigation                  |
 | 📄 README                      | ✅ Updated                    | Minimal, high-value npm-facing copy                          |
@@ -86,10 +86,10 @@ last_updated: "2026-04-15"
 | F21 | `chameleon init` Tailwind v4 auto-config | P0 | ✅ Done | 7  | Detect + inject `@tailwindcss/vite` in host vite.config |
 | F22 | Self-contained generated components | P0  | ✅ Done | 7  | `chameleon add` maps internal deps to npm package exports |
 | F23 | Stable public CSS/component exports | P0  | ✅ Done | 7  | `@chameleon-ui-lib/react/styles` public entry point      |
-| F24 | Strict-mode-safe code generation | P1     | 🔲 Backlog | 7  | Generated files pass strict TS + ESLint out of the box   |
-| F25 | `chameleon doctor` integration checks | P1 | 🔲 Backlog | 7  | Detect missing plugin, CSS import, dep issues, lint risk |
-| F26 | Framework quickstart guides  | P2       | 🔲 Backlog | 7  | Vite + React + TS + Tailwind v4 known-good snippets      |
-| F27 | CSS `@import` ordering / single entry | P2 | 🔲 Backlog | 7  | Consolidated CSS entry to avoid PostCSS warnings         |
+| F24 | Strict-mode-safe code generation | P1     | ✅ Done    | 7  | Generated files pass strict TS + ESLint out of the box   |
+| F25 | `chameleon doctor` integration checks | P1 | ✅ Done    | 7  | Detect missing plugin, CSS import, dep issues, lint risk |
+| F26 | Framework quickstart guides  | P2       | ✅ Done    | 7  | Vite + React + TS + Tailwind v4 known-good snippets      |
+| F27 | CSS `@import` ordering / single entry | P2 | ✅ Done    | 7  | Consolidated CSS entry to avoid PostCSS warnings         |
 
 ---
 
