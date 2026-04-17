@@ -231,30 +231,18 @@ last_updated: "2026-04-15"
 
 ## 🎯 What's Next (Prioritized)
 
-### � Phase 7 — Consumer Integration Quality (BrandDrop Review, 2026-04-17)
+### ✅ Phase 8 — 2026-04-17 (complete)
+- ✅ **DatePicker atom** — single date + date range, all 5 themes, keyboard accessible, minDate/maxDate
+- ✅ **AI briefing copy button** — banner on AI Docs page with one-click copy of full markdown writeup for pasting into any AI agent
+- ✅ **Crawlable static files** — `public/llms.txt`, `public/context.md`, `public/manifest.json`, `public/sitemap.xml` — AI agents can visit chameleon.glenhalton.com and parse the full knowledge base
+- ✅ **index.html meta** — `<link rel="alternate">` + `<meta name="ai-context">` pointing to context files
+- ✅ Registered DatePicker in `CHAMELEON_AI_MANIFEST` and CLI `COMPONENTS` registry
 
-> These items were surfaced by a real-world integration test. Fix these before the next npm publish.
-
-**Sprint 1 — P0 (unblock consumers)**
-1. **F21 — `chameleon init` Tailwind v4 auto-config** — Read host `vite.config.ts`, detect missing `@tailwindcss/vite`, inject plugin automatically. Also check for `@import 'tailwindcss'` in CSS entry.
-2. **F22 — Self-contained generated components** — When `chameleon add <component>` is run, auto-detect which local deps it needs (`context.tsx`, `utils.ts`, `animations.tsx`) and either copy them or rewrite imports to `@chameleon-ui-lib/react`. Produce a dependency manifest per component.
-3. **F23 — Stable public CSS export** — Add `"./styles"` to the `exports` map in `package.json` pointing to a bundled CSS file. Document the single import: `import '@chameleon-ui-lib/react/styles'`.
-
-**Sprint 2 — P1 (quality)**
-
-4. **F24 — Strict-mode-safe generation** — Audit all generated file templates in `bin/chameleon.js`. Replace all `any` with proper types, remove dead imports, ensure output passes `tsc --noEmit` + ESLint in a strict host app.
-5. **F25 — `chameleon doctor` integration checks** — Expand existing doctor command with: (a) Tailwind v4 plugin check, (b) stylesheet import check, (c) unresolved generated dep check, (d) lint-risk pattern scan.
-
-**Sprint 3 — P2 (polish)**
-
-6. **F26 — Framework quickstart guide** — Add a `QUICKSTART.md` (or README section) with a copy-paste known-good setup: Vite + React + TS + Tailwind v4 with exact config snippets.
-7. **F27 — Consolidated CSS entry** — Merge all style entry files into a single importable output that avoids PostCSS `@import` ordering warnings in host configs.
-
-### 🟡 Phase 6 Remaining (carry-forward)
+### 🟡 Phase 9 (upcoming)
 - **Expand test coverage** — molecule and composite tests
-- **CLIMockup update** — reflect all 13 commands
+- **Publish to npm** — bump to `0.1.0`
 - **Liquid theme light mode audit**
-- **Publish to npm** — bump to `0.1.0` after Phase 7 fixes are in
+- **`--all-templates` flag** on CLI (scaffold templates into pagesDir)
 
 ---
 

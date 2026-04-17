@@ -54,9 +54,13 @@ Optional: Brief supporting detail (1-2 sentences max).
 
 **2026-04-05** — Despite NEXUS manifest saying `yarn`, the project has `pnpm-workspace.yaml` and no `yarn.lock`. Use `pnpm` for all package commands.
 
-### [architecture] Dual component systems exist
+### [architecture] Crawlable static files for AI agents
 
-**2026-04-05** — There are two component directories: `src/app/components/chameleon/` (the actual library, ~45 components) and `src/app/components/ui/` (40+ shadcn/ui base components, mostly unused). The Chameleon components are the real library; the `ui/` directory appears to be scaffolding from Figma export. Do not confuse them.
+**2026-04-17** — Since the workshop is a React SPA, bots can't read the UI. Added `public/llms.txt`, `public/context.md`, `public/manifest.json`, and `public/sitemap.xml` as static crawlable files. `index.html` links to them via `<link rel="alternate">` and `<meta name="ai-context">` tags.
+
+### [pattern] AI briefing copy button pattern
+
+**2026-04-17** — The `CHAMELEON_AI_WRITEUP` constant in `ai-docs-page.tsx` is a markdown string that serves as a one-click context dump for AI agents. Keep it in sync with `public/context.md`. Both files cover the same ground but `context.md` is more detailed (with full examples); the writeup is a compact briefing.
 
 ### [package] React 19 with React 18 peer deps
 
