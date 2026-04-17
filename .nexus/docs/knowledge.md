@@ -173,3 +173,11 @@ Optional: Brief supporting detail (1-2 sentences max).
 ### [gotcha] Generated code can fail strict TS + ESLint in host apps
 
 **2026-04-17** — Chameleon-generated files use patterns (implicit `any`, unused imports) that pass in our own relaxed config but break in typical strict consumer setups. All code generation templates in `bin/chameleon.js` must be audited for strict TS compliance before next release (see F24).
+
+### [convention] Release ritual for this project
+
+**2026-04-17** — Release steps: (1) bump `package.json` version, (2) add CHANGELOG entry, (3) `tsc --noEmit && vitest run && eslint .` — all must pass, (4) `git add -A && git commit -m "chore: release vX.Y.Z"`, (5) `git tag vX.Y.Z && git push origin main --tags` — the `v*` tag triggers `publish.yml` on GitHub Actions which runs `npm publish`. Update NEXUS `index.md` after.
+
+### [gotcha] Light mode buttons with hardcoded white/opacity classes
+
+**2026-04-17** — Buttons styled with `bg-white/5 text-white/60 border-white/10` are invisible in light mode. Use CSS custom properties (`var(--muted)`, `var(--muted-foreground)`, `var(--border)`, `var(--accent)`) instead — these adapt to the active theme and mode automatically.

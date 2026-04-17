@@ -4,7 +4,7 @@ id: "project_index"
 title: "Project Index — AI Agent Brain"
 status: populated
 confidence: high
-last_updated: "2026-04-15"
+last_updated: "2026-04-17"
 ---
 
 # Chameleon UI — Project Index
@@ -16,16 +16,16 @@ last_updated: "2026-04-15"
 **Framework:** React 19 + Vite 6
 **Package Manager:** pnpm
 **Created:** 2026-04-04
-**Status:** 🟢 v0.0.3 released — full mobile responsiveness baked into every component, composite, and template
+**Status:** 🟢 v1.0.1 released — Phase 8 complete: DatePicker, AI briefing copy, CLI copy, crawlable static files, deploy.sh, full-width CLIMockup, light mode fixes
 
 ---
 
 ## 🎯 Current Objective
 
-**Current Phase:** Phase 7 — Consumer Integration Quality ✅ COMPLETE
-**Active Task:** None — all F21–F27 shipped
+**Current Phase:** Phase 8 — AI polish + developer experience ✅ COMPLETE
+**Active Task:** None — v1.0.1 shipped
 **Blocked:** None
-**Next Up:** Phase 8 — NPM publish + version bump, or new backlog items
+**Next Up:** Phase 9 — expand test coverage (molecules + composites), publish audit, Liquid theme light mode audit
 
 ---
 
