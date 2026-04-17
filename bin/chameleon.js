@@ -102,6 +102,70 @@ function readProjectPkg() {
 
 const banner = `\n${c.emerald}▧${c.reset} ${c.bold}${c.white}Chameleon UI${c.reset} ${c.dim}v${VERSION}${c.reset}\n`;
 
+function autoConfigureTailwindVite() {
+  const dir = process.cwd();
+  const viteConf = ["vite.config.ts", "vite.config.js", "vite.config.mjs"].find(f => fs.existsSync(path.join(dir, f)));
+  if (!viteConf) {
+    warn("No Vite config found. Make sure to configure @tailwindcss/vite manually.");
+    return false;
+  }
+
+  const confPath = path.join(dir, viteConf);
+  let content = fs.readFileSync(confPath, "utf8");
+  
+  if (content.includes("@tailwindcss/vite") || content.includes("tailwindcss()")) {
+    ok(`Tailwind v4 plugin already configured in ${viteConf}`);
+    return true;
+  }
+
+  log(`  ${c.dim}Injecting Tailwind v4 Vite plugin into ${viteConf}...${c.reset}`);
+
+  // Inject import
+  if (!content.includes("import tailwindcss")) {
+    const importMatch = [...content.matchAll(/import\s+.*?from\s+['"][^'"]+['"];?/gs)];
+    if (importMatch.length > 0) {
+      const lastImport = importMatch[importMatch.length - 1][0];
+      content = content.replace(lastImport, `${lastImport}\nimport tailwindcss from "@tailwindcss/vite";`);
+    } else {
+      content = `import tailwindcss from "@tailwindcss/vite";\n` + content;
+    }
+  }
+
+  // Inject plugin
+  const pluginsMatch = content.match(/plugins:\s*\[(.*?)\]/s);
+  if (pluginsMatch) {
+    let currentPlugins = pluginsMatch[1].trim();
+    if (currentPlugins && !currentPlugins.endsWith(",")) {
+      currentPlugins += ", ";
+    }
+    const newPlugins = currentPlugins ? `${currentPlugins}tailwindcss()` : `tailwindcss()`;
+    content = content.replace(/plugins:\s*\[.*?\]/s, `plugins: [${newPlugins}]`);
+    
+    fs.writeFileSync(confPath, content, "utf8");
+    ok(`Successfully updated ${viteConf}`);
+    return true;
+  } else {
+    warn(`Could not automatically add tailwindcss() to plugins in ${viteConf}. Add it manually.`);
+    return false;
+  }
+}
+
+function checkCssTailwindImport(configCssPath) {
+  const cssPath = path.join(process.cwd(), configCssPath || "src/index.css");
+  if (fs.existsSync(cssPath)) {
+    let content = fs.readFileSync(cssPath, "utf8");
+    if (!content.includes("@import 'tailwindcss'") && !content.includes('@import "tailwindcss"')) {
+      content = `@import "tailwindcss";\n` + content;
+      fs.writeFileSync(cssPath, content, "utf8");
+      ok(`Injected @import "tailwindcss" into ${configCssPath}`);
+    } else {
+      ok(`Tailwind directives found in ${configCssPath}`);
+    }
+  } else {
+    warn(`CSS entry ${configCssPath} not found. Don't forget to add @import "tailwindcss".`);
+  }
+}
+
 function printHelp() {
   log(banner);
   log(`  ${c.gray}The beautiful, modular, and themeable React UI library.${c.reset}\n`);
@@ -166,6 +230,10 @@ if (cmd === "init") {
   if (!fs.existsSync(outDir)) { fs.mkdirSync(outDir, { recursive: true }); ok(`Created ${cfg.dir}`); }
   else { ok(`Output directory exists: ${cfg.dir}`); }
 
+  // Auto-configure Tailwind v4
+  autoConfigureTailwindVite();
+  checkCssTailwindImport(cfg.css || "src/index.css");
+
   log(`\n${c.emerald}Ready!${c.reset} ${c.gray}Run ${c.emerald}chameleon list${c.gray} to see available components.${c.reset}\n`);
 
 // ── list ──────────────────────────────────────────────────────────────────────
@@ -197,9 +265,17 @@ if (cmd === "init") {
   const outFile = path.join(outDir, `${key}.tsx`);
   if (!fs.existsSync(srcFile)) { fail(`Source file not found: ${meta.file}`); process.exit(1); }
   fs.mkdirSync(outDir, { recursive: true });
-  fs.copyFileSync(srcFile, outFile);
+  
+  let content = fs.readFileSync(srcFile, "utf8");
+  const localDeps = ["context", "utils", "animations", "atoms", "molecules", "composites"];
+  const foundDeps = localDeps.filter(dep => content.includes(`from "./${dep}"`) || content.includes(`from './${dep}'`));
+  
+  content = content.replace(/from\s+['"]\.\/.*?['"]/g, 'from "@chameleon-ui-lib/react"');
+  fs.writeFileSync(outFile, content, "utf8");
+
   ok(`${cfg.dir}/${key}.tsx created`);
-  if (meta.deps.length > 0) info(`Dependencies needed: ${meta.deps.join(", ")}`);
+  if (meta.deps.length > 0) info(`External package dependencies: ${meta.deps.join(", ")}`);
+  if (foundDeps.length > 0) info(`Mapped local dependencies to package exports: ${foundDeps.join(", ")}`);
   log(`\n${c.emerald}Ready!${c.reset} ${c.gray}Import: ${c.cyan}import { ${toPascalCase(key)} } from './${key}'${c.reset}\n`);
 
 // ── remove ────────────────────────────────────────────────────────────────────
@@ -260,9 +336,17 @@ if (cmd === "init") {
   const outFile = path.join(outDir, `${key}.tsx`);
   if (!fs.existsSync(srcFile)) { fail(`Source file not found: ${meta.file}`); process.exit(1); }
   fs.mkdirSync(outDir, { recursive: true });
-  fs.copyFileSync(srcFile, outFile);
+  
+  let content = fs.readFileSync(srcFile, "utf8");
+  const localDeps = ["context", "utils", "animations", "atoms", "molecules", "composites", "auth-components"];
+  const foundDeps = localDeps.filter(dep => content.includes(`from "./${dep}"`) || content.includes(`from './${dep}'`));
+  
+  content = content.replace(/from\s+['"]\.\/.*?['"]/g, 'from "@chameleon-ui-lib/react"');
+  fs.writeFileSync(outFile, content, "utf8");
+
   ok(`${cfg.pagesDir || "src/pages"}/${key}.tsx created`);
   ok(`Exported: ${meta.export}`);
+  if (foundDeps.length > 0) info(`Mapped local dependencies to package exports: ${foundDeps.join(", ")}`);
   log(`\n${c.emerald}Success!${c.reset} ${c.gray}Import: ${c.cyan}import { ${meta.export} } from './pages/${key}'${c.reset}\n`);
 
 // ── info ──────────────────────────────────────────────────────────────────────
@@ -284,23 +368,112 @@ if (cmd === "init") {
 } else if (cmd === "doctor") {
   log(`\n${c.emerald}➜${c.reset} ${c.indigo}Running Chameleon diagnostics...${c.reset}\n`);
   let issues = 0;
+  
   const pkg = readProjectPkg();
   if (pkg) { ok("package.json found"); } else { fail("No package.json found"); issues++; }
+  
   const cfg = readConfig();
   if (cfg) { ok(`chameleon.config.json found (theme: ${cfg.theme}, mode: ${cfg.mode})`); } else { warn("No chameleon.config.json — run chameleon init"); issues++; }
+  
   if (pkg) {
     const allDeps = { ...pkg.dependencies, ...pkg.devDependencies };
     if (allDeps["@chameleon-ui-lib/react"]) { ok("@chameleon-ui-lib/react installed"); } else { warn("@chameleon-ui-lib/react not in package.json"); issues++; }
   }
+  
   if (fs.existsSync(path.join(process.cwd(), "node_modules"))) { ok("node_modules present"); } else { fail("node_modules not found — run npm install"); issues++; }
-  const viteConfig = path.join(process.cwd(), "vite.config.ts");
-  const twFiles    = ["tailwind.config.js","tailwind.config.ts","tailwind.config.mjs"];
-  const hasTw      = twFiles.some(f => fs.existsSync(path.join(process.cwd(), f))) || (fs.existsSync(viteConfig) && fs.readFileSync(viteConfig,"utf8").includes("tailwindcss"));
-  if (hasTw) { ok("Tailwind CSS configured"); } else { warn("No Tailwind CSS config found"); issues++; }
+  
+  // 1. Check Bundler / Tailwind config
+  const viteConfigJs = path.join(process.cwd(), "vite.config.js");
+  const viteConfigTs = path.join(process.cwd(), "vite.config.ts");
+  const viteConfig = fs.existsSync(viteConfigTs) ? viteConfigTs : (fs.existsSync(viteConfigJs) ? viteConfigJs : null);
+  
+  const twFiles = ["tailwind.config.js","tailwind.config.ts","tailwind.config.mjs"];
+  const hasTwConfig = twFiles.some(f => fs.existsSync(path.join(process.cwd(), f)));
+  
+  let hasTwVitePlugin = false;
+  if (viteConfig) {
+    const vc = fs.readFileSync(viteConfig, 'utf8');
+    if (vc.includes('@tailwindcss/vite')) {
+      hasTwVitePlugin = true;
+    }
+  }
+
+  if (hasTwConfig || hasTwVitePlugin) { 
+    ok("Tailwind CSS configured"); 
+  } else { 
+    warn("No Tailwind CSS config found (no tailwind.config or @tailwindcss/vite in vite.config)"); 
+    issues++; 
+  }
+
+  // 2. Check missing CSS import
+  if (cfg && cfg.css) {
+    const cssPath = path.join(process.cwd(), cfg.css);
+    if (fs.existsSync(cssPath)) {
+      const cssContent = fs.readFileSync(cssPath, 'utf8');
+      if (cssContent.includes('@chameleon-ui-lib/react/styles')) {
+        ok(`Library CSS imported correctly in ${cfg.css}`);
+      } else {
+        warn(`Library CSS not imported in ${cfg.css}. Add: @import "@chameleon-ui-lib/react/styles";`);
+        issues++;
+      }
+    } else {
+      warn(`Configured CSS file not found: ${cfg.css}`);
+      issues++;
+    }
+  }
+
+  // 3 & 4. Check generated components (unresolved deps & lint risks)
   if (cfg) {
     const outDir = path.join(process.cwd(), cfg.dir);
-    if (fs.existsSync(outDir)) { ok(`Components directory: ${cfg.dir}`); } else { warn(`Components directory missing: ${cfg.dir}`); issues++; }
+    if (fs.existsSync(outDir)) {
+      ok(`Components directory exists: ${cfg.dir}`);
+      
+      const scaffolded = fs.readdirSync(outDir).filter(f => f.endsWith(".tsx") || f.endsWith(".ts"));
+      let unresolvedPaths = [];
+      let lintRisks = [];
+
+      for (const t of scaffolded) {
+        const fullPath = path.join(outDir, t);
+        const code = fs.readFileSync(fullPath, "utf8");
+        
+        // Find local imports like: import { ... } from "./atoms"
+        const importRegex = /from\s+["'](\.\/[^"']+)["']/g;
+        let match;
+        while ((match = importRegex.exec(code)) !== null) {
+          const importPath = match[1];
+          // Simplistic check for .ts or .tsx file existence
+          const targetPathBase = path.join(outDir, importPath);
+          if (!fs.existsSync(targetPathBase + ".tsx") && !fs.existsSync(targetPathBase + ".ts")) {
+            unresolvedPaths.push({ file: t, import: importPath });
+          }
+        }
+        
+        // Lint risks
+        if (code.includes(" as any") || code.includes(": any") || code.includes("@ts-ignore")) {
+          lintRisks.push(t);
+        }
+      }
+      
+      if (unresolvedPaths.length === 0) {
+        ok("All local cross-component imports resolved");
+      } else {
+        warn(`Found unresolved local imports in ${unresolvedPaths.length} file(s)`);
+        unresolvedPaths.forEach(up => log(`    ${c.gray}${up.file} -> ${up.import}${c.reset}`));
+        issues++;
+      }
+      
+      if (lintRisks.length === 0) {
+        ok("No explicit lint-risk patterns found in generated code");
+      } else {
+        warn(`Found lint-risk patterns (any/ts-ignore) in: ${lintRisks.join(", ")}`);
+        issues++;
+      }
+
+    } else {
+      warn(`Components directory missing: ${cfg.dir} — run chameleon add`);
+    }
   }
+
   if (issues === 0) { log(`\n${c.emerald}All checks passed!${c.reset} ${c.gray}Your project is healthy.${c.reset}\n`); }
   else { log(`\n${c.yellow}${issues} issue(s) found.${c.reset} ${c.gray}Address the warnings above.${c.reset}\n`); }
 
@@ -319,8 +492,12 @@ if (cmd === "init") {
     const meta = COMPONENTS[key];
     if (!meta) continue;
     const localContent  = fs.readFileSync(path.join(outDir, file), "utf8");
-    const sourceContent = fs.existsSync(path.join(LIB_SRC, meta.file)) ? fs.readFileSync(path.join(LIB_SRC, meta.file), "utf8") : null;
+    let sourceContent = fs.existsSync(path.join(LIB_SRC, meta.file)) ? fs.readFileSync(path.join(LIB_SRC, meta.file), "utf8") : null;
     if (!sourceContent) continue;
+    
+    // Apply the same rewrite before comparing
+    sourceContent = sourceContent.replace(/from\s+['"]\.\/.*?['"]/g, 'from "@chameleon-ui-lib/react"');
+
     if (localContent === sourceContent) { ok(`${file} — up to date`); }
     else { warn(`${file} — differs from library source`); diffCount++; }
   }
@@ -338,14 +515,18 @@ if (cmd === "init") {
   let updated = 0;
   for (const file of localFiles) {
     const key  = file.replace(".tsx","").toLowerCase();
-    const meta = COMPONENTS[key];
+    const meta = COMPONENTS[key] || TEMPLATES[key]; // Actually templates might not be in dir, but if they are, handle them
     if (!meta) continue;
     const localPath  = path.join(outDir, file);
     const sourcePath = path.join(LIB_SRC, meta.file);
     if (!fs.existsSync(sourcePath)) continue;
     const localContent  = fs.readFileSync(localPath, "utf8");
-    const sourceContent = fs.readFileSync(sourcePath, "utf8");
-    if (localContent !== sourceContent) { fs.copyFileSync(sourcePath, localPath); ok(`Updated ${file}`); updated++; }
+    let sourceContent = fs.readFileSync(sourcePath, "utf8");
+    
+    // Apply the same rewrite used in add/template
+    sourceContent = sourceContent.replace(/from\s+['"]\.\/.*?['"]/g, 'from "@chameleon-ui-lib/react"');
+    
+    if (localContent !== sourceContent) { fs.writeFileSync(localPath, sourceContent, "utf8"); ok(`Updated ${file}`); updated++; }
     else { info(`${file} already up to date`); }
   }
   if (updated === 0) { log(`\n${c.emerald}Everything is already up to date.${c.reset}\n`); }

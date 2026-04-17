@@ -27,7 +27,7 @@ import {
  */
 export function validateComponentProps(
   componentId: string,
-  props: Record<string, any>,
+  props: Record<string, unknown>,
 ): string | null {
   const component = CHAMELEON_AI_MANIFEST.find((c) => c.id === componentId);
 

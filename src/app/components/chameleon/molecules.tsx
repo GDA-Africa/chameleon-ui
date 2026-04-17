@@ -33,7 +33,7 @@ export const Card: React.FC<CardProps> = ({ className, animated = false, elevati
         className={finalClass}
         whileHover={preset.hover}
         whileTap={preset.tap}
-        {...(props as any)}
+        {...(props as React.ComponentPropsWithoutRef<typeof motion.div>)}
       />
     );
   }
@@ -428,26 +428,8 @@ export const Alert: React.FC<{
     },
   }[variant];
 
-  const Wrapper = animated ? motion.div : "div";
-  const wrapperProps = animated
-    ? {
-        initial: { opacity: 0, x: -8 },
-        animate: { opacity: 1, x: 0 },
-        transition: animationPresets[theme].enter.transition,
-      }
-    : {};
-
-  return (
-    <Wrapper
-      className={cn(
-        "flex gap-3 p-4 rounded-xl border text-sm",
-        variantConfig.bg,
-        variantConfig.border,
-        theme === "minimalist" && "rounded-none border-l-4 border-t-0 border-r-0 border-b-0",
-        className,
-      )}
-      {...(wrapperProps as any)}
-    >
+  const childrenContent = (
+    <>
       <span className={cn("font-black text-base shrink-0", variantConfig.text)}>
         {variantConfig.icon}
       </span>
@@ -455,7 +437,40 @@ export const Alert: React.FC<{
         {title && <p className={cn("font-bold text-sm", variantConfig.text)}>{title}</p>}
         <div className="text-[var(--foreground)]/80 text-sm">{children}</div>
       </div>
-    </Wrapper>
+    </>
+  );
+
+  if (animated) {
+    return (
+      <motion.div
+        initial={{ opacity: 0, x: -8 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={animationPresets[theme].enter.transition}
+        className={cn(
+          "flex gap-3 p-4 rounded-xl border text-sm",
+          variantConfig.bg,
+          variantConfig.border,
+          theme === "minimalist" && "rounded-none border-l-4 border-t-0 border-r-0 border-b-0",
+          className,
+        )}
+      >
+        {childrenContent}
+      </motion.div>
+    );
+  }
+
+  return (
+    <div
+      className={cn(
+        "flex gap-3 p-4 rounded-xl border text-sm",
+        variantConfig.bg,
+        variantConfig.border,
+        theme === "minimalist" && "rounded-none border-l-4 border-t-0 border-r-0 border-b-0",
+        className,
+      )}
+    >
+      {childrenContent}
+    </div>
   );
 };
 

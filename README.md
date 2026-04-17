@@ -21,6 +21,7 @@ npm install @chameleon-ui-lib/react
 ## Quick Start
 
 ```tsx
+import "@chameleon-ui-lib/react/styles";
 import { ChameleonProvider, Button, Card } from "@chameleon-ui-lib/react";
 
 export default function App() {

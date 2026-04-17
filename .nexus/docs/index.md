@@ -22,10 +22,10 @@ last_updated: "2026-04-15"
 
 ## 🎯 Current Objective
 
-**Current Phase:** Phase 6 — Distribution & Ecosystem
-**Active Task:** None — v0.0.3 released, all components fully responsive
+**Current Phase:** Phase 7 — Consumer Integration Quality
+**Active Task:** None — F23 complete, Sprint 1 done. Ready to start Sprint 2 (F24).
 **Blocked:** None
-**Next Up:** See "What's Next" section below
+**Next Up:** F24 — Strict-mode-safe code generation (P1)
 
 ---
 
@@ -52,7 +52,7 @@ last_updated: "2026-04-15"
 | 🧪 Tests                       | ✅ Configured + Setup         | Vitest + RTL, utils and atoms tested                         |
 | 📏 Linting                     | ✅ Configured                 | ESLint (flat config) + Prettier                              |
 | 📦 NPM Package                 | ✅ Configured                 | Vite lib mode — ESM + CJS + types in `dist/`                 |
-| 🖥️ CLI Tool                    | ✅ 13 commands, all working   | `bin/chameleon.js` — real FS ops, ANSI polish                |
+| 🖥️ CLI Tool                    | 🟡 Needs Integration Fixes   | F21, F22, F25: init, add, doctor improvements planned        |
 | 🚀 CI/CD Pipeline              | ✅ Configured                 | `.github/workflows/ci.yml` + `publish.yml`                   |
 | 🖼️ Workshop UI                 | ✅ Production-ready           | 7 pages, 4 sidebar groups, clean navigation                  |
 | 📄 README                      | ✅ Updated                    | Minimal, high-value npm-facing copy                          |
@@ -83,6 +83,13 @@ last_updated: "2026-04-15"
 | F18 | Glassy Light Mode Visibility | P1       | ✅ Done     | 5     | Mode-branched sidebar/header/token fixes       |
 | F19 | Glassy/Liquid Freeze Fix     | P0       | ✅ Done     | 5     | backdrop-blur removed, contain:paint, memo     |
 | F20 | README for npm               | P1       | ✅ Done     | 5     | Minimal, pure-value copy                       |
+| F21 | `chameleon init` Tailwind v4 auto-config | P0 | ✅ Done | 7  | Detect + inject `@tailwindcss/vite` in host vite.config |
+| F22 | Self-contained generated components | P0  | ✅ Done | 7  | `chameleon add` maps internal deps to npm package exports |
+| F23 | Stable public CSS/component exports | P0  | ✅ Done | 7  | `@chameleon-ui-lib/react/styles` public entry point      |
+| F24 | Strict-mode-safe code generation | P1     | 🔲 Backlog | 7  | Generated files pass strict TS + ESLint out of the box   |
+| F25 | `chameleon doctor` integration checks | P1 | 🔲 Backlog | 7  | Detect missing plugin, CSS import, dep issues, lint risk |
+| F26 | Framework quickstart guides  | P2       | 🔲 Backlog | 7  | Vite + React + TS + Tailwind v4 known-good snippets      |
+| F27 | CSS `@import` ordering / single entry | P2 | 🔲 Backlog | 7  | Consolidated CSS entry to avoid PostCSS warnings         |
 
 ---
 
@@ -224,12 +231,85 @@ last_updated: "2026-04-15"
 
 ## 🎯 What's Next (Prioritized)
 
-### 🟡 Phase 6 — Distribution & Ecosystem
-1. **Expand test coverage** — add molecule and composite tests (currently only atoms + utils)
-2. **CLIMockup update** — the `CLIMockup` component in `cli.tsx` still shows 4 original commands; update to reflect all 13
-3. **Liquid theme light mode audit** — same light mode visibility patterns as glassy may exist; verify
-4. **Publish to npm** — run `npm publish` with v0.0.3 (or bump to `0.1.0` for first stable public release)
-5. **Documentation site** — standalone docs site separate from the workshop app
+### � Phase 7 — Consumer Integration Quality (BrandDrop Review, 2026-04-17)
+
+> These items were surfaced by a real-world integration test. Fix these before the next npm publish.
+
+**Sprint 1 — P0 (unblock consumers)**
+1. **F21 — `chameleon init` Tailwind v4 auto-config** — Read host `vite.config.ts`, detect missing `@tailwindcss/vite`, inject plugin automatically. Also check for `@import 'tailwindcss'` in CSS entry.
+2. **F22 — Self-contained generated components** — When `chameleon add <component>` is run, auto-detect which local deps it needs (`context.tsx`, `utils.ts`, `animations.tsx`) and either copy them or rewrite imports to `@chameleon-ui-lib/react`. Produce a dependency manifest per component.
+3. **F23 — Stable public CSS export** — Add `"./styles"` to the `exports` map in `package.json` pointing to a bundled CSS file. Document the single import: `import '@chameleon-ui-lib/react/styles'`.
+
+**Sprint 2 — P1 (quality)**
+
+4. **F24 — Strict-mode-safe generation** — Audit all generated file templates in `bin/chameleon.js`. Replace all `any` with proper types, remove dead imports, ensure output passes `tsc --noEmit` + ESLint in a strict host app.
+5. **F25 — `chameleon doctor` integration checks** — Expand existing doctor command with: (a) Tailwind v4 plugin check, (b) stylesheet import check, (c) unresolved generated dep check, (d) lint-risk pattern scan.
+
+**Sprint 3 — P2 (polish)**
+
+6. **F26 — Framework quickstart guide** — Add a `QUICKSTART.md` (or README section) with a copy-paste known-good setup: Vite + React + TS + Tailwind v4 with exact config snippets.
+7. **F27 — Consolidated CSS entry** — Merge all style entry files into a single importable output that avoids PostCSS `@import` ordering warnings in host configs.
+
+### 🟡 Phase 6 Remaining (carry-forward)
+- **Expand test coverage** — molecule and composite tests
+- **CLIMockup update** — reflect all 13 commands
+- **Liquid theme light mode audit**
+- **Publish to npm** — bump to `0.1.0` after Phase 7 fixes are in
+
+---
+
+## 🎯 What's Next — Phase 7: Consumer Integration Quality (from BrandDrop Review)
+
+> **Source:** Real-world integration test by BrandDrop coding agent (2026-04-17)
+> All items below are P0/P1 — they directly block adoption.
+
+### P0 — Must Fix Before Next Release
+
+| #   | ID  | Title                                       | Effort | Notes                                                                                   |
+| --- | --- | ------------------------------------------- | ------ | --------------------------------------------------------------------------------------- |
+| 1   | F21 | `chameleon init` auto-configures Tailwind v4 plugin | M | Detect missing `@tailwindcss/vite` in host project — add to `vite.config.ts` automatically |
+| 2   | F22 | Self-contained generated components         | L      | `chameleon add` must auto-scaffold all local deps (`context`, `utils`, `animations`) or import from package exports |
+| 3   | F23 | Stable public CSS/component exports         | M      | Export `@chameleon-ui-lib/react/styles` as a public entry point; no internal path imports required |
+
+### P1 — Fix in Same Release
+
+| #   | ID  | Title                                       | Effort | Notes                                                                                   |
+| --- | --- | ------------------------------------------- | ------ | --------------------------------------------------------------------------------------- |
+| 4   | F24 | Strict-mode-safe code generation            | M      | Generated files must pass strict TS + ESLint with zero violations (no `any`, no unused imports) |
+| 5   | F25 | `chameleon doctor` integration health checks | M     | Detect: missing bundler plugin, missing CSS import, unresolved generated deps, lint-risk patterns |
+
+### P2 — Next Iteration
+
+| #   | ID  | Title                                       | Effort | Notes                                                                                   |
+| --- | --- | ------------------------------------------- | ------ | --------------------------------------------------------------------------------------- |
+| 6   | F26 | Framework-specific quickstart guides        | S      | Vite + React + TS + Tailwind v4 known-good config snippet in README/docs                |
+| 7   | F27 | CSS `@import` ordering fix / single entry   | S      | Ship a consolidated CSS entry to avoid PostCSS `@import` order warnings in host apps   |
+
+### 2026-04-17 — Phase 7 Planning (BrandDrop Integration Review)
+- ✅ Received real-world integration feedback from BrandDrop coding agent
+- ✅ Identified 7 new backlog items (F21–F27) across 3 priority tiers
+- ✅ Added Phase 7 "Consumer Integration Quality" to roadmap
+- ✅ Updated NEXUS index, feature backlog, status matrix, and knowledge base
+
+### 2026-04-17 — Phase 7 F21 Tailwind v4 Auto-Config
+- ✅ Modified `chameleon init` to check host `vite.config` and auto-inject `@tailwindcss/vite` import + plugin
+- ✅ Added auto-insertion of `@import "tailwindcss"` in the configured CSS file
+
+### 2026-04-17 — Phase 7 F22 Self-contained Generated Components
+- ✅ Modified `chameleon add` to dynamically map local component imports (`./utils`, `./atoms`, etc) to `@chameleon-ui-lib/react`
+- ✅ Applied same rewrite strategy to `chameleon template` scaffolding
+- ✅ Updated `diff` and `update` commands to understand the re-mapped imports and preserve diffing logic
+- ✅ CLI now outputs mapped dependency lists upon generation
+
+### 2026-04-17 — Phase 7 F23 Stable Public CSS Exports
+- ✅ Created `scripts/build-css.mjs` to aggregate `fonts.css`, `theme.css`, and custom classes from `index.css` without stripping local Tailwind utilities
+- ✅ Hooked script into `npm run build:css`
+- ✅ Exported `./styles` route in `package.json` pointing to `dist/styles.css`
+- ✅ Updated README quickstart to show `import "@chameleon-ui-lib/react/styles"`
+- ✅ Completed F24 (Strict-mode-safe generation) by removing `any` from component primitives
+- ✅ Resolved testing errors with testing-library overrides
+- ✅ Completed F25 (`chameleon doctor` expansion): Handled missing CSS, undefined components, Vite TS setup, and lint checks.
+- 🔲 Ready to begin F26 (Framework-specific quickstart guides)
 
 ---
 

@@ -110,7 +110,7 @@ interface Column<T> {
   hideOnMobile?: boolean;
 }
 
-interface DataTableProps<T extends Record<string, any>> {
+interface DataTableProps<T extends Record<string, unknown>> {
   data: T[];
   columns: Column<T>[];
   title?: string;
@@ -121,7 +121,7 @@ interface DataTableProps<T extends Record<string, any>> {
   className?: string;
 }
 
-export function DataTable<T extends Record<string, any>>({
+export function DataTable<T extends Record<string, unknown>>({
   data,
   columns,
   title,
@@ -426,7 +426,7 @@ type ChartType = "line" | "bar" | "area" | "pie" | "donut" | "radar" | "scatter"
 
 interface ChartDataPoint {
   name: string;
-  [key: string]: any;
+  [key: string]: number | string | null | undefined;
 }
 
 interface ThemeChartProps {
@@ -1568,7 +1568,7 @@ interface FormStep {
 
 interface MultiStepFormProps {
   steps: FormStep[];
-  onComplete?: (data: Record<string, any>) => void;
+  onComplete?: (data: Record<string, unknown>) => void;
   animated?: boolean;
   className?: string;
 }
@@ -2341,7 +2341,7 @@ export const CompositesShowcase: React.FC = () => {
       label: "Role",
       sortable: true,
       filterable: true,
-      render: (v: any) => (
+      render: (v: string | number | undefined) => (
         <span
           className={cn(
             "text-xs font-bold px-2 py-0.5 rounded-full",
@@ -2359,7 +2359,7 @@ export const CompositesShowcase: React.FC = () => {
       label: "Status",
       sortable: true,
       filterable: true,
-      render: (v: any) => (
+      render: (v: string | number | undefined) => (
         <span
           className={cn(
             "text-xs font-bold px-2 py-0.5 rounded-full",

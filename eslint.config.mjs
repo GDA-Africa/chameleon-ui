@@ -8,7 +8,7 @@ export default ts.config(
   js.configs.recommended,
   ...ts.configs.recommended,
   {
-    ignores: ["dist", "node_modules", "dist-ssr", "src/app/components/ui/sidebar.tsx"],
+    ignores: ["dist", "dist-app", "node_modules", "dist-ssr", "scripts", "test-rewrite.js", "src/app/components/ui/sidebar.tsx"],
   },
   {
     files: ["**/*.js", "bin/**/*.js", "packages/**/*.js"],

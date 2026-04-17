@@ -4,3 +4,4 @@ export * from "./molecules";
 export * from "./composites";
 export * from "./animations";
 export * from "./utils";
+import "../../../styles/index.css";

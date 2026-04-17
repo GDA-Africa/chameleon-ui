@@ -153,3 +153,19 @@ Optional: Brief supporting detail (1-2 sentences max).
 ### [gotcha] replace_string_in_file truncates array literals that share array-start syntax
 
 **2026-04-15** — When an array `[{ ... }]` is inlined in JSX and the oldString starts mid-array (after the `[`), the tool can accidentally drop the first array element. Always include at least the opening `[` and the first element in the oldString to avoid silent data loss. If the replacement breaks JSX parsing, re-read the region and restore the full array.
+
+### [gotcha] Consumer projects require explicit Tailwind v4 Vite plugin — not auto-detected
+
+**2026-04-17** — BrandDrop integration test: the most common "Chameleon looks unstyled" failure is that `@tailwindcss/vite` is not added to the host's `vite.config.ts`. Tailwind v4 does not fall back gracefully — it just produces unstyled HTML. `chameleon init` must detect and fix this automatically (see F21).
+
+### [architecture] Generated files from `chameleon add` are not self-contained
+
+**2026-04-17** — `chameleon add <component>` copies a single file but components import local modules (`context.tsx`, `utils.ts`, `animations.tsx`) that may not exist in the host app. This causes compile errors immediately after scaffolding. Fix (F22): either copy deps automatically or rewrite imports to the package export path.
+
+### [architecture] No stable public CSS export exists yet
+
+**2026-04-17** — The package `exports` map does not include a `"./styles"` entry. Consumers must import internal build paths (e.g. `dist/index.css`), which is fragile and breaks on version bumps. Adding a stable `@chameleon-ui-lib/react/styles` public entry is P0 for adoption (see F23).
+
+### [gotcha] Generated code can fail strict TS + ESLint in host apps
+
+**2026-04-17** — Chameleon-generated files use patterns (implicit `any`, unused imports) that pass in our own relaxed config but break in typical strict consumer setups. All code generation templates in `bin/chameleon.js` must be audited for strict TS compliance before next release (see F24).

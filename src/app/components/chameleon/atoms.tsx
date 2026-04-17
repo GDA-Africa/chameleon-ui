@@ -122,7 +122,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
           className={baseClass}
           whileHover={preset.hover}
           whileTap={preset.tap}
-          {...(props as any)}
+          {...(props as React.ComponentPropsWithoutRef<typeof motion.button>)}
         />
       );
     }
@@ -164,7 +164,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
           className={baseClass}
           whileFocus={{ scale: 1.01 }}
           transition={{ type: "spring", stiffness: 400, damping: 25 }}
-          {...(props as any)}
+          {...(props as React.ComponentPropsWithoutRef<typeof motion.input>)}
         />
       );
     }
