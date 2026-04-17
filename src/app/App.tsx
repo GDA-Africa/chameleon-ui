@@ -39,6 +39,7 @@ import { DocumentationPage } from "./components/chameleon/documentation";
 import { EnhancedLandingPage } from "./components/chameleon/enhanced-landing";
 import { ComponentDocsPage } from "./components/chameleon/component-docs-page";
 import { CLIDocsPage } from "./components/chameleon/cli-docs-page";
+import { CHAMELEON_AI_WRITEUP } from "./components/chameleon/ai-docs-page";
 
 // ─── Page Components ──────────────────────────────────────────────────────────
 
@@ -76,6 +77,7 @@ function Workshop() {
   const [activePage, setActivePage] = useState<Page>("landing");
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [themeSwitcherOpen, setThemeSwitcherOpen] = useState(false);
+  const [copiedBriefing, setCopiedBriefing] = useState(false);
   const themeSwitcherRef = useRef<HTMLDivElement>(null);
   const t = translations[lang];
 
@@ -497,6 +499,43 @@ function Workshop() {
                 )}
               />
             </div>
+
+            {/* Copy AI Briefing — with tooltip */}
+            <div className="relative group hidden sm:block">
+              <button
+                onClick={() => {
+                  navigator.clipboard.writeText(CHAMELEON_AI_WRITEUP);
+                  setCopiedBriefing(true);
+                  setTimeout(() => setCopiedBriefing(false), 2500);
+                }}
+                aria-label="Copy AI briefing"
+                className={cn(
+                  "h-9 px-3 flex items-center gap-1.5 rounded-full text-xs font-bold transition-all",
+                  copiedBriefing
+                    ? "bg-emerald-500/15 text-emerald-500"
+                    : "bg-[var(--primary)]/10 text-[var(--primary)] hover:bg-[var(--primary)]/20",
+                )}
+              >
+                {copiedBriefing ? (
+                  <><Code className="w-3.5 h-3.5" /><span className="hidden lg:inline">Copied!</span></>
+                ) : (
+                  <><Code className="w-3.5 h-3.5" /><span className="hidden lg:inline">AI Brief</span></>
+                )}
+              </button>
+              {/* Tooltip */}
+              <div className={cn(
+                "absolute top-full right-0 mt-2 z-50 w-64 p-3 text-xs leading-relaxed rounded-xl shadow-xl pointer-events-none",
+                "opacity-0 group-hover:opacity-100 translate-y-1 group-hover:translate-y-0 transition-all duration-200",
+                "bg-[var(--card)] border border-[var(--border)] text-[var(--foreground)]",
+              )}>
+                <p className="font-bold text-[var(--foreground)] mb-1">📋 Copy AI Agent Briefing</p>
+                <p className="text-[var(--muted-foreground)]">
+                  Copies a complete Chameleon UI markdown briefing — components, themes, CLI &amp; code
+                  examples — ready to paste into ChatGPT, Claude, Gemini, or any AI coding assistant.
+                </p>
+              </div>
+            </div>
+
             <Button
               size="icon"
               variant="ghost"

@@ -334,6 +334,7 @@ export const CLIDocsPage: React.FC = () => {
   const [search, setSearch] = useState("");
   const [activeCmd, setActiveCmd] = useState("init");
   const [copiedInstall, setCopiedInstall] = useState(false);
+  const [copiedMarkdown, setCopiedMarkdown] = useState(false);
 
   const installCmd = "npm install -g @chameleon-ui-lib/react";
 
@@ -341,6 +342,58 @@ export const CLIDocsPage: React.FC = () => {
     navigator.clipboard.writeText(installCmd);
     setCopiedInstall(true);
     setTimeout(() => setCopiedInstall(false), 2000);
+  };
+
+  const handleCopyMarkdown = () => {
+    const md = [
+      "# Chameleon CLI — Complete Reference",
+      "",
+      "> A first-class command-line interface for scaffolding components, managing themes,",
+      "> running health checks, and launching the dev server.",
+      "",
+      "## Install",
+      "```bash",
+      "npm install -g @chameleon-ui-lib/react",
+      "chameleon --version",
+      "```",
+      "",
+      ...CATEGORY_ORDER.flatMap((cat) => {
+        const cmds = CLI_COMMANDS.filter((c) => c.category === cat);
+        if (!cmds.length) return [];
+        return [
+          `## ${cat}`,
+          "",
+          ...cmds.flatMap((c) => [
+            `### \`chameleon ${c.cmd}\``,
+            "",
+            `**Usage:** \`${c.usage}\``,
+            "",
+            c.desc.replace(/`([^`]+)`/g, "`$1`"),
+            "",
+            ...(c.flags.length
+              ? ["**Flags:**", ...c.flags.map((f) => `- \`${f}\``), ""]
+              : []),
+            "**Example:**",
+            "```bash",
+            c.example,
+            "```",
+            "",
+          ]),
+        ];
+      }),
+      "---",
+      "## Quick Reference",
+      "",
+      "| Command | Category | Description |",
+      "|---------|----------|-------------|",
+      ...CLI_COMMANDS.map(
+        (c) => `| \`chameleon ${c.cmd}\` | ${c.category} | ${c.desc.split(".")[0]} |`,
+      ),
+    ].join("\n");
+
+    navigator.clipboard.writeText(md);
+    setCopiedMarkdown(true);
+    setTimeout(() => setCopiedMarkdown(false), 2500);
   };
 
   const filtered = CLI_COMMANDS.filter(
@@ -363,13 +416,32 @@ export const CLIDocsPage: React.FC = () => {
     <div className="pb-20 space-y-10">
       {/* Header */}
       <div>
-        <div className="flex items-center gap-3 mb-3">
-          <div className="w-10 h-10 rounded-xl bg-indigo-500/15 flex items-center justify-center border border-indigo-500/20">
-            <Terminal className="w-5 h-5 text-indigo-400" />
+        <div className="flex items-start justify-between gap-4 mb-3">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-indigo-500/15 flex items-center justify-center border border-indigo-500/20">
+              <Terminal className="w-5 h-5 text-indigo-400" />
+            </div>
+            <Badge className="bg-emerald-500/10 text-emerald-500 border-emerald-500/20 text-[10px] font-black uppercase tracking-widest">
+              CLI Reference
+            </Badge>
           </div>
-          <Badge className="bg-emerald-500/10 text-emerald-500 border-emerald-500/20 text-[10px] font-black uppercase tracking-widest">
-            CLI Reference
-          </Badge>
+
+          {/* Copy as Markdown */}
+          <button
+            onClick={handleCopyMarkdown}
+            className={cn(
+              "shrink-0 flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all border",
+              copiedMarkdown
+                ? "bg-emerald-500/15 text-emerald-600 border-emerald-500/30"
+                : "bg-[var(--muted)] text-[var(--muted-foreground)] border-[var(--border)] hover:bg-[var(--accent)] hover:text-[var(--accent-foreground)]",
+            )}
+          >
+            {copiedMarkdown ? (
+              <><Check className="w-3.5 h-3.5" /> Copied!</>
+            ) : (
+              <><Copy className="w-3.5 h-3.5" /> Copy as Markdown</>
+            )}
+          </button>
         </div>
         <h1 className={cn("text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight mb-3", textPrimary)}>
           Chameleon CLI
@@ -420,7 +492,8 @@ export const CLIDocsPage: React.FC = () => {
       </div>
 
       {/* CLI Mockup */}
-      <CLIMockup />
+        <CLIMockup />
+
 
       {/* Command Reference */}
       <div>
@@ -432,7 +505,7 @@ export const CLIDocsPage: React.FC = () => {
         </p>
 
         {/* Search */}
-        <div className="relative mb-6">
+        <div className="relative mb-6 lg:hidden">
           <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-white/30" />
           <input
             value={search}
@@ -445,7 +518,18 @@ export const CLIDocsPage: React.FC = () => {
         {/* Two-column layout */}
         <div className="grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-6">
           {/* Left: command list */}
-          <div className="space-y-6">
+          <div className="rounded-2xl bg-[#0d1117] border border-white/10 overflow-hidden p-4 space-y-6">
+            {/* Search (inside dark card) */}
+            <div className="relative">
+              <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-white/30" />
+              <input
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search commands…"
+                className="w-full bg-white/5 border border-white/10 rounded-xl pl-10 pr-4 py-2.5 text-sm text-white/70 placeholder:text-white/20 focus:outline-none focus:border-indigo-500/40 font-mono"
+              />
+            </div>
+
             {Object.entries(grouped).map(([cat, cmds]) => (
               <div key={cat}>
                 <p className="text-[10px] font-black uppercase tracking-widest text-white/25 px-1 mb-2">

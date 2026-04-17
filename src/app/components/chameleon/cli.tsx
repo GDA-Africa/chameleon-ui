@@ -29,7 +29,7 @@ export const CLIMockup = () => {
   };
 
   return (
-    <div className="w-full max-w-2xl mx-auto rounded-xl overflow-hidden shadow-2xl bg-[#0d1117] border border-white/10 font-mono text-sm">
+    <div className="w-full rounded-xl overflow-hidden shadow-2xl bg-[#0d1117] border border-white/10 font-mono text-sm">
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-2 bg-[#161b22] border-b border-white/5">
         <div className="flex gap-1.5">

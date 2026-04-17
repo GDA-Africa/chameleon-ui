@@ -5,6 +5,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.1] - 2026-04-17
+
+### Added
+- **`DatePicker` atom** — fully theme-aware date picker supporting `single` and `range` modes, month navigation, `minDate`/`maxDate` guards, clear button, and framer-motion popup animation across all 5 themes.
+- **AI briefing copy button** — prominent "Copy AI Briefing" button in the AI Docs page hero and a secondary copy button in the Workshop navbar; copies the full `CHAMELEON_AI_WRITEUP` markdown to clipboard in one click.
+- **"Copy as Markdown" button** on the CLI Reference page — exports the full CLI command reference as formatted markdown for use in AI context windows or documentation.
+- **Crawlable static files** for AI agents: `public/llms.txt`, `public/context.md`, `public/manifest.json`, `public/sitemap.xml` — all served from `chameleon.glenhalton.com` as static assets.
+- **`index.html` AI crawler meta tags** — `<link rel="alternate">` for each static AI resource, `<meta name="ai-context">`, `<meta name="llms-txt">`, and `<link rel="sitemap">`.
+- **`DatePicker` CLI registration** — `datepicker` entry added to the CLI `COMPONENTS` registry with `single` and `range` variants.
+- **`DatePicker` AI manifest entry** — full entry in `CHAMELEON_AI_MANIFEST` with 9 props, minimal + full examples, use cases, and keywords.
+
+### Changed
+- **`deploy.sh`** — rewritten from static-file-zipping to a full build-then-deploy flow: runs `npm run build:app` → validates `dist-app/` → zips → `scp` → `ssh` unzip.
+- **`CLIMockup`** (`cli.tsx`) — removed `max-w-2xl mx-auto` constraint; component now spans full page width (`w-full`).
+
+### Fixed
+- **CLI docs "Copy as Markdown" button — light mode invisible** — replaced hardcoded `bg-white/5 text-white/60 border-white/10` with CSS custom property classes (`var(--muted)`, `var(--muted-foreground)`, `var(--border)`, `var(--accent)`) so the button is visible in all themes and modes.
+- **CLI docs page light mode text visibility** — command list sidebar items and search input were using `text-white/80` / `bg-white/3` without a dark backing; both are now inside the always-dark `bg-[#0d1117]` terminal card.
+
 ## [1.0.0] - 2026-04-14
 
 ### Added

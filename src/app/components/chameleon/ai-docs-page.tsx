@@ -35,7 +35,7 @@ import {
 
 // ─── AI Agent Writeup ─────────────────────────────────────────────────────────
 // A comprehensive, copy-paste-ready briefing for feeding to any AI agent.
-const CHAMELEON_AI_WRITEUP = `# Chameleon UI — Complete AI Agent Briefing
+export const CHAMELEON_AI_WRITEUP = `# Chameleon UI — Complete AI Agent Briefing
 > Version: ${CHAMELEON_AI_SUMMARY.version} | Last updated: 2026-04-17 | Package: @chameleon-ui-lib/react
 
 ## What Is Chameleon UI?
