@@ -309,7 +309,10 @@ last_updated: "2026-04-15"
 - ✅ Completed F24 (Strict-mode-safe generation) by removing `any` from component primitives
 - ✅ Resolved testing errors with testing-library overrides
 - ✅ Completed F25 (`chameleon doctor` expansion): Handled missing CSS, undefined components, Vite TS setup, and lint checks.
-- 🔲 Ready to begin F26 (Framework-specific quickstart guides)
+- ✅ Restored `scripts/build-css.mjs` (was accidentally overwritten with stdout text)
+- ✅ Completed F26 (Framework quickstart guide): Added 7-step Vite+React+TS+Tailwind v4 setup to README, Troubleshooting section, `chameleon init` now prints next-steps guide
+- ✅ Completed F27 (CSS @import ordering): `build-css.mjs` strips all @import lines from bundle, `chameleon doctor` now detects rules-before-imports ordering issues
+- 🔲 Phase 7 Sprint 2 & 3 complete — all F21–F27 items shipped
 
 ---
 

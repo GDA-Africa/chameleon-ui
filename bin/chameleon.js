@@ -234,7 +234,16 @@ if (cmd === "init") {
   autoConfigureTailwindVite();
   checkCssTailwindImport(cfg.css || "src/index.css");
 
-  log(`\n${c.emerald}Ready!${c.reset} ${c.gray}Run ${c.emerald}chameleon list${c.gray} to see available components.${c.reset}\n`);
+  log(`\n${c.emerald}✔ Chameleon UI ready!${c.reset}\n`);
+  log(`${c.bold}${c.white}Next steps:${c.reset}`);
+  log(`  ${c.gray}1.${c.reset} Make sure your CSS entry file starts with:`);
+  log(`       ${c.cyan}@import "tailwindcss";`);
+  log(`       @import "@chameleon-ui-lib/react/styles";${c.reset}`);
+  log(`  ${c.gray}2.${c.reset} Wrap your app:  ${c.cyan}<ChameleonProvider initialTheme="simple" initialMode="light">${c.reset}`);
+  log(`  ${c.gray}3.${c.reset} Add components: ${c.emerald}chameleon add button${c.reset}`);
+  log(`  ${c.gray}4.${c.reset} Full page:      ${c.emerald}chameleon template dashboard${c.reset}`);
+  log(`  ${c.gray}5.${c.reset} Health check:   ${c.emerald}chameleon doctor${c.reset}`);
+  log(`  ${c.gray}6.${c.reset} See all:        ${c.emerald}chameleon list${c.reset}\n`);
 
 // ── list ──────────────────────────────────────────────────────────────────────
 } else if (cmd === "list") {
@@ -415,6 +424,29 @@ if (cmd === "init") {
       } else {
         warn(`Library CSS not imported in ${cfg.css}. Add: @import "@chameleon-ui-lib/react/styles";`);
         issues++;
+      }
+
+      // F27: Check @import ordering — no rules must precede @import lines
+      const lines = cssContent.split('\n');
+      let firstRuleLine = -1;
+      let firstImportAfterRule = -1;
+      for (let i = 0; i < lines.length; i++) {
+        const t = lines[i].trim();
+        if (!t || t.startsWith('/*') || t.startsWith('*') || t.startsWith('//')) continue;
+        if (t.startsWith('@import')) {
+          if (firstRuleLine !== -1 && firstImportAfterRule === -1) {
+            firstImportAfterRule = i + 1;
+          }
+        } else {
+          if (firstRuleLine === -1) firstRuleLine = i + 1;
+        }
+      }
+      if (firstImportAfterRule !== -1) {
+        warn(`CSS @import ordering issue in ${cfg.css} (line ${firstImportAfterRule}): @import must precede all other rules. PostCSS will warn about this.`);
+        info(`  Fix: move all @import lines to the very top of ${cfg.css}`);
+        issues++;
+      } else {
+        ok(`CSS @import order is correct in ${cfg.css}`);
       }
     } else {
       warn(`Configured CSS file not found: ${cfg.css}`);
