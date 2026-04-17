@@ -10,8 +10,10 @@ export default defineConfig({
     react(),
     tailwindcss(),
     dts({
-      include: ["src/app/components/chameleon/**/*.{ts,tsx}"],
-      exclude: ["src/app/components/chameleon/**/*.test.{ts,tsx}", "src/app/components/chameleon/showcase*.tsx", "src/app/components/chameleon/comprehensive*.tsx", "src/app/components/chameleon/cli.tsx", "src/app/components/chameleon/ai*.ts", "src/app/components/chameleon/ai*.tsx"]
+      include: ["src/app/components/chameleon/**/*.{ts,tsx}", "vite-env.d.ts"],
+      exclude: ["src/app/components/chameleon/**/*.test.{ts,tsx}", "src/app/components/chameleon/showcase*.tsx", "src/app/components/chameleon/comprehensive*.tsx", "src/app/components/chameleon/cli.tsx", "src/app/components/chameleon/ai*.ts", "src/app/components/chameleon/ai*.tsx"],
+      outDir: "dist",
+      rollupTypes: true,
     })
   ],
   resolve: {

@@ -1,7 +1,7 @@
 {
   "name": "@chameleon-ui-lib/react",
   "private": false,
-  "version": "1.0.1",
+  "version": "1.0.2",
   "type": "module",
   "bin": {
     "chameleon": "./bin/chameleon.js",

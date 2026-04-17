@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.2] - 2026-04-17
+
+### Fixed
+- **TS2307 "Cannot find module" in consumer projects** — `vite-plugin-dts` was outputting declaration files to `dist/src/app/components/chameleon/index.d.ts` instead of `dist/index.d.ts`. Added `outDir: "dist"` and `rollupTypes: true` to the dts plugin config so all types are rolled into a single `dist/index.d.ts` that matches the `"types"` field in `package.json`.
+- **TS2882 CSS side-effect import warning in dts** — added `vite-env.d.ts` to the dts `include` list so `declare module "*.css"` is resolved during declaration generation.
+
 ## [1.0.1] - 2026-04-17
 
 ### Added
