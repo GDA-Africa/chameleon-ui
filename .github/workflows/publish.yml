@@ -2,6 +2,8 @@ name: Publish to NPM
 
 on:
   push:
+    branches:
+      - deploy
     tags:
       - 'v*' # Push events to matching v*, i.e. v1.0, v20.15.10
 
@@ -28,7 +30,7 @@ jobs:
           cache: 'pnpm'
 
       - name: Install dependencies
-        run: pnpm install
+        run: pnpm install --no-frozen-lockfile
 
       - name: Lint
         run: pnpm run lint
