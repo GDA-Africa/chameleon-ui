@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { cn } from "./utils";
 import { useChameleon, useThemeClasses } from "./context";
+import { CopyPageForAIPanel } from "./ai-helpers";
 
 // ─── Code Block with Copy ────────────────────────────────────────────────────
 
@@ -176,6 +177,22 @@ function ReturnsTable({ rows }: { rows: { name: string; type: string; descriptio
   );
 }
 
+const HOOKS_UTILS_MARKDOWN = `# Chameleon UI — Hooks & Utils
+
+## 🪝 Hooks
+- \`useChameleon()\`: Access current \`theme\`, \`mode\`, \`lang\`, \`primaryColor\`, \`radius\`, and setter properties.
+- \`useThemeClasses()\`: Returns CSS tailwind classes (\`textPrimary\`, \`textMuted\`, etc.) adapted to the active theme. Useful for deep UI customization.
+- \`useAnimation()\`: Returns physics-based animation presets (\`hover\`, \`tap\`, \`fadeUp\`, \`stagger\`, etc.) specifically designed for the active theme. Built to be used with \`motion/react\`.
+
+## 🛠️ Utils
+- \`cn(...classes)\`: Tailwind's clsx + tailwind-merge utility for safe conditional class rendering. The backbone of all Chameleon atom components.
+- \`CSS Variables\`: You can tap into \`var(--primary)\`, \`var(--border)\`, \`var(--card)\`, \`var(--muted)\`, etc. anywhere in your Tailwind classes.
+
+## 🌍 i18n
+- \`translations\`: A dictionary of strings (EN, ES, FR) for common UI elements.
+- Usage: \`const { lang } = useChameleon(); const t = translations[lang]; return t.signIn;\`.
+`;
+
 // ─── Main Page ───────────────────────────────────────────────────────────────
 
 export function HooksUtilsDocsPage() {
@@ -186,10 +203,13 @@ export function HooksUtilsDocsPage() {
     <div className="space-y-8 max-w-4xl">
       {/* Hero */}
       <div className="space-y-3">
-        <div className="flex items-center gap-2">
-          <span className="text-[10px] font-black uppercase tracking-widest text-[var(--primary)] bg-[var(--primary)]/10 px-2.5 py-1 rounded-full">
-            API Reference
-          </span>
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] font-black uppercase tracking-widest text-[var(--primary)] bg-[var(--primary)]/10 px-2.5 py-1 rounded-full">
+              API Reference
+            </span>
+          </div>
+          <CopyPageForAIPanel markdown={HOOKS_UTILS_MARKDOWN} />
         </div>
         <h1 className={cn("text-3xl sm:text-4xl font-black tracking-tight", textPrimary)}>
           Hooks & Utilities

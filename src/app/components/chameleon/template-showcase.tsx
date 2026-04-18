@@ -18,6 +18,7 @@ import {
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "./molecules";
 import { useThemeClasses } from "./context";
 import { cn } from "./utils";
+import { CopyPageForAIPanel } from "./ai-helpers";
 import {
   LandingPageTemplate,
   BlogArticleTemplate,
@@ -32,6 +33,25 @@ import {
   AuthFlowTemplate,
   DocumentationTemplate,
 } from "./comprehensive-templates-part2";
+
+const TEMPLATE_DOCS_MARKDOWN = `# Chameleon UI — Templates
+
+A set of 10 fully built, production-ready page templates assembling multiple Chameleon components.
+
+## 🏗️ Available Templates:
+- **Landing Page**: \`LandingPageTemplate\`
+- **Blog/Article**: \`BlogArticleTemplate\`
+- **Pricing**: \`PricingPageTemplate\`
+- **Contact**: \`ContactSupportTemplate\`
+- **User Profile**: \`UserProfileTemplate\`
+- **Admin Dashboard**: \`AdminDashboardTemplate\`
+- **E-commerce Product**: \`EcommerceProductTemplate\`
+- **Settings Panel**: \`SettingsPanelTemplate\`
+- **Authentication**: \`AuthFlowTemplate\`
+- **Documentation**: \`DocumentationTemplate\`
+
+Import these from \`@/components/chameleon/comprehensive-templates\` and \`@/components/chameleon/comprehensive-templates-part2\` for rapid prototyping. They strictly use internal Atoms and Molecules and respect the active theme.
+`;
 
 export const TemplateShowcase: React.FC = () => {
   const { textPrimary, textMuted } = useThemeClasses();
@@ -57,9 +77,12 @@ export const TemplateShowcase: React.FC = () => {
   return (
     <div className="pb-20 space-y-8">
       <div>
-        <h1 className={cn("text-5xl font-black tracking-tight mb-2", textPrimary)}>
-          Template Library
-        </h1>
+        <div className="flex items-center justify-between mb-2">
+          <h1 className={cn("text-5xl font-black tracking-tight", textPrimary)}>
+            Template Library
+          </h1>
+          <CopyPageForAIPanel markdown={TEMPLATE_DOCS_MARKDOWN} />
+        </div>
         <p className={cn("text-xl", textMuted)}>
           10 production-ready templates for the most common web patterns
         </p>

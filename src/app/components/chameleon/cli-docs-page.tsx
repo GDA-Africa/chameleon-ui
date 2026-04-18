@@ -29,6 +29,7 @@ import { CLIMockup } from "./cli";
 import { useThemeClasses } from "./context";
 import { cn } from "./utils";
 import { Badge } from "./atoms";
+import { CopyPageForAIPanel } from "./ai-helpers";
 
 // ─── Command Data ─────────────────────────────────────────────────────────────
 

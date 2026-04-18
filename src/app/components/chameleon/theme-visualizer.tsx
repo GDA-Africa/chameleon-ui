@@ -4,6 +4,7 @@ import { Button, Input, Badge } from "./atoms";
 import { cn, generateVariations, getContrastColor } from "./utils";
 import { Card, CardHeader, CardTitle, CardContent } from "./molecules";
 import { useThemeClasses, useChameleon } from "./context";
+import { CopyPageForAIPanel } from "./ai-helpers";
 
 interface ColorPalette {
   primary: string;
