@@ -21,6 +21,7 @@ import {
   Menu,
   X,
   ChevronDown,
+  Wrench,
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import {
@@ -39,6 +40,7 @@ import { DocumentationPage } from "./components/chameleon/documentation";
 import { EnhancedLandingPage } from "./components/chameleon/enhanced-landing";
 import { ComponentDocsPage } from "./components/chameleon/component-docs-page";
 import { CLIDocsPage } from "./components/chameleon/cli-docs-page";
+import { HooksUtilsDocsPage } from "./components/chameleon/hooks-utils-docs";
 import { CHAMELEON_AI_WRITEUP } from "./components/chameleon/ai-docs-page";
 
 // ─── Page Components ──────────────────────────────────────────────────────────
@@ -54,6 +56,7 @@ const DocsPage = () => <DocumentationPage />;
 type Page =
   | "landing"
   | "component-docs"
+  | "hooks-utils"
   | "cli-docs"
   | "docs"
   | "visualizer"
@@ -120,6 +123,7 @@ function Workshop() {
   const sidebarLinks: { id: Page; label: string; icon: any; group: string; badge?: string }[] = [
     { id: "landing",        label: "Home",            icon: Monitor,       group: "Overview" },
     { id: "component-docs", label: "Component Docs",  icon: Code,          group: "Components", badge: "35+" },
+    { id: "hooks-utils",    label: "Hooks & Utils",   icon: Wrench,        group: "Components" },
     { id: "templates",      label: "Templates",       icon: LayoutDashboard, group: "Components", badge: "14" },
     { id: "cli-docs",       label: "CLI Reference",   icon: Terminal,      group: "Documentation" },
     { id: "docs",           label: "Getting Started", icon: BookOpen,      group: "Documentation" },
@@ -560,6 +564,7 @@ function Workshop() {
             >
               {activePage === "landing"        && <LandingPage onNavigate={(p) => setActivePage(p as Page)} />}
               {activePage === "component-docs" && <ComponentDocsPage />}
+              {activePage === "hooks-utils"    && <HooksUtilsDocsPage />}
               {activePage === "cli-docs"        && <CLIDocsPage />}
               {activePage === "docs"            && <DocsPage />}
               {activePage === "visualizer"      && <ThemeVisualizer />}

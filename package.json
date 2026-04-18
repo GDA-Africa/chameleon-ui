@@ -1,8 +1,9 @@
 {
   "name": "@chameleon-ui-lib/react",
   "private": false,
-  "version": "1.0.1",
+  "version": "1.0.3",
   "type": "module",
+  "homepage": "https://chameleon.glenhalton.com",
   "bin": {
     "chameleon": "./bin/chameleon.js",
     "chameleon-cli": "./bin/chameleon.js"
