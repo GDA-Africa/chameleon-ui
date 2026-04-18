@@ -1,0 +1,19 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "rootDir": "src/app/components/chameleon",
+    "declaration": true,
+    "declarationDir": "dist",
+    "outDir": "dist"
+  },
+  "include": ["src/app/components/chameleon/**/*.ts", "src/app/components/chameleon/**/*.tsx"],
+  "exclude": [
+    "src/app/components/chameleon/**/*.test.ts",
+    "src/app/components/chameleon/**/*.test.tsx",
+    "src/app/components/chameleon/showcase*.tsx",
+    "src/app/components/chameleon/comprehensive*.tsx",
+    "src/app/components/chameleon/cli.tsx",
+    "src/app/components/chameleon/ai*.ts",
+    "src/app/components/chameleon/ai*.tsx"
+  ]
+}
