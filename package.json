@@ -1,7 +1,7 @@
 {
   "name": "@chameleon-ui-lib/react",
   "private": false,
-  "version": "1.0.3",
+  "version": "1.0.5",
   "type": "module",
   "homepage": "https://chameleon.glenhalton.com",
   "bin": {
@@ -27,6 +27,9 @@
     "lint": "eslint .",
     "format": "prettier --write ."
   },
+  "sideEffects": [
+    "./dist/styles.css"
+  ],
   "dependencies": {
     "@emotion/react": "11.14.0",
     "@emotion/styled": "11.14.1",
@@ -68,11 +71,9 @@
     "lucide-react": "0.487.0",
     "motion": "12.23.24",
     "next-themes": "0.4.6",
-    "react": "18.3.1",
     "react-day-picker": "8.10.1",
     "react-dnd": "16.0.1",
     "react-dnd-html5-backend": "16.0.1",
-    "react-dom": "18.3.1",
     "react-hook-form": "7.55.0",
     "react-popper": "2.3.0",
     "react-resizable-panels": "2.1.7",
@@ -92,8 +93,8 @@
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
     "@types/node": "^25.5.2",
-    "@types/react": "^19.2.14",
-    "@types/react-dom": "^19.2.3",
+    "@types/react": "^18.3.0",
+    "@types/react-dom": "^18.3.0",
     "@types/testing-library__jest-dom": "^5.14.9",
     "@typescript-eslint/eslint-plugin": "^8.58.0",
     "@typescript-eslint/parser": "^8.58.0",
@@ -105,6 +106,8 @@
     "globals": "^17.4.0",
     "jsdom": "^29.0.1",
     "prettier": "^3.8.1",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
     "tailwindcss": "4.1.12",
     "typescript": "^6.0.2",
     "typescript-eslint": "^8.58.0",
@@ -113,16 +116,8 @@
     "vitest": "^4.1.2"
   },
   "peerDependencies": {
-    "react": "18.3.1",
-    "react-dom": "18.3.1"
-  },
-  "peerDependenciesMeta": {
-    "react": {
-      "optional": true
-    },
-    "react-dom": {
-      "optional": true
-    }
+    "react": ">=18.0.0",
+    "react-dom": ">=18.0.0"
   },
   "pnpm": {
     "overrides": {
