@@ -16,6 +16,10 @@ import {
   selectComponentsForTask,
   selectRecipeForTask,
 } from "./ai-manifest";
+import { cn } from "./utils";
+import { Button } from "./atoms";
+import { Copy, Check, Bot } from "lucide-react";
+import React, { useState } from "react";
 
 /**
  * Validates component prop usage and returns helpful error messages
@@ -404,4 +408,30 @@ export function validateCode(code: string): {
     warnings,
     suggestions,
   };
+}
+
+/**
+ * A standard button to copy page-specific structured markdown for AI agents.
+ */
+export function CopyPageForAIPanel({ markdown, className }: { markdown: string; className?: string }) {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(markdown.trim());
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  return (
+    <Button
+      variant="outline"
+      size="sm"
+      className={cn("gap-2 text-xs font-mono font-bold bg-[var(--card)] hover:bg-[var(--muted)] border-[var(--border)]", className)}
+      onClick={handleCopy}
+    >
+      <Bot className="w-4 h-4" />
+      {copied ? "Copied!" : "Copy for AI"}
+      {copied ? <Check className="w-3.5 h-3.5 text-green-500" /> : <Copy className="w-3.5 h-3.5 text-gray-400" />}
+    </Button>
+  );
 }

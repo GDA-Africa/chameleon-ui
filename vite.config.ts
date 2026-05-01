@@ -12,7 +12,8 @@ export default defineConfig({
     dts({
       tsconfigPath: "./tsconfig.lib.json",
       outDir: "dist",
-      rollupTypes: false,
+      rollupTypes: true,
+      pathsToAliases: true,
     })
   ],
   resolve: {

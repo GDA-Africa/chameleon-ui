@@ -43,7 +43,28 @@ import {
 } from "./molecules";
 import { useThemeClasses, useChameleon, ChameleonTheme } from "./context";
 import { cn } from "./utils";
+import { CopyPageForAIPanel } from "./ai-helpers";
 import { AIDocsPage } from "./ai-docs-page";
+
+const DOCS_MARKDOWN = `# Chameleon UI — Documentation
+
+## 🚀 Quick Start
+1. **Install:** \`npx chameleon init\`
+2. **Add Components:** \`npx chameleon add button card dialog dropdown-menu\`
+3. **Usage:**
+   \`\`\`tsx
+   import { Button } from "@/components/chameleon/atoms";
+   export default () => <Button variant="primary">Click Me</Button>;
+   \`\`\`
+
+## 🎨 Core Concepts
+- \`ChameleonProvider\`: The React context wrapper that registers active theme, mode (light/dark), and liquid intensities.
+- \`useChameleon()\`: Read and update the global theme state.
+- **Themes**: material (elevated), simple (border-radius), minimalist (sharp black & white), glassy (frosted UI), liquid (organic shapes).
+
+## ✨ Tailored Components
+Use \`cn\` from \`@/components/chameleon/utils\` and standard Tailwind CSS variables (\`var(--primary)\`, \`var(--muted)\`) to respect active themes natively.
+`;
 
 export const DocumentationPage: React.FC = () => {
   const { textPrimary, textMuted, cardClass, theme } = useThemeClasses();
@@ -60,9 +81,12 @@ export const DocumentationPage: React.FC = () => {
     <div className="pb-20 space-y-8">
       {/* Hero */}
       <div>
-        <h1 className={cn("text-5xl font-black tracking-tight mb-2", textPrimary)}>
-          Documentation
-        </h1>
+        <div className="flex items-center justify-between mb-2">
+          <h1 className={cn("text-5xl font-black tracking-tight", textPrimary)}>
+            Documentation
+          </h1>
+          <CopyPageForAIPanel markdown={DOCS_MARKDOWN} />
+        </div>
         <p className={cn("text-xl", textMuted)}>
           Everything you need to integrate Chameleon UI into your workflow
         </p>

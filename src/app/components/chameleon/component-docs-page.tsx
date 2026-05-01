@@ -38,6 +38,7 @@ import { AuthShowcase } from "./auth-showcase";
 import { ButtonShowcaseExample, AnimationShowcaseExample, ProgressShowcaseExample } from "./showcase-examples";
 import { useThemeClasses, useChameleon } from "./context";
 import { cn } from "./utils";
+import { CopyPageForAIPanel } from "./ai-helpers";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -487,6 +488,29 @@ const TABS: SectionTab[] = [
   },
 ];
 
+export const COMPONENT_DOCS_MARKDOWN = `# Chameleon UI — Component Library
+
+A comprehensive collection of React + Tailwind UI components available in Chameleon UI. They automatically adapt to the active theme (Simple, Material, Minimalist, Glassy, Liquid).
+
+## 🧬 Atoms (Foundational Basics)
+- Button, Input, Badge, Progress, Label, Avatar, Checkbox, Switch, Radio.
+- Available via \`import { Button, Input } from "@/components/chameleon/atoms"\`.
+
+## 🧩 Molecules (Complex Combinations)
+- Card, Tabs, Dialog, Alert, StatCard, PricingCard, Accordion, Dropdown Menu.
+- Available via \`import { Card, Dialog } from "@/components/chameleon/molecules"\`.
+
+## 🏗️ Composites (Full Interfaces)
+- DataTable, AdvancedCharts, KanbanBoard, DynamicForm, InteractiveCalendar.
+- Available via \`import { DataTable } from "@/components/chameleon/composites"\`.
+
+## 🔐 Auth (Authentication Views)
+- Login, Signup, 2FA, MagicLink, ForgotPassword.
+- Built on top of Atoms/Molecules, available via \`import { AuthCard } from "@/components/chameleon/auth-components"\`.
+
+All components strongly typed and support Tailwind classes via the \`className\` prop and the \`cn()\` utility.
+`;
+
 export const ComponentDocsPage: React.FC = () => {
   const { textPrimary, textMuted } = useThemeClasses();
   const [activeTab, setActiveTab] = useState<DocTab>("atoms");
@@ -498,13 +522,16 @@ export const ComponentDocsPage: React.FC = () => {
     <div className="pb-20 space-y-8">
       {/* Header */}
       <div>
-        <div className="flex items-center gap-3 mb-3">
-          <div className="w-10 h-10 rounded-xl bg-[var(--primary)]/10 flex items-center justify-center border border-[var(--primary)]/20">
-            <Code className="w-5 h-5 text-[var(--primary)]" />
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-[var(--primary)]/10 flex items-center justify-center border border-[var(--primary)]/20">
+              <Code className="w-5 h-5 text-[var(--primary)]" />
+            </div>
+            <Badge className="text-[10px] font-black uppercase tracking-widest">
+              Component Library
+            </Badge>
           </div>
-          <Badge className="text-[10px] font-black uppercase tracking-widest">
-            Component Library
-          </Badge>
+          <CopyPageForAIPanel markdown={COMPONENT_DOCS_MARKDOWN} />
         </div>
         <h1 className={cn("text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight mb-3", textPrimary)}>
           Component Docs

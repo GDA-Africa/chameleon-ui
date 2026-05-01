@@ -4,7 +4,9 @@
     "rootDir": "src/app/components/chameleon",
     "declaration": true,
     "declarationDir": "dist",
-    "outDir": "dist"
+    "outDir": "dist",
+    "moduleResolution": "bundler",
+    "noEmit": false
   },
   "include": ["src/app/components/chameleon/**/*.ts", "src/app/components/chameleon/**/*.tsx"],
   "exclude": [
