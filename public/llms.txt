@@ -10,7 +10,7 @@
 ## Package
 
 - NPM: @chameleon-ui-lib/react
-- Version: 1.0.6
+- Version: 1.0.7
 - Framework: React 19 + Vite 6 + TypeScript (strict mode)
 - Styling: Tailwind CSS v4 + CSS custom properties (tokens)
 - Animations: Framer Motion (motion/react)

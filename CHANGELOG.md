@@ -15,13 +15,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **`chameleon template <name>` source not found** — CLI `LIB_SRC` path now resolves to the published `lib-src/` directory when installed from npm, falling back to the dev source tree for local development.
 - **TS7053 in `component-docs-directory-page.tsx`** — cast `component.category` to `DocsCategory` when indexing `categoryIcon` to satisfy strict TypeScript, since the manifest's `"template"` category is filtered out at runtime but not narrowed by `.filter()`.
 
-## [1.0.6] - 2026-05-03
+## [1.0.7] - 2026-05-03
 
 ### Changed
-- **Release metadata bumped to 1.0.6** — updated `package.json` and lockfile version metadata for the new publish target.
+- **Release metadata bumped to 1.0.7** — updated `package.json` and lockfile version metadata for the new publish target.
 - **Library docs synchronized** — updated version references in `docs/00-index.md`, `docs/01-overview.md`, `AI_INTEGRATION_GUIDE.md`, `public/context.md`, and `public/llms.txt`.
 - **Frontend app release copy updated** — updated visible version labels in `enhanced-landing.tsx` and documentation callouts in `comprehensive-templates-part2.tsx` and `src/pages/auth-flow.tsx`.
-- **AI manifest summary updated** — `CHAMELEON_AI_SUMMARY.version` and manifest header now report `1.0.6` for agent-facing integrations.
+- **AI manifest summary updated** — `CHAMELEON_AI_SUMMARY.version` and manifest header now report `1.0.7` for agent-facing integrations.
 
 ## [1.0.2] - 2026-04-17
 
