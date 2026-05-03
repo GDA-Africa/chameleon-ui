@@ -16,15 +16,12 @@ status: active
 # Skill: Knowledge Logging (Shared)
 
 ## When to Read This
-
 Read this skill when documenting project decisions, lessons learned, or important context that should be preserved for future reference.
 
 ## Context
-
 Knowledge logging captures the "why" behind decisions, technical discoveries, and project evolution. This living document helps team members understand context, avoid repeating mistakes, and make informed decisions. It's particularly valuable for AI agents that need to understand project history and rationale.
 
 ## Steps
-
 1. Identify significant decisions, discoveries, or patterns worth documenting
 2. Categorize the entry (decision, discovery, pattern, warning, etc.)
 3. Write a clear, concise entry with context and reasoning
@@ -33,7 +30,6 @@ Knowledge logging captures the "why" behind decisions, technical discoveries, an
 6. Review and organize entries periodically for clarity
 
 ## Patterns We Use
-
 - Decision log: Record major architectural and technical decisions with alternatives considered
 - Discovery log: Document new findings about tools, libraries, or system behavior
 - Pattern log: Capture recurring solutions and best practices discovered during development
@@ -41,7 +37,6 @@ Knowledge logging captures the "why" behind decisions, technical discoveries, an
 - Context log: Record external factors, constraints, or business requirements that influenced decisions
 
 ## Anti-Patterns — Never Do This
-
 - ❌ Do not write vague entries without context or explanation
 - ❌ Do not include personal complaints or blame
 - ❌ Do not log trivial changes that don't provide lasting value
@@ -59,7 +54,6 @@ Knowledge logging captures the "why" behind decisions, technical discoveries, an
 **Decision:** Chose Zustand over Redux Toolkit and Context API.
 
 **Alternatives considered:**
-
 - Redux Toolkit: Rejected due to boilerplate and complexity for our use case
 - Context API: Rejected due to performance concerns with frequent updates
 
@@ -86,13 +80,12 @@ Knowledge logging captures the "why" behind decisions, technical discoveries, an
 **Note:** Document this pattern for future scaling considerations.
 ```
 
-````markdown
+```markdown
 ## 2024-05-10: Pattern - API Error Handling Standardization
 
 **Pattern:** Standardized error response format across all API endpoints.
 
 **Implementation:**
-
 ```typescript
 interface ErrorResponse {
   error: {
@@ -102,16 +95,13 @@ interface ErrorResponse {
   };
 }
 ```
-````
 
 **Benefits:**
-
 - Consistent error handling across frontend and backend
 - Better user experience with standardized error messages
 - Easier debugging and logging
 
 **Adoption:** Applied to all new endpoints, migrating existing ones gradually.
-
 ```
 
 ## Notes
@@ -123,4 +113,3 @@ interface ErrorResponse {
 - Use consistent formatting and categorization for easy navigation
 - Consider the perspective of future team members reading this
 - Document both successes and failures for balanced learning
-```

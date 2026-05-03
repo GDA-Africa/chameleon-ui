@@ -4,7 +4,7 @@ id: "07_implementation"
 title: "Implementation Plan"
 status: populated
 confidence: high
-last_updated: "2026-04-14"
+last_updated: "2026-05-03"
 ---
 
 # Implementation Plan
@@ -69,6 +69,7 @@ last_updated: "2026-04-14"
 | README for npm            | README.md                     | ✅ Done | Installation + quick start   |
 | CHANGELOG                 | CHANGELOG.md                  | ✅ Done | Semantic versioning          |
 | npm publish workflow      | .github/workflows/publish.yml | ✅ Done | CI publish on tag            |
+| Publish artifact whitelist + lifecycle build | package.json | ✅ Done | Added `files` + `prepare` to guarantee `dist/` artifacts ship for consumers |
 
 ### Phase 4: CLI Tool ✅ COMPLETE
 

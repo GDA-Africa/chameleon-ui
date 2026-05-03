@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "generatedAt": "2026-04-04T23:01:51.465Z",
+  "generatedAt": "2026-05-03T03:30:27.847Z",
   "config": {
     "projectName": "chameleon-ui",
     "displayName": "Chameleon Ui",
@@ -22,7 +22,7 @@
     }
   },
   "cli": {
-    "version": "0.3.2",
+    "version": "0.4.0",
     "name": "@nexus-framework/cli"
   },
   "localOnly": false

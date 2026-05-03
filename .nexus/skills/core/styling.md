@@ -16,15 +16,12 @@ status: active
 # Skill: Styling (React + Vite)
 
 ## When to Read This
-
 Read this skill when implementing styles, creating components, or working with CSS in a React + Vite application.
 
 ## Context
-
 This project uses a combination of CSS Modules, SCSS, and styled-components for styling. We follow a component-based approach with consistent naming conventions, responsive design principles, and accessibility considerations. The styling system supports theming, dark mode, and maintains consistency across the application while allowing for flexibility and maintainability.
 
 ## Steps
-
 1. Choose appropriate styling approach for each component
 2. Create component styles with CSS Modules or styled-components
 3. Implement responsive design with mobile-first approach
@@ -35,7 +32,6 @@ This project uses a combination of CSS Modules, SCSS, and styled-components for 
 8. Test styles across different devices and screen sizes
 
 ## Patterns We Use
-
 - CSS Modules: Use for component-scoped styles with BEM-like naming
 - SCSS: Use for shared styles, mixins, and variables
 - styled-components: Use for dynamic styles and complex component styling
@@ -46,7 +42,6 @@ This project uses a combination of CSS Modules, SCSS, and styled-components for 
 - Performance: Minimize CSS bundle size and avoid style duplication
 
 ## Anti-Patterns — Never Do This
-
 - ❌ Do not use inline styles for complex styling
 - ❌ Do not create overly specific CSS selectors
 - ❌ Do not ignore responsive design principles
@@ -83,12 +78,11 @@ This project uses a combination of CSS Modules, SCSS, and styled-components for 
   --color-gray-900: #000000;
 
   /* Typography */
-  --font-family-base:
-    -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell",
-    "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
-  --font-family-monospace:
-    "SF Mono", "Monaco", "Inconsolata", "Roboto Mono", "Source Code Pro", monospace;
-
+  --font-family-base: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  --font-family-monospace: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', 'Source Code Pro', monospace;
+  
   --font-size-xs: 0.75rem;
   --font-size-sm: 0.875rem;
   --font-size-base: 1rem;
@@ -192,7 +186,7 @@ This project uses a combination of CSS Modules, SCSS, and styled-components for 
   width: 1px;
   overflow: hidden;
   clip: rect(1px, 1px, 1px, 1px);
-
+  
   &:focus {
     position: static !important;
     height: auto !important;
@@ -206,17 +200,17 @@ This project uses a combination of CSS Modules, SCSS, and styled-components for 
   background-color: $bg;
   border-color: $border;
   color: $color;
-
+  
   &:hover {
     background-color: darken($bg, 5%);
     border-color: darken($border, 5%);
   }
-
+  
   &:focus {
     box-shadow: 0 0 0 3px rgba($bg, 0.25);
     outline: none;
   }
-
+  
   &:disabled {
     opacity: 0.6;
     cursor: not-allowed;
@@ -225,24 +219,16 @@ This project uses a combination of CSS Modules, SCSS, and styled-components for 
 
 @mixin responsive($breakpoint) {
   @if $breakpoint == sm {
-    @media (min-width: 640px) {
-      @content;
-    }
+    @media (min-width: 640px) { @content; }
   }
   @if $breakpoint == md {
-    @media (min-width: 768px) {
-      @content;
-    }
+    @media (min-width: 768px) { @content; }
   }
   @if $breakpoint == lg {
-    @media (min-width: 1024px) {
-      @content;
-    }
+    @media (min-width: 1024px) { @content; }
   }
   @if $breakpoint == xl {
-    @media (min-width: 1280px) {
-      @content;
-    }
+    @media (min-width: 1280px) { @content; }
   }
 }
 
@@ -251,11 +237,11 @@ This project uses a combination of CSS Modules, SCSS, and styled-components for 
   max-width: 1200px;
   margin: 0 auto;
   padding: 0 var(--spacing-md);
-
+  
   @include responsive(md) {
     padding: 0 var(--spacing-lg);
   }
-
+  
   @include responsive(lg) {
     padding: 0 var(--spacing-xl);
   }
@@ -264,8 +250,8 @@ This project uses a combination of CSS Modules, SCSS, and styled-components for 
 
 ```scss
 // src/styles/base.scss
-@import "./variables";
-@import "./mixins";
+@import './variables';
+@import './mixins';
 
 /* CSS Reset and Base Styles */
 * {
@@ -287,35 +273,18 @@ body {
 }
 
 /* Typography */
-h1,
-h2,
-h3,
-h4,
-h5,
-h6 {
+h1, h2, h3, h4, h5, h6 {
   margin: 0 0 var(--spacing-md) 0;
   font-weight: var(--font-weight-semibold);
   line-height: 1.2;
 }
 
-h1 {
-  font-size: var(--font-size-4xl);
-}
-h2 {
-  font-size: var(--font-size-3xl);
-}
-h3 {
-  font-size: var(--font-size-2xl);
-}
-h4 {
-  font-size: var(--font-size-xl);
-}
-h5 {
-  font-size: var(--font-size-lg);
-}
-h6 {
-  font-size: var(--font-size-base);
-}
+h1 { font-size: var(--font-size-4xl); }
+h2 { font-size: var(--font-size-3xl); }
+h3 { font-size: var(--font-size-2xl); }
+h4 { font-size: var(--font-size-xl); }
+h5 { font-size: var(--font-size-lg); }
+h6 { font-size: var(--font-size-base); }
 
 p {
   margin: 0 0 var(--spacing-md) 0;
@@ -324,11 +293,11 @@ p {
 a {
   color: var(--color-primary);
   text-decoration: none;
-
+  
   &:hover {
     text-decoration: underline;
   }
-
+  
   &:focus {
     outline: 2px solid var(--color-primary);
     outline-offset: 2px;
@@ -336,8 +305,7 @@ a {
 }
 
 /* Lists */
-ul,
-ol {
+ul, ol {
   padding-left: var(--spacing-lg);
   margin: 0 0 var(--spacing-md) 0;
 }
@@ -393,84 +361,84 @@ img {
   transition: all var(--transition-normal);
   text-decoration: none;
   user-select: none;
-
+  
   &:hover {
     transform: translateY(-1px);
   }
-
+  
   &:active {
     transform: translateY(0);
   }
-
+  
   &:disabled {
     opacity: 0.6;
     cursor: not-allowed;
     transform: none;
   }
-
+  
   // Variants
   &--primary {
     background-color: var(--color-primary);
     color: white;
     border-color: var(--color-primary);
-
+    
     &:hover:not(:disabled) {
       background-color: var(--color-primary-hover);
       border-color: var(--color-primary-hover);
     }
   }
-
+  
   &--secondary {
     background-color: transparent;
     color: var(--color-primary);
     border-color: var(--color-primary);
-
+    
     &:hover:not(:disabled) {
       background-color: var(--color-primary);
       color: white;
     }
   }
-
+  
   &--ghost {
     background-color: transparent;
     color: var(--color-gray-700);
     border-color: transparent;
-
+    
     &:hover:not(:disabled) {
       background-color: var(--color-gray-100);
       color: var(--color-gray-900);
     }
   }
-
+  
   &--danger {
     background-color: var(--color-danger);
     color: white;
     border-color: var(--color-danger);
-
+    
     &:hover:not(:disabled) {
       background-color: darken(var(--color-danger), 10%);
       border-color: darken(var(--color-danger), 10%);
     }
   }
-
+  
   // Sizes
   &--small {
     padding: var(--spacing-xs) var(--spacing-sm);
     font-size: var(--font-size-sm);
   }
-
+  
   &--large {
     padding: var(--spacing-md) var(--spacing-lg);
     font-size: var(--font-size-lg);
   }
-
+  
   // States
   &--loading {
     position: relative;
     pointer-events: none;
-
+    
     &::after {
-      content: "";
+      content: '';
       position: absolute;
       top: 50%;
       left: 50%;
@@ -483,18 +451,18 @@ img {
       animation: button-spin 1s linear infinite;
     }
   }
-
+  
   // Icon button
   &--icon {
     padding: var(--spacing-sm);
-
+    
     .button__icon {
       margin-right: var(--spacing-xs);
     }
-
+    
     &.button--icon-only {
       padding: var(--spacing-sm);
-
+      
       .button__icon {
         margin-right: 0;
       }
@@ -503,19 +471,17 @@ img {
 }
 
 @keyframes button-spin {
-  to {
-    transform: rotate(360deg);
-  }
+  to { transform: rotate(360deg); }
 }
 ```
 
 ```tsx
 // src/components/Button/Button.tsx
-import React from "react";
-import styles from "./Button.module.scss";
+import React from 'react';
+import styles from './Button.module.scss';
 
-type ButtonVariant = "primary" | "secondary" | "ghost" | "danger";
-type ButtonSize = "small" | "medium" | "large";
+type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger';
+type ButtonSize = 'small' | 'medium' | 'large';
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: ButtonVariant;
@@ -529,107 +495,101 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   (
     {
       children,
-      variant = "primary",
-      size = "medium",
+      variant = 'primary',
+      size = 'medium',
       isLoading = false,
       leftIcon,
       rightIcon,
-      className = "",
+      className = '',
       disabled,
       ...props
     },
-    ref,
+    ref
   ) => {
     const buttonClasses = [
       styles.button,
       styles[`button--${variant}`],
       styles[`button--${size}`],
-      isLoading && styles["button--loading"],
-      leftIcon && styles["button--icon"],
-      rightIcon && styles["button--icon"],
+      isLoading && styles['button--loading'],
+      leftIcon && styles['button--icon'],
+      rightIcon && styles['button--icon'],
       className,
     ]
       .filter(Boolean)
-      .join(" ");
+      .join(' ');
 
     return (
-      <button ref={ref} className={buttonClasses} disabled={disabled || isLoading} {...props}>
+      <button
+        ref={ref}
+        className={buttonClasses}
+        disabled={disabled || isLoading}
+        {...props}
+      >
         {leftIcon && <span className={styles.button__icon}>{leftIcon}</span>}
         {children}
         {rightIcon && <span className={styles.button__icon}>{rightIcon}</span>}
       </button>
     );
-  },
+  }
 );
 
-Button.displayName = "Button";
+Button.displayName = 'Button';
 ```
 
 ```tsx
 // src/components/Card/Card.tsx
-import React from "react";
-import styled from "styled-components";
+import React from 'react';
+import styled from 'styled-components';
 
 interface CardProps {
   children: React.ReactNode;
-  variant?: "default" | "elevated" | "outlined";
-  padding?: "small" | "medium" | "large";
+  variant?: 'default' | 'elevated' | 'outlined';
+  padding?: 'small' | 'medium' | 'large';
   className?: string;
 }
 
 const StyledCard = styled.div<CardProps>`
   background-color: white;
   border-radius: var(--border-radius-lg);
-  box-shadow: ${(props) => {
+  box-shadow: ${props => {
     switch (props.variant) {
-      case "elevated":
-        return "var(--shadow-lg)";
-      case "outlined":
-        return "none";
-      default:
-        return "var(--shadow-md)";
+      case 'elevated': return 'var(--shadow-lg)';
+      case 'outlined': return 'none';
+      default: return 'var(--shadow-md)';
     }
   }};
-  border: ${(props) => (props.variant === "outlined" ? "1px solid var(--color-gray-200)" : "none")};
-  padding: ${(props) => {
+  border: ${props => props.variant === 'outlined' ? '1px solid var(--color-gray-200)' : 'none'};
+  padding: ${props => {
     switch (props.padding) {
-      case "small":
-        return "var(--spacing-sm)";
-      case "large":
-        return "var(--spacing-xl)";
-      default:
-        return "var(--spacing-md)";
+      case 'small': return 'var(--spacing-sm)';
+      case 'large': return 'var(--spacing-xl)';
+      default: return 'var(--spacing-md)';
     }
   }};
-
-  transition:
-    box-shadow var(--transition-normal),
-    transform var(--transition-normal);
-
+  
+  transition: box-shadow var(--transition-normal), transform var(--transition-normal);
+  
   &:hover {
-    ${(props) =>
-      props.variant === "elevated" &&
-      `
+    ${props => props.variant === 'elevated' && `
       transform: translateY(-2px);
       box-shadow: var(--shadow-xl);
     `}
   }
-
+  
   @media (prefers-color-scheme: dark) {
     background-color: var(--color-gray-800);
     border-color: var(--color-gray-700);
   }
 `;
 
-export const Card: React.FC<CardProps> = ({
-  children,
-  variant = "default",
-  padding = "medium",
-  className,
-  ...props
-}) => {
+export const Card: React.FC<CardProps> = ({ children, variant = 'default', padding = 'medium', className, ...props }) => {
   return (
-    <StyledCard variant={variant} padding={padding} className={className} {...props}>
+    <StyledCard
+      variant={variant}
+      padding={padding}
+      className={className}
+      {...props}
+    >
       {children}
     </StyledCard>
   );
@@ -641,73 +601,71 @@ export const Card: React.FC<CardProps> = ({
 .form {
   &-group {
     margin-bottom: var(--spacing-lg);
-
+    
     &:last-child {
       margin-bottom: 0;
     }
   }
-
+  
   &-label {
     display: block;
     margin-bottom: var(--spacing-xs);
     font-weight: var(--font-weight-medium);
     color: var(--color-gray-700);
   }
-
+  
   &-input {
     width: 100%;
     padding: var(--spacing-sm) var(--spacing-md);
     border: var(--border-width) solid var(--color-gray-300);
     border-radius: var(--border-radius-md);
     font-size: var(--font-size-base);
-    transition:
-      border-color var(--transition-normal),
-      box-shadow var(--transition-normal);
+    transition: border-color var(--transition-normal), box-shadow var(--transition-normal);
     background-color: white;
-
+    
     &:focus {
       outline: none;
       border-color: var(--color-primary);
       box-shadow: 0 0 0 3px rgba(var(--color-primary), 0.25);
     }
-
+    
     &:hover {
       border-color: var(--color-gray-400);
     }
-
+    
     &:disabled {
       background-color: var(--color-gray-100);
       color: var(--color-gray-500);
       cursor: not-allowed;
     }
-
+    
     &::placeholder {
       color: var(--color-gray-400);
     }
-
+    
     // Input variants
     &--error {
       border-color: var(--color-danger);
-
+      
       &:focus {
         box-shadow: 0 0 0 3px rgba(var(--color-danger), 0.25);
       }
     }
-
+    
     &--success {
       border-color: var(--color-success);
-
+      
       &:focus {
         box-shadow: 0 0 0 3px rgba(var(--color-success), 0.25);
       }
     }
   }
-
+  
   &-textarea {
     resize: vertical;
     min-height: 100px;
   }
-
+  
   &-select {
     background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
     background-position: right 0.5rem center;
@@ -716,26 +674,26 @@ export const Card: React.FC<CardProps> = ({
     padding-right: 2.5rem;
     appearance: none;
   }
-
+  
   &-error {
     color: var(--color-danger);
     font-size: var(--font-size-sm);
     margin-top: var(--spacing-xs);
   }
-
+  
   &-help {
     color: var(--color-gray-600);
     font-size: var(--font-size-sm);
     margin-top: var(--spacing-xs);
   }
-
+  
   &-checkbox,
   &-radio {
     display: flex;
     align-items: center;
     gap: var(--spacing-sm);
     cursor: pointer;
-
+    
     input {
       width: 18px;
       height: 18px;
@@ -743,7 +701,7 @@ export const Card: React.FC<CardProps> = ({
       cursor: pointer;
     }
   }
-
+  
   &-submit {
     display: flex;
     gap: var(--spacing-md);
@@ -754,9 +712,9 @@ export const Card: React.FC<CardProps> = ({
 
 ```tsx
 // src/components/ThemeToggle/ThemeToggle.tsx
-import React from "react";
-import styled from "styled-components";
-import { useThemeStore } from "../../stores";
+import React from 'react';
+import styled from 'styled-components';
+import { useThemeStore } from '../../stores';
 
 const ToggleContainer = styled.div`
   display: flex;
@@ -766,7 +724,7 @@ const ToggleContainer = styled.div`
   border-radius: var(--border-radius-lg);
   background-color: var(--color-gray-100);
   border: 1px solid var(--color-gray-200);
-
+  
   @media (prefers-color-scheme: dark) {
     background-color: var(--color-gray-800);
     border-color: var(--color-gray-700);
@@ -777,22 +735,20 @@ const ToggleButton = styled.button<{ isActive: boolean }>`
   padding: var(--spacing-xs) var(--spacing-sm);
   border: none;
   border-radius: var(--border-radius-md);
-  background-color: ${(props) => (props.isActive ? "var(--color-primary)" : "transparent")};
-  color: ${(props) => (props.isActive ? "white" : "var(--color-gray-700)")};
+  background-color: ${props => props.isActive ? 'var(--color-primary)' : 'transparent'};
+  color: ${props => props.isActive ? 'white' : 'var(--color-gray-700)'};
   font-weight: var(--font-weight-medium);
   cursor: pointer;
   transition: all var(--transition-normal);
-
+  
   &:hover {
-    background-color: ${(props) =>
-      props.isActive ? "var(--color-primary-hover)" : "var(--color-gray-200)"};
+    background-color: ${props => props.isActive ? 'var(--color-primary-hover)' : 'var(--color-gray-200)'};
   }
-
+  
   @media (prefers-color-scheme: dark) {
-    color: ${(props) => (props.isActive ? "white" : "var(--color-gray-300)")};
+    color: ${props => props.isActive ? 'white' : 'var(--color-gray-300)'};
     &:hover {
-      background-color: ${(props) =>
-        props.isActive ? "var(--color-primary-hover)" : "var(--color-gray-700)"};
+      background-color: ${props => props.isActive ? 'var(--color-primary-hover)' : 'var(--color-gray-700)'};
     }
   }
 `;
@@ -802,13 +758,22 @@ export const ThemeToggle: React.FC = () => {
 
   return (
     <ToggleContainer>
-      <ToggleButton isActive={theme === "light"} onClick={() => setTheme("light")}>
+      <ToggleButton
+        isActive={theme === 'light'}
+        onClick={() => setTheme('light')}
+      >
         Light
       </ToggleButton>
-      <ToggleButton isActive={theme === "system"} onClick={() => setTheme("system")}>
+      <ToggleButton
+        isActive={theme === 'system'}
+        onClick={() => setTheme('system')}
+      >
         System
       </ToggleButton>
-      <ToggleButton isActive={theme === "dark"} onClick={() => setTheme("dark")}>
+      <ToggleButton
+        isActive={theme === 'dark'}
+        onClick={() => setTheme('dark')}
+      >
         Dark
       </ToggleButton>
     </ToggleContainer>
@@ -818,8 +783,8 @@ export const ThemeToggle: React.FC = () => {
 
 ```scss
 // src/styles/layout.scss
-@import "./variables";
-@import "./mixins";
+@import './variables';
+@import './mixins';
 
 .layout {
   min-height: 100vh;
@@ -833,7 +798,7 @@ export const ThemeToggle: React.FC = () => {
   position: sticky;
   top: 0;
   z-index: 50;
-
+  
   @media (prefers-color-scheme: dark) {
     background-color: var(--color-gray-900);
     border-bottom-color: var(--color-gray-700);
@@ -853,7 +818,7 @@ export const ThemeToggle: React.FC = () => {
   font-weight: var(--font-weight-bold);
   color: var(--color-primary);
   text-decoration: none;
-
+  
   &:hover {
     color: var(--color-primary-hover);
   }
@@ -861,7 +826,7 @@ export const ThemeToggle: React.FC = () => {
 
 .desktop-nav {
   display: none;
-
+  
   @include responsive(lg) {
     display: flex;
     gap: var(--spacing-lg);
@@ -874,20 +839,20 @@ export const ThemeToggle: React.FC = () => {
   padding: var(--spacing-sm);
   border-radius: var(--border-radius-md);
   transition: all var(--transition-normal);
-
+  
   &:hover {
     color: var(--color-primary);
     background-color: var(--color-gray-100);
   }
-
+  
   &.active {
     color: var(--color-primary);
     font-weight: var(--font-weight-semibold);
   }
-
+  
   @media (prefers-color-scheme: dark) {
     color: var(--color-gray-300);
-
+    
     &:hover {
       color: var(--color-primary);
       background-color: var(--color-gray-800);
@@ -906,17 +871,17 @@ export const ThemeToggle: React.FC = () => {
   border-radius: var(--border-radius-md);
   cursor: pointer;
   font-size: 1.5rem;
-
+  
   &:hover {
     background-color: var(--color-gray-100);
   }
-
+  
   @media (prefers-color-scheme: dark) {
     &:hover {
       background-color: var(--color-gray-800);
     }
   }
-
+  
   @include responsive(lg) {
     display: none;
   }
@@ -933,11 +898,11 @@ export const ThemeToggle: React.FC = () => {
   padding: var(--spacing-md);
   flex-direction: column;
   gap: var(--spacing-sm);
-
+  
   @include responsive(lg) {
     display: none;
   }
-
+  
   @media (prefers-color-scheme: dark) {
     background-color: var(--color-gray-900);
     border-bottom-color: var(--color-gray-700);
@@ -950,19 +915,19 @@ export const ThemeToggle: React.FC = () => {
   color: var(--color-gray-700);
   text-decoration: none;
   border-radius: var(--border-radius-md);
-
+  
   &:hover {
     background-color: var(--color-gray-100);
   }
-
+  
   &.active {
     color: var(--color-primary);
     font-weight: var(--font-weight-semibold);
   }
-
+  
   @media (prefers-color-scheme: dark) {
     color: var(--color-gray-300);
-
+    
     &:hover {
       background-color: var(--color-gray-800);
     }
@@ -980,7 +945,7 @@ export const ThemeToggle: React.FC = () => {
   background-color: white;
   border-top: 1px solid var(--color-gray-200);
   margin-top: auto;
-
+  
   @media (prefers-color-scheme: dark) {
     background-color: var(--color-gray-900);
     border-top-color: var(--color-gray-700);
@@ -993,11 +958,11 @@ export const ThemeToggle: React.FC = () => {
   justify-content: space-between;
   align-items: center;
   padding: var(--spacing-lg) 0;
-
+  
   @include responsive(md) {
     flex-direction: row;
   }
-
+  
   @include responsive(sm) {
     flex-direction: column;
     gap: var(--spacing-md);
@@ -1007,18 +972,18 @@ export const ThemeToggle: React.FC = () => {
 .footer-links {
   display: flex;
   gap: var(--spacing-lg);
-
+  
   a {
     color: var(--color-gray-600);
     text-decoration: none;
-
+    
     &:hover {
       color: var(--color-primary);
     }
-
+    
     @media (prefers-color-scheme: dark) {
       color: var(--color-gray-400);
-
+      
       &:hover {
         color: var(--color-primary);
       }
@@ -1028,7 +993,6 @@ export const ThemeToggle: React.FC = () => {
 ```
 
 ## Notes
-
 - Use CSS Modules for component-scoped styles to avoid conflicts
 - Implement responsive design with mobile-first approach
 - Use CSS custom properties for theming and dark mode support

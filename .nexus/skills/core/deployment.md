@@ -16,15 +16,12 @@ status: active
 # Skill: Deployment (Shared)
 
 ## When to Read This
-
 Read this skill when setting up deployment pipelines, configuring environments, or deploying applications to production.
 
 ## Context
-
 This project follows modern deployment practices with automated CI/CD pipelines, environment isolation, and zero-downtime deployments. We use containerization, infrastructure as code, and monitoring to ensure reliable and scalable deployments. The deployment process should be repeatable, automated, and safe for production environments.
 
 ## Steps
-
 1. Set up CI/CD pipeline with automated testing and deployment
 2. Configure environment-specific settings and secrets
 3. Use containerization (Docker) for consistent deployments
@@ -35,7 +32,6 @@ This project follows modern deployment practices with automated CI/CD pipelines,
 8. Document deployment procedures and runbooks
 
 ## Patterns We Use
-
 - CI/CD: GitHub Actions, GitLab CI, or similar for automated pipelines
 - Containerization: Docker with multi-stage builds for optimization
 - Environment management: Separate configs for dev, staging, production
@@ -46,7 +42,6 @@ This project follows modern deployment practices with automated CI/CD pipelines,
 - Rollback strategies: Automated rollback on deployment failures
 
 ## Anti-Patterns — Never Do This
-
 - ❌ Do not deploy directly to production without testing
 - ❌ Do not hardcode secrets or credentials in code
 - ❌ Do not skip automated testing in deployment pipeline
@@ -80,9 +75,9 @@ jobs:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
         with:
-          node-version: "18"
-          cache: "npm"
-
+          node-version: '18'
+          cache: 'npm'
+      
       - run: npm ci
       - run: npm run lint
       - run: npm run typecheck
@@ -95,24 +90,24 @@ jobs:
     permissions:
       contents: read
       packages: write
-
+    
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
         with:
-          node-version: "18"
-          cache: "npm"
-
+          node-version: '18'
+          cache: 'npm'
+      
       - run: npm ci
       - run: npm run build
-
+      
       - name: Log in to Container Registry
         uses: docker/login-action@v2
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-
+      
       - name: Extract metadata
         id: meta
         uses: docker/metadata-action@v4
@@ -122,7 +117,7 @@ jobs:
             type=ref,event=branch
             type=ref,event=pr
             type=sha,prefix={{branch}}-
-
+      
       - name: Build and push Docker image
         uses: docker/build-push-action@v4
         with:
@@ -138,28 +133,28 @@ jobs:
     runs-on: ubuntu-latest
     environment: staging
     if: github.ref == 'refs/heads/main'
-
+    
     steps:
       - name: Deploy to staging
         uses: azure/webapps-deploy@v2
         with:
-          app-name: "my-app-staging"
+          app-name: 'my-app-staging'
           publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE_STAGING }}
-          images: "${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}"
+          images: '${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}'
 
   deploy-production:
     needs: [build-and-push, deploy-staging]
     runs-on: ubuntu-latest
     environment: production
     if: github.ref == 'refs/heads/main'
-
+    
     steps:
       - name: Deploy to production
         uses: azure/webapps-deploy@v2
         with:
-          app-name: "my-app-production"
+          app-name: 'my-app-production'
           publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE_PRODUCTION }}
-          images: "${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}"
+          images: '${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}'
 ```
 
 ```dockerfile
@@ -207,7 +202,7 @@ CMD ["node", "dist/server.js"]
 ```yaml
 # ✅ Docker Compose for local development
 # docker-compose.yml
-version: "3.8"
+version: '3.8'
 
 services:
   app:
@@ -248,7 +243,7 @@ volumes:
 // ✅ Environment configuration management
 // config/environment.ts
 interface EnvironmentConfig {
-  nodeEnv: "development" | "production" | "test";
+  nodeEnv: 'development' | 'production' | 'test';
   port: number;
   database: {
     url: string;
@@ -263,30 +258,30 @@ interface EnvironmentConfig {
     expiresIn: string;
   };
   logging: {
-    level: "debug" | "info" | "warn" | "error";
+    level: 'debug' | 'info' | 'warn' | 'error';
   };
 }
 
 function loadEnvironment(): EnvironmentConfig {
-  const nodeEnv = (process.env.NODE_ENV as EnvironmentConfig["nodeEnv"]) || "development";
-
+  const nodeEnv = (process.env.NODE_ENV as EnvironmentConfig['nodeEnv']) || 'development';
+  
   return {
     nodeEnv,
-    port: parseInt(process.env.PORT || "3000", 10),
+    port: parseInt(process.env.PORT || '3000', 10),
     database: {
       url: process.env.DATABASE_URL!,
-      maxConnections: parseInt(process.env.DB_MAX_CONNECTIONS || "10", 10),
+      maxConnections: parseInt(process.env.DB_MAX_CONNECTIONS || '10', 10),
     },
     redis: {
       url: process.env.REDIS_URL!,
-      maxRetries: parseInt(process.env.REDIS_MAX_RETRIES || "3", 10),
+      maxRetries: parseInt(process.env.REDIS_MAX_RETRIES || '3', 10),
     },
     jwt: {
       secret: process.env.JWT_SECRET!,
-      expiresIn: process.env.JWT_EXPIRES_IN || "24h",
+      expiresIn: process.env.JWT_EXPIRES_IN || '24h',
     },
     logging: {
-      level: (process.env.LOG_LEVEL as EnvironmentConfig["logging"]["level"]) || "info",
+      level: (process.env.LOG_LEVEL as EnvironmentConfig['logging']['level']) || 'info',
     },
   };
 }
@@ -298,86 +293,86 @@ export const config = loadEnvironment();
 # ✅ Terraform for infrastructure as code
 # terraform/main.tf
 provider "aws" {
-region = var.aws_region
+  region = var.aws_region
 }
 
 resource "aws_s3_bucket" "app_bucket" {
-bucket = "${var.app_name}-assets-${random_id.bucket_suffix.hex}"
-acl    = "private"
-
-versioning {
-enabled = true
-}
-
-server_side_encryption_configuration {
-rule {
-apply_server_side_encryption_by_default {
-sse_algorithm = "AES256"
-}
-}
-}
+  bucket = "${var.app_name}-assets-${random_id.bucket_suffix.hex}"
+  acl    = "private"
+  
+  versioning {
+    enabled = true
+  }
+  
+  server_side_encryption_configuration {
+    rule {
+      apply_server_side_encryption_by_default {
+        sse_algorithm = "AES256"
+      }
+    }
+  }
 }
 
 resource "aws_rds_cluster" "app_database" {
-cluster_identifier = "${var.app_name}-cluster"
-engine             = "aurora-postgresql"
-engine_version     = "14.9"
-database_name      = var.database_name
-master_username    = var.database_username
-master_password    = var.database_password
-
-backup_retention_period = 7
-preferred_backup_window = "03:00-04:00"
-
-vpc_security_group_ids = [aws_security_group.database.id]
-db_subnet_group_name   = aws_db_subnet_group.app_subnet_group.name
-
-tags = {
-Environment = var.environment
-Project     = var.app_name
-}
+  cluster_identifier = "${var.app_name}-cluster"
+  engine             = "aurora-postgresql"
+  engine_version     = "14.9"
+  database_name      = var.database_name
+  master_username    = var.database_username
+  master_password    = var.database_password
+  
+  backup_retention_period = 7
+  preferred_backup_window = "03:00-04:00"
+  
+  vpc_security_group_ids = [aws_security_group.database.id]
+  db_subnet_group_name   = aws_db_subnet_group.app_subnet_group.name
+  
+  tags = {
+    Environment = var.environment
+    Project     = var.app_name
+  }
 }
 
 resource "aws_app_service" "app" {
-name       = var.app_name
-region     = var.aws_region
-account_id = var.aws_account_id
-
-source_configuration {
-bucket_name = aws_s3_bucket.app_bucket.bucket
-bucket_key  = "app.zip"
-}
-
-environment {
-NODE_ENV = var.environment
-PORT     = "3000"
-}
-
-scaling {
-min_capacity = 2
-max_capacity = 10
-}
+  name       = var.app_name
+  region     = var.aws_region
+  account_id = var.aws_account_id
+  
+  source_configuration {
+    bucket_name = aws_s3_bucket.app_bucket.bucket
+    bucket_key  = "app.zip"
+  }
+  
+  environment {
+    NODE_ENV = var.environment
+    PORT     = "3000"
+  }
+  
+  scaling {
+    min_capacity = 2
+    max_capacity = 10
+  }
 }
 ```
 
 ```typescript
 // ✅ Health check endpoint
 // src/health.ts
-import { Request, Response } from "express";
-import { database } from "./database";
-import { redis } from "./redis";
+import { Request, Response } from 'express';
+import { database } from './database';
+import { redis } from './redis';
 
 interface HealthCheck {
-  status: "healthy" | "unhealthy";
+  status: 'healthy' | 'unhealthy';
   timestamp: string;
   uptime: number;
   services: {
     database: {
-      status: "healthy" | "unhealthy";
+      status: 'healthy' | 'unhealthy';
       responseTime?: number;
     };
     redis: {
-      status: "healthy" | "unhealthy";
+      status: 'healthy' | 'unhealthy';
       responseTime?: number;
     };
   };
@@ -386,12 +381,12 @@ interface HealthCheck {
 export async function healthCheck(req: Request, res: Response): Promise<void> {
   const startTime = Date.now();
   const health: HealthCheck = {
-    status: "healthy",
+    status: 'healthy',
     timestamp: new Date().toISOString(),
     uptime: process.uptime(),
     services: {
-      database: { status: "healthy" },
-      redis: { status: "healthy" },
+      database: { status: 'healthy' },
+      redis: { status: 'healthy' },
     },
   };
 
@@ -401,8 +396,8 @@ export async function healthCheck(req: Request, res: Response): Promise<void> {
     await database.$queryRaw`SELECT 1`;
     health.services.database.responseTime = Date.now() - dbStart;
   } catch (error) {
-    health.services.database.status = "unhealthy";
-    health.status = "unhealthy";
+    health.services.database.status = 'unhealthy';
+    health.status = 'unhealthy';
   }
 
   try {
@@ -411,17 +406,16 @@ export async function healthCheck(req: Request, res: Response): Promise<void> {
     await redis.ping();
     health.services.redis.responseTime = Date.now() - redisStart;
   } catch (error) {
-    health.services.redis.status = "unhealthy";
-    health.status = "unhealthy";
+    health.services.redis.status = 'unhealthy';
+    health.status = 'unhealthy';
   }
 
-  const statusCode = health.status === "healthy" ? 200 : 503;
+  const statusCode = health.status === 'healthy' ? 200 : 503;
   res.status(statusCode).json(health);
 }
 ```
 
 ## Notes
-
 - Use blue-green or rolling deployments for zero-downtime deployments
 - Implement proper health checks and readiness probes
 - Use environment variables for all configuration

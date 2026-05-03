@@ -15,15 +15,12 @@ status: active
 # Skill: Component Creation (React + Vite)
 
 ## When to Read This
-
 Read this skill when creating new React components, designing component architecture, or establishing component patterns in a React + Vite application.
 
 ## Context
-
 This project follows a component-based architecture with clear separation of concerns, consistent naming conventions, and reusable patterns. We use functional components with hooks, TypeScript for type safety, and a structured approach to component organization. Components are designed to be composable, testable, and maintainable with proper prop interfaces and documentation.
 
 ## Steps
-
 1. Define component purpose and responsibilities
 2. Create TypeScript interfaces for props and state
 3. Implement component with proper hooks and state management
@@ -34,7 +31,6 @@ This project follows a component-based architecture with clear separation of con
 8. Document component usage and props
 
 ## Patterns We Use
-
 - Functional components: Use modern React patterns with hooks
 - TypeScript: Define clear interfaces for all props and state
 - Composition: Design components to be composable and reusable
@@ -45,7 +41,6 @@ This project follows a component-based architecture with clear separation of con
 - Custom hooks: Extract reusable logic into custom hooks
 
 ## Anti-Patterns — Never Do This
-
 - ❌ Do not create overly complex components with too many responsibilities
 - ❌ Do not ignore TypeScript for component props
 - ❌ Do not hardcode values in components
@@ -59,11 +54,11 @@ This project follows a component-based architecture with clear separation of con
 
 ```tsx
 // src/components/Button/Button.tsx
-import React from "react";
-import styles from "./Button.module.scss";
+import React from 'react';
+import styles from './Button.module.scss';
 
-type ButtonVariant = "primary" | "secondary" | "ghost" | "danger";
-type ButtonSize = "small" | "medium" | "large";
+type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger';
+type ButtonSize = 'small' | 'medium' | 'large';
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: ButtonVariant;
@@ -78,36 +73,36 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   (
     {
       children,
-      variant = "primary",
-      size = "medium",
+      variant = 'primary',
+      size = 'medium',
       isLoading = false,
       leftIcon,
       rightIcon,
-      className = "",
+      className = '',
       disabled,
       onClick,
       ...props
     },
-    ref,
+    ref
   ) => {
     const buttonClasses = [
       styles.button,
       styles[`button--${variant}`],
       styles[`button--${size}`],
-      isLoading && styles["button--loading"],
-      leftIcon && styles["button--icon"],
-      rightIcon && styles["button--icon"],
+      isLoading && styles['button--loading'],
+      leftIcon && styles['button--icon'],
+      rightIcon && styles['button--icon'],
       className,
     ]
       .filter(Boolean)
-      .join(" ");
+      .join(' ');
 
     const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
       if (isLoading || disabled) {
         event.preventDefault();
         return;
       }
-
+      
       onClick?.(event);
     };
 
@@ -126,23 +121,16 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         {isLoading && (
           <span className={styles.button__spinner} aria-hidden="true">
             <svg className={styles.button__spinnerIcon} viewBox="0 0 50 50">
-              <circle
-                className={styles.button__spinnerPath}
-                cx="25"
-                cy="25"
-                r="20"
-                fill="none"
-                strokeWidth="4"
-              />
+              <circle className={styles.button__spinnerPath} cx="25" cy="25" r="20" fill="none" strokeWidth="4" />
             </svg>
           </span>
         )}
       </button>
     );
-  },
+  }
 );
 
-Button.displayName = "Button";
+Button.displayName = 'Button';
 ```
 
 ```scss
@@ -162,84 +150,84 @@ Button.displayName = "Button";
   text-decoration: none;
   user-select: none;
   position: relative;
-
+  
   &:hover {
     transform: translateY(-1px);
   }
-
+  
   &:active {
     transform: translateY(0);
   }
-
+  
   &:disabled {
     opacity: 0.6;
     cursor: not-allowed;
     transform: none;
     pointer-events: none;
   }
-
+  
   // Variants
   &--primary {
     background-color: var(--color-primary);
     color: white;
     border-color: var(--color-primary);
-
+    
     &:hover:not(:disabled) {
       background-color: var(--color-primary-hover);
       border-color: var(--color-primary-hover);
     }
   }
-
+  
   &--secondary {
     background-color: transparent;
     color: var(--color-primary);
     border-color: var(--color-primary);
-
+    
     &:hover:not(:disabled) {
       background-color: var(--color-primary);
       color: white;
     }
   }
-
+  
   &--ghost {
     background-color: transparent;
     color: var(--color-gray-700);
     border-color: transparent;
-
+    
     &:hover:not(:disabled) {
       background-color: var(--color-gray-100);
       color: var(--color-gray-900);
     }
   }
-
+  
   &--danger {
     background-color: var(--color-danger);
     color: white;
     border-color: var(--color-danger);
-
+    
     &:hover:not(:disabled) {
       background-color: darken(var(--color-danger), 10%);
       border-color: darken(var(--color-danger), 10%);
     }
   }
-
+  
   // Sizes
   &--small {
     padding: var(--spacing-xs) var(--spacing-sm);
     font-size: var(--font-size-sm);
   }
-
+  
   &--large {
     padding: var(--spacing-md) var(--spacing-lg);
     font-size: var(--font-size-lg);
   }
-
+  
   // States
   &--loading {
     pointer-events: none;
-
+    
     &::after {
-      content: "";
+      content: '';
       position: absolute;
       top: 50%;
       left: 50%;
@@ -252,24 +240,24 @@ Button.displayName = "Button";
       animation: button-spin 1s linear infinite;
     }
   }
-
+  
   // Icon button
   &--icon {
     padding: var(--spacing-sm);
-
+    
     .button__icon {
       margin-right: var(--spacing-xs);
     }
-
+    
     &.button--icon-only {
       padding: var(--spacing-sm);
-
+      
       .button__icon {
         margin-right: 0;
       }
     }
   }
-
+  
   // Spinner
   &__spinner {
     position: absolute;
@@ -277,13 +265,13 @@ Button.displayName = "Button";
     left: 50%;
     transform: translate(-50%, -50%);
   }
-
+  
   &__spinnerIcon {
     width: 16px;
     height: 16px;
     animation: button-spin 1s linear infinite;
   }
-
+  
   &__spinnerPath {
     stroke: currentColor;
     stroke-linecap: round;
@@ -292,9 +280,7 @@ Button.displayName = "Button";
 }
 
 @keyframes button-spin {
-  to {
-    transform: rotate(360deg);
-  }
+  to { transform: rotate(360deg); }
 }
 
 @keyframes spinner-dash {
@@ -315,13 +301,13 @@ Button.displayName = "Button";
 
 ```tsx
 // src/components/Card/Card.tsx
-import React from "react";
-import styled from "styled-components";
+import React from 'react';
+import styled from 'styled-components';
 
 interface CardProps {
   children: React.ReactNode;
-  variant?: "default" | "elevated" | "outlined";
-  padding?: "small" | "medium" | "large";
+  variant?: 'default' | 'elevated' | 'outlined';
+  padding?: 'small' | 'medium' | 'large';
   className?: string;
   onClick?: () => void;
 }
@@ -329,60 +315,47 @@ interface CardProps {
 const StyledCard = styled.div<CardProps>`
   background-color: white;
   border-radius: var(--border-radius-lg);
-  box-shadow: ${(props) => {
+  box-shadow: ${props => {
     switch (props.variant) {
-      case "elevated":
-        return "var(--shadow-lg)";
-      case "outlined":
-        return "none";
-      default:
-        return "var(--shadow-md)";
+      case 'elevated': return 'var(--shadow-lg)';
+      case 'outlined': return 'none';
+      default: return 'var(--shadow-md)';
     }
   }};
-  border: ${(props) => (props.variant === "outlined" ? "1px solid var(--color-gray-200)" : "none")};
-  padding: ${(props) => {
+  border: ${props => props.variant === 'outlined' ? '1px solid var(--color-gray-200)' : 'none'};
+  padding: ${props => {
     switch (props.padding) {
-      case "small":
-        return "var(--spacing-sm)";
-      case "large":
-        return "var(--spacing-xl)";
-      default:
-        return "var(--spacing-md)";
+      case 'small': return 'var(--spacing-sm)';
+      case 'large': return 'var(--spacing-xl)';
+      default: return 'var(--spacing-md)';
     }
   }};
-
-  transition:
-    box-shadow var(--transition-normal),
-    transform var(--transition-normal);
-
+  
+  transition: box-shadow var(--transition-normal), transform var(--transition-normal);
+  
   &:hover {
-    ${(props) =>
-      props.onClick &&
-      `
+    ${props => props.onClick && `
       cursor: pointer;
-      ${
-        props.variant === "elevated" &&
-        `
+      ${props.variant === 'elevated' && `
         transform: translateY(-2px);
         box-shadow: var(--shadow-xl);
-      `
-      }
+      `}
     `}
   }
-
+  
   @media (prefers-color-scheme: dark) {
     background-color: var(--color-gray-800);
     border-color: var(--color-gray-700);
   }
 `;
 
-export const Card: React.FC<CardProps> = ({
-  children,
-  variant = "default",
-  padding = "medium",
-  className,
+export const Card: React.FC<CardProps> = ({ 
+  children, 
+  variant = 'default', 
+  padding = 'medium', 
+  className, 
   onClick,
-  ...props
+  ...props 
 }) => {
   return (
     <StyledCard
@@ -400,38 +373,48 @@ export const Card: React.FC<CardProps> = ({
 
 ```tsx
 // src/components/Form/Input/Input.tsx
-import React from "react";
-import styles from "./Input.module.scss";
+import React from 'react';
+import styles from './Input.module.scss';
 
-type InputType = "text" | "email" | "password" | "number" | "tel" | "url";
+type InputType = 'text' | 'email' | 'password' | 'number' | 'tel' | 'url';
 
-interface InputProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "size"> {
+interface InputProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'size'> {
   label?: string;
   error?: string;
   helpText?: string;
-  size?: "small" | "medium" | "large";
+  size?: 'small' | 'medium' | 'large';
   leftIcon?: React.ReactNode;
   rightIcon?: React.ReactNode;
 }
 
 export const Input = React.forwardRef<HTMLInputElement, InputProps>(
   (
-    { label, error, helpText, size = "medium", leftIcon, rightIcon, className = "", id, ...props },
-    ref,
+    {
+      label,
+      error,
+      helpText,
+      size = 'medium',
+      leftIcon,
+      rightIcon,
+      className = '',
+      id,
+      ...props
+    },
+    ref
   ) => {
     const inputId = id || React.useId();
     const hasError = Boolean(error);
-
+    
     const inputClasses = [
       styles.input,
       styles[`input--${size}`],
-      hasError && styles["input--error"],
-      leftIcon && styles["input--icon-left"],
-      rightIcon && styles["input--icon-right"],
+      hasError && styles['input--error'],
+      leftIcon && styles['input--icon-left'],
+      rightIcon && styles['input--icon-right'],
       className,
     ]
       .filter(Boolean)
-      .join(" ");
+      .join(' ');
 
     return (
       <div className={styles.inputWrapper}>
@@ -440,42 +423,40 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
             {label}
           </label>
         )}
-
+        
         <div className={styles.inputContainer}>
           {leftIcon && (
             <span className={styles.inputIconLeft} aria-hidden="true">
               {leftIcon}
             </span>
           )}
-
+          
           <input
             ref={ref}
             id={inputId}
             className={inputClasses}
             aria-invalid={hasError}
-            aria-describedby={[
-              label && `${inputId}-label`,
-              error && `${inputId}-error`,
-              helpText && `${inputId}-help`,
-            ]
-              .filter(Boolean)
-              .join(" ")}
+            aria-describedby={
+              [label && `${inputId}-label`, error && `${inputId}-error`, helpText && `${inputId}-help`]
+                .filter(Boolean)
+                .join(' ')
+            }
             {...props}
           />
-
+          
           {rightIcon && (
             <span className={styles.inputIconRight} aria-hidden="true">
               {rightIcon}
             </span>
           )}
         </div>
-
+        
         {error && (
           <span id={`${inputId}-error`} className={styles.inputError} role="alert">
             {error}
           </span>
         )}
-
+        
         {helpText && (
           <span id={`${inputId}-help`} className={styles.inputHelp}>
             {helpText}
@@ -483,10 +464,10 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
         )}
       </div>
     );
-  },
+  }
 );
 
-Input.displayName = "Input";
+Input.displayName = 'Input';
 ```
 
 ```scss
@@ -515,56 +496,54 @@ Input.displayName = "Input";
   border: var(--border-width) solid var(--color-gray-300);
   border-radius: var(--border-radius-md);
   font-size: var(--font-size-base);
-  transition:
-    border-color var(--transition-normal),
-    box-shadow var(--transition-normal);
+  transition: border-color var(--transition-normal), box-shadow var(--transition-normal);
   background-color: white;
-
+  
   &:focus {
     outline: none;
     border-color: var(--color-primary);
     box-shadow: 0 0 0 3px rgba(var(--color-primary), 0.25);
   }
-
+  
   &:hover {
     border-color: var(--color-gray-400);
   }
-
+  
   &:disabled {
     background-color: var(--color-gray-100);
     color: var(--color-gray-500);
     cursor: not-allowed;
   }
-
+  
   &::placeholder {
     color: var(--color-gray-400);
   }
-
+  
   // Sizes
   &--small {
     padding: var(--spacing-xs) var(--spacing-sm);
     font-size: var(--font-size-sm);
   }
-
+  
   &--large {
     padding: var(--spacing-md) var(--spacing-lg);
     font-size: var(--font-size-lg);
   }
-
+  
   // States
   &--error {
     border-color: var(--color-danger);
-
+    
     &:focus {
       box-shadow: 0 0 0 3px rgba(var(--color-danger), 0.25);
     }
   }
-
+  
   // Icons
   &--icon-left {
     padding-left: var(--spacing-lg);
   }
-
+  
   &--icon-right {
     padding-right: var(--spacing-lg);
   }
@@ -601,41 +580,36 @@ Input.displayName = "Input";
 
 ```tsx
 // src/components/Modal/Modal.tsx
-import React, { useEffect, useRef } from "react";
-import { createPortal } from "react-dom";
-import { useClickOutside } from "../../hooks/useClickOutside";
-import styles from "./Modal.module.scss";
+import React, { useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
+import { useClickOutside } from '../../hooks/useClickOutside';
+import styles from './Modal.module.scss';
 
 interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
   title?: string;
   children: React.ReactNode;
-  size?: "small" | "medium" | "large";
+  size?: 'small' | 'medium' | 'large';
   closeOnOverlayClick?: boolean;
   closeOnEscape?: boolean;
 }
 
-export function Modal({
-  isOpen,
-  onClose,
-  title,
-  children,
-  size = "medium",
+export function Modal({ 
+  isOpen, 
+  onClose, 
+  title, 
+  children, 
+  size = 'medium',
   closeOnOverlayClick = true,
-  closeOnEscape = true,
+  closeOnEscape = true 
 }: ModalProps) {
   const modalRef = useRef<HTMLDivElement>(null);
   const previousActiveElement = useRef<HTMLElement | null>(null);
 
   // Handle click outside
   useClickOutside(modalRef, (event) => {
-    if (
-      isOpen &&
-      closeOnOverlayClick &&
-      modalRef.current &&
-      !modalRef.current.contains(event.target as Node)
-    ) {
+    if (isOpen && closeOnOverlayClick && modalRef.current && !modalRef.current.contains(event.target as Node)) {
       onClose();
     }
   });
@@ -645,13 +619,13 @@ export function Modal({
     if (!isOpen) return;
 
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && closeOnEscape) {
+      if (e.key === 'Escape' && closeOnEscape) {
         onClose();
       }
     };
 
-    document.addEventListener("keydown", handleKeyDown);
-    return () => document.removeEventListener("keydown", handleKeyDown);
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, closeOnEscape, onClose]);
 
   // Focus management
@@ -659,12 +633,12 @@ export function Modal({
     if (isOpen) {
       // Store the previously focused element
       previousActiveElement.current = document.activeElement as HTMLElement;
-
+      
       // Focus the modal
       const focusableElement = modalRef.current?.querySelector(
-        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
       ) as HTMLElement;
-
+      
       if (focusableElement) {
         focusableElement.focus();
       }
@@ -721,11 +695,13 @@ export function Modal({
             )}
           </div>
         )}
-
-        <div className={styles.modalBody}>{children}</div>
+        
+        <div className={styles.modalBody}>
+          {children}
+        </div>
       </div>
     </div>,
-    document.body,
+    document.body
   );
 }
 ```
@@ -755,20 +731,20 @@ export function Modal({
   overflow: hidden;
   display: flex;
   flex-direction: column;
-
+  
   @media (prefers-color-scheme: dark) {
     background: var(--color-gray-800);
   }
-
+  
   // Sizes
   &--small {
     max-width: 400px;
   }
-
+  
   &--medium {
     max-width: 600px;
   }
-
+  
   &--large {
     max-width: 800px;
   }
@@ -780,7 +756,7 @@ export function Modal({
   justify-content: space-between;
   padding: var(--spacing-md);
   border-bottom: 1px solid var(--color-gray-200);
-
+  
   @media (prefers-color-scheme: dark) {
     border-bottom-color: var(--color-gray-700);
   }
@@ -791,7 +767,7 @@ export function Modal({
   font-size: var(--font-size-xl);
   font-weight: var(--font-weight-semibold);
   color: var(--color-gray-900);
-
+  
   @media (prefers-color-scheme: dark) {
     color: var(--color-gray-100);
   }
@@ -807,16 +783,16 @@ export function Modal({
   align-items: center;
   justify-content: center;
   transition: background-color var(--transition-normal);
-
+  
   &:hover {
     background-color: var(--color-gray-100);
   }
-
+  
   &:focus {
     outline: 2px solid var(--color-primary);
     outline-offset: 2px;
   }
-
+  
   @media (prefers-color-scheme: dark) {
     &:hover {
       background-color: var(--color-gray-700);
@@ -832,10 +808,10 @@ export function Modal({
 
 ```tsx
 // src/components/DataTable/DataTable.tsx
-import React, { useState, useMemo } from "react";
-import { useTable, useSortBy, usePagination } from "react-table";
-import { TableProps } from "./types";
-import styles from "./DataTable.module.scss";
+import React, { useState, useMemo } from 'react';
+import { useTable, useSortBy, usePagination } from 'react-table';
+import { TableProps } from './types';
+import styles from './DataTable.module.scss';
 
 export function DataTable<T extends Record<string, any>>({
   columns,
@@ -844,8 +820,8 @@ export function DataTable<T extends Record<string, any>>({
   sortable = true,
   paginated = true,
   loading = false,
-  emptyMessage = "No data available",
-  className = "",
+  emptyMessage = 'No data available',
+  className = '',
 }: TableProps<T>) {
   const [pageIndex, setPageIndex] = useState(0);
 
@@ -870,22 +846,22 @@ export function DataTable<T extends Record<string, any>>({
       },
     },
     useSortBy,
-    usePagination,
+    usePagination
   );
 
   const sortedData = useMemo(() => {
     if (!sortable || !sortBy.length) return data;
-
+    
     const sorted = [...data].sort((a, b) => {
       const { id, desc } = sortBy[0];
       const aValue = a[id];
       const bValue = b[id];
-
+      
       if (aValue < bValue) return desc ? 1 : -1;
       if (aValue > bValue) return desc ? -1 : 1;
       return 0;
     });
-
+    
     return sorted;
   }, [data, sortBy, sortable]);
 
@@ -896,25 +872,27 @@ export function DataTable<T extends Record<string, any>>({
       <div className={styles.tableWrapper}>
         <table {...getTableProps()} className={styles.table}>
           <thead>
-            {headerGroups.map((headerGroup) => (
+            {headerGroups.map(headerGroup => (
               <tr {...headerGroup.getHeaderGroupProps()} key={headerGroup.id}>
-                {headerGroup.headers.map((column) => (
+                {headerGroup.headers.map(column => (
                   <th
-                    {...column.getHeaderProps(sortable && column.getSortByToggleProps())}
+                    {...column.getHeaderProps(
+                      sortable && column.getSortByToggleProps()
+                    )}
                     className={`${styles.tableHeader} ${
-                      column.isSorted
-                        ? column.isSortedDesc
-                          ? styles.sortDesc
-                          : styles.sortAsc
-                        : ""
+                      column.isSorted ? (column.isSortedDesc ? styles.sortDesc : styles.sortAsc) : ''
                     }`}
                     key={column.id}
                   >
                     <div className={styles.headerContent}>
-                      {column.render("Header")}
+                      {column.render('Header')}
                       {sortable && (
                         <span className={styles.sortIndicator}>
-                          {column.isSorted ? (column.isSortedDesc ? " ↓" : " ↑") : "↕"}
+                          {column.isSorted ? (
+                            column.isSortedDesc ? ' ↓' : ' ↑'
+                          ) : (
+                            '↕'
+                          )}
                         </span>
                       )}
                     </div>
@@ -941,13 +919,9 @@ export function DataTable<T extends Record<string, any>>({
                 prepareRow(row);
                 return (
                   <tr {...row.getRowProps()} key={row.id}>
-                    {row.cells.map((cell) => (
-                      <td
-                        {...cell.getCellProps()}
-                        className={styles.tableCell}
-                        key={cell.column.id}
-                      >
-                        {cell.render("Cell")}
+                    {row.cells.map(cell => (
+                      <td {...cell.getCellProps()} className={styles.tableCell} key={cell.column.id}>
+                        {cell.render('Cell')}
                       </td>
                     ))}
                   </tr>
@@ -963,7 +937,7 @@ export function DataTable<T extends Record<string, any>>({
           <div className={styles.paginationInfo}>
             Page {pageIndex + 1} of {pageCount}
           </div>
-
+          
           <div className={styles.paginationControls}>
             <button
               onClick={() => gotoPage(0)}
@@ -1033,7 +1007,7 @@ export interface TableProps<T extends Record<string, any>> {
   overflow-x: auto;
   border-radius: var(--border-radius-md);
   border: 1px solid var(--color-gray-200);
-
+  
   @media (prefers-color-scheme: dark) {
     border-color: var(--color-gray-700);
   }
@@ -1043,7 +1017,7 @@ export interface TableProps<T extends Record<string, any>> {
   width: 100%;
   border-collapse: collapse;
   background-color: white;
-
+  
   @media (prefers-color-scheme: dark) {
     background-color: var(--color-gray-800);
   }
@@ -1061,16 +1035,16 @@ export interface TableProps<T extends Record<string, any>> {
   z-index: 1;
   cursor: pointer;
   transition: background-color var(--transition-normal);
-
+  
   &:hover {
     background-color: var(--color-gray-100);
   }
-
+  
   @media (prefers-color-scheme: dark) {
     background-color: var(--color-gray-700);
     color: var(--color-gray-200);
     border-bottom-color: var(--color-gray-600);
-
+    
     &:hover {
       background-color: var(--color-gray-600);
     }
@@ -1102,7 +1076,7 @@ export interface TableProps<T extends Record<string, any>> {
   border-bottom: 1px solid var(--color-gray-100);
   font-size: var(--font-size-base);
   color: var(--color-gray-900);
-
+  
   @media (prefers-color-scheme: dark) {
     border-bottom-color: var(--color-gray-700);
     color: var(--color-gray-100);
@@ -1124,7 +1098,7 @@ export interface TableProps<T extends Record<string, any>> {
   padding: var(--spacing-md);
   border-top: 1px solid var(--color-gray-200);
   background-color: var(--color-gray-50);
-
+  
   @media (prefers-color-scheme: dark) {
     border-top-color: var(--color-gray-700);
     background-color: var(--color-gray-700);
@@ -1149,23 +1123,23 @@ export interface TableProps<T extends Record<string, any>> {
   cursor: pointer;
   font-size: var(--font-size-sm);
   transition: all var(--transition-normal);
-
+  
   &:hover:not(:disabled) {
     background-color: var(--color-primary);
     color: white;
     border-color: var(--color-primary);
   }
-
+  
   &:disabled {
     opacity: 0.5;
     cursor: not-allowed;
   }
-
+  
   @media (prefers-color-scheme: dark) {
     background-color: var(--color-gray-600);
     border-color: var(--color-gray-500);
     color: var(--color-gray-100);
-
+    
     &:hover:not(:disabled) {
       background-color: var(--color-primary);
       border-color: var(--color-primary);
@@ -1175,7 +1149,6 @@ export interface TableProps<T extends Record<string, any>> {
 ```
 
 ## Notes
-
 - Use TypeScript for all component props and state
 - Follow consistent naming conventions (PascalCase for components)
 - Implement proper accessibility features (ARIA attributes, keyboard navigation)

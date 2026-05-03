@@ -16,15 +16,12 @@ status: active
 # Skill: Internationalization (React + Vite)
 
 ## When to Read This
-
 Read this skill when implementing multi-language support, handling date/number formatting, or designing for global audiences in a React + Vite application.
 
 ## Context
-
 This project supports multiple languages and regions using i18next with react-i18next. We follow a consistent approach for translation management, locale detection, and content formatting. All user-facing text should be externalized and translatable, with proper handling of pluralization, context, and RTL languages when needed.
 
 ## Steps
-
 1. Extract all user-facing text into translation files
 2. Use translation keys instead of hardcoded strings
 3. Implement locale detection and switching
@@ -35,7 +32,6 @@ This project supports multiple languages and regions using i18next with react-i1
 8. Implement fallback mechanisms for missing translations
 
 ## Patterns We Use
-
 - Translation files: JSON-based with hierarchical keys
 - Translation library: i18next with react-i18next integration
 - Locale detection: Browser settings, URL parameters, or user preferences
@@ -46,7 +42,6 @@ This project supports multiple languages and regions using i18next with react-i1
 - Translation management: Use tools like Lokalise, Crowdin, or manual processes
 
 ## Anti-Patterns — Never Do This
-
 - ❌ Do not hardcode text strings in components
 - ❌ Do not assume English is the default for all users
 - ❌ Do not concatenate translated strings (breaks grammar)
@@ -60,15 +55,15 @@ This project supports multiple languages and regions using i18next with react-i1
 
 ```typescript
 // src/i18n/index.ts
-import i18n from "i18next";
-import { initReactI18next } from "react-i18next";
-import LanguageDetector from "i18next-browser-languagedetector";
-import Backend from "i18next-http-backend";
+import i18n from 'i18next';
+import { initReactI18next } from 'react-i18next';
+import LanguageDetector from 'i18next-browser-languagedetector';
+import Backend from 'i18next-http-backend';
 
 // Import translation files
-import enTranslations from "../locales/en/common.json";
-import frTranslations from "../locales/fr/common.json";
-import esTranslations from "../locales/es/common.json";
+import enTranslations from '../locales/en/common.json';
+import frTranslations from '../locales/fr/common.json';
+import esTranslations from '../locales/es/common.json';
 
 i18n
   // Load translation using http -> see /public/locales (i.e. https://github.com/i18next/react-i18next/tree/master/example/react/public/locales)
@@ -90,25 +85,25 @@ i18n
         translation: esTranslations,
       },
     },
-    fallbackLng: "en",
-    debug: process.env.NODE_ENV === "development",
-
+    fallbackLng: 'en',
+    debug: process.env.NODE_ENV === 'development',
+    
     interpolation: {
       escapeValue: false, // React already safes from xss
     },
-
+    
     // Language detection options
     detection: {
-      order: ["localStorage", "navigator", "htmlTag"],
-      lookupLocalStorage: "i18nextLng",
-      caches: ["localStorage"],
+      order: ['localStorage', 'navigator', 'htmlTag'],
+      lookupLocalStorage: 'i18nextLng',
+      caches: ['localStorage'],
     },
-
+    
     // Backend options
     backend: {
-      loadPath: "/locales/{{lng}}/{{ns}}.json",
+      loadPath: '/locales/{{lng}}/{{ns}}.json',
     },
-
+    
     // React options
     react: {
       useSuspense: false, // Set to true if using Suspense
@@ -250,9 +245,9 @@ export default i18n;
 
 ```tsx
 // src/components/LoginForm.tsx
-import { useState } from "react";
-import { useTranslation } from "react-i18next";
-import { useForm } from "../hooks/useForm";
+import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { useForm } from '../hooks/useForm';
 
 interface FormData {
   email: string;
@@ -263,21 +258,26 @@ export function LoginForm() {
   const { t, i18n } = useTranslation();
   const [isLoading, setIsLoading] = useState(false);
 
-  const { values, errors, handleChange, handleSubmit } = useForm<FormData>({
-    initialValues: { email: "", password: "" },
+  const {
+    values,
+    errors,
+    handleChange,
+    handleSubmit,
+  } = useForm<FormData>({
+    initialValues: { email: '', password: '' },
     validate: (values) => {
       const errors: Partial<FormData> = {};
-
+      
       if (!values.email) {
-        errors.email = t("errors.required", { field: t("auth.login.email") });
+        errors.email = t('errors.required', { field: t('auth.login.email') });
       } else if (!/\S+@\S+\.\S+/.test(values.email)) {
-        errors.email = t("errors.email");
+        errors.email = t('errors.email');
       }
-
+      
       if (!values.password) {
-        errors.password = t("errors.required", { field: t("auth.login.password") });
+        errors.password = t('errors.required', { field: t('auth.login.password') });
       }
-
+      
       return errors;
     },
   });
@@ -286,9 +286,9 @@ export function LoginForm() {
     setIsLoading(true);
     try {
       // Submit form
-      console.log("Login data:", data);
+      console.log('Login data:', data);
     } catch (error) {
-      console.error("Login error:", error);
+      console.error('Login error:', error);
     } finally {
       setIsLoading(false);
     }
@@ -301,46 +301,50 @@ export function LoginForm() {
   return (
     <div className="login-form">
       <div className="language-switcher">
-        <button onClick={() => changeLanguage("en")}>English</button>
-        <button onClick={() => changeLanguage("fr")}>Français</button>
-        <button onClick={() => changeLanguage("es")}>Español</button>
+        <button onClick={() => changeLanguage('en')}>English</button>
+        <button onClick={() => changeLanguage('fr')}>Français</button>
+        <button onClick={() => changeLanguage('es')}>Español</button>
       </div>
 
-      <h2>{t("auth.login.title")}</h2>
-
+      <h2>{t('auth.login.title')}</h2>
+      
       <form onSubmit={handleSubmit(onSubmit)}>
         <div className="form-group">
-          <label htmlFor="email">{t("auth.login.email")}</label>
+          <label htmlFor="email">{t('auth.login.email')}</label>
           <input
             type="email"
             id="email"
             value={values.email}
             onChange={handleChange}
-            className={errors.email ? "error" : ""}
-            placeholder={t("auth.login.email")}
+            className={errors.email ? 'error' : ''}
+            placeholder={t('auth.login.email')}
           />
           {errors.email && <span className="error">{errors.email}</span>}
         </div>
 
         <div className="form-group">
-          <label htmlFor="password">{t("auth.login.password")}</label>
+          <label htmlFor="password">{t('auth.login.password')}</label>
           <input
             type="password"
             id="password"
             value={values.password}
             onChange={handleChange}
-            className={errors.password ? "error" : ""}
-            placeholder={t("auth.login.password")}
+            className={errors.password ? 'error' : ''}
+            placeholder={t('auth.login.password')}
           />
           {errors.password && <span className="error">{errors.password}</span>}
         </div>
 
         <div className="form-actions">
-          <button type="submit" disabled={isLoading} className="btn btn--primary">
-            {isLoading ? t("common.loading") : t("auth.login.submit")}
+          <button 
+            type="submit" 
+            disabled={isLoading}
+            className="btn btn--primary"
+          >
+            {isLoading ? t('common.loading') : t('auth.login.submit')}
           </button>
           <button type="button" className="btn btn--secondary">
-            {t("auth.login.forgotPassword")}
+            {t('auth.login.forgotPassword')}
           </button>
         </div>
       </form>
@@ -351,49 +355,45 @@ export function LoginForm() {
 
 ```tsx
 // src/components/ItemList.tsx
-import { useTranslation } from "react-i18next";
-import { useItems } from "../hooks/useItems";
+import { useTranslation } from 'react-i18next';
+import { useItems } from '../hooks/useItems';
 
 export function ItemList() {
   const { t, i18n } = useTranslation();
   const { items, isLoading, error } = useItems();
 
   if (isLoading) {
-    return <div>{t("common.loading")}</div>;
+    return <div>{t('common.loading')}</div>;
   }
 
   if (error) {
-    return (
-      <div>
-        {t("common.error")}: {error.message}
-      </div>
-    );
+    return <div>{t('common.error')}: {error.message}</div>;
   }
 
   return (
     <div className="item-list">
-      <h2>{t("navigation.dashboard")}</h2>
-
+      <h2>{t('navigation.dashboard')}</h2>
+      
       {items.length === 0 ? (
-        <p>{t("count.zero")}</p>
+        <p>{t('count.zero')}</p>
       ) : (
         <>
           <p className="item-count">
-            {t("count", {
+            {t('count', { 
               count: items.length,
-              postProcess: "interval",
-              interval: [0, 1, 2],
+              postProcess: 'interval',
+              interval: [0, 1, 2]
             })}
           </p>
-
+          
           <ul>
-            {items.map((item) => (
+            {items.map(item => (
               <li key={item.id} className="item-card">
                 <h3>{item.name}</h3>
                 <p>{item.description}</p>
                 <span className="item-date">
-                  {t("date.at", {
-                    time: new Date(item.createdAt).toLocaleString(i18n.language),
+                  {t('date.at', { 
+                    time: new Date(item.createdAt).toLocaleString(i18n.language) 
                   })}
                 </span>
               </li>
@@ -408,18 +408,18 @@ export function ItemList() {
 
 ```tsx
 // src/components/DateTime.tsx
-import { useTranslation } from "react-i18next";
-import { formatDistanceToNow } from "date-fns";
-import { enUS, fr, es } from "date-fns/locale";
+import { useTranslation } from 'react-i18next';
+import { formatDistanceToNow } from 'date-fns';
+import { enUS, fr, es } from 'date-fns/locale';
 
 interface DateTimeProps {
   date: Date;
-  format?: "relative" | "absolute";
+  format?: 'relative' | 'absolute';
 }
 
-export function DateTime({ date, format = "relative" }: DateTimeProps) {
+export function DateTime({ date, format = 'relative' }: DateTimeProps) {
   const { t, i18n } = useTranslation();
-
+  
   const locales = {
     en: enUS,
     fr: fr,
@@ -428,10 +428,10 @@ export function DateTime({ date, format = "relative" }: DateTimeProps) {
 
   const locale = locales[i18n.language as keyof typeof locales] || enUS;
 
-  if (format === "relative") {
+  if (format === 'relative') {
     const now = new Date();
     const diffInHours = Math.abs(now.getTime() - date.getTime()) / 36e5;
-
+    
     if (diffInHours < 24) {
       return (
         <time dateTime={date.toISOString()}>
@@ -444,11 +444,11 @@ export function DateTime({ date, format = "relative" }: DateTimeProps) {
   return (
     <time dateTime={date.toISOString()}>
       {date.toLocaleDateString(i18n.language, {
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-        hour: "2-digit",
-        minute: "2-digit",
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
       })}
     </time>
   );
@@ -457,8 +457,8 @@ export function DateTime({ date, format = "relative" }: DateTimeProps) {
 
 ```tsx
 // src/components/Layout.tsx
-import { useTranslation } from "react-i18next";
-import { useState, useEffect } from "react";
+import { useTranslation } from 'react-i18next';
+import { useState, useEffect } from 'react';
 
 export function Layout({ children }: { children: React.ReactNode }) {
   const { t, i18n } = useTranslation();
@@ -466,42 +466,34 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     // Check if current language is RTL
-    const rtlLanguages = ["ar", "he", "fa"];
+    const rtlLanguages = ['ar', 'he', 'fa'];
     setIsRTL(rtlLanguages.includes(i18n.language));
-
+    
     // Apply direction to document
-    document.documentElement.dir = isRTL ? "rtl" : "ltr";
+    document.documentElement.dir = isRTL ? 'rtl' : 'ltr';
     document.documentElement.lang = i18n.language;
   }, [i18n.language, isRTL]);
 
   return (
-    <div className={`layout ${isRTL ? "rtl" : "ltr"}`}>
+    <div className={`layout ${isRTL ? 'rtl' : 'ltr'}`}>
       <header className="header">
-        <h1>{t("navigation.home")}</h1>
+        <h1>{t('navigation.home')}</h1>
         <nav className="navigation">
           <ul>
-            <li>
-              <a href="/">{t("navigation.home")}</a>
-            </li>
-            <li>
-              <a href="/dashboard">{t("navigation.dashboard")}</a>
-            </li>
-            <li>
-              <a href="/profile">{t("navigation.profile")}</a>
-            </li>
-            <li>
-              <a href="/settings">{t("navigation.settings")}</a>
-            </li>
+            <li><a href="/">{t('navigation.home')}</a></li>
+            <li><a href="/dashboard">{t('navigation.dashboard')}</a></li>
+            <li><a href="/profile">{t('navigation.profile')}</a></li>
+            <li><a href="/settings">{t('navigation.settings')}</a></li>
           </ul>
         </nav>
       </header>
-
-      <main className="main-content">{children}</main>
-
+      
+      <main className="main-content">
+        {children}
+      </main>
+      
       <footer className="footer">
-        <p>
-          &copy; {new Date().getFullYear()} {t("common.appName")}
-        </p>
+        <p>&copy; {new Date().getFullYear()} {t('common.appName')}</p>
       </footer>
     </div>
   );
@@ -571,7 +563,6 @@ export function Layout({ children }: { children: React.ReactNode }) {
 ```
 
 ## Notes
-
 - Use Unicode CLDR data for accurate locale-specific formatting
 - Consider text expansion when designing layouts (30-40% longer in some languages)
 - Test with actual translated content, not just Lorem Ipsum

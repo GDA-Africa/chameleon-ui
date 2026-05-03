@@ -19,6 +19,7 @@
   "scripts": {
     "build": "vite build && npm run build:css",
     "build:css": "node scripts/build-css.mjs",
+    "prepare": "npm run build",
     "build:app": "vite build --config vite.config.app.ts",
     "dev": "vite",
     "typecheck": "tsc --noEmit",
@@ -29,6 +30,12 @@
   },
   "sideEffects": [
     "./dist/styles.css"
+  ],
+  "files": [
+    "dist",
+    "bin",
+    "README.md",
+    "CHANGELOG.md"
   ],
   "dependencies": {
     "@emotion/react": "11.14.0",

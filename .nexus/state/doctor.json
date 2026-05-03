@@ -1,0 +1,41 @@
+{
+  "ranAt": "2026-05-03T03:30:27.837Z",
+  "summary": {
+    "info": 0,
+    "warn": 5,
+    "error": 0
+  },
+  "findings": [
+    {
+      "id": "D01",
+      "severity": "warn",
+      "description": "Doc 05_business_logic.md is marked populated but still contains unresolved placeholders.",
+      "fixHint": "Fill placeholders in .nexus/docs/05_business_logic.md or set status back to \"template\"."
+    },
+    {
+      "id": "D01",
+      "severity": "warn",
+      "description": "Doc 07_implementation.md is marked populated but still contains unresolved placeholders.",
+      "fixHint": "Fill placeholders in .nexus/docs/07_implementation.md or set status back to \"template\"."
+    },
+    {
+      "id": "D01",
+      "severity": "warn",
+      "description": "Doc index.md is marked populated but still contains unresolved placeholders.",
+      "fixHint": "Fill placeholders in .nexus/docs/index.md or set status back to \"template\"."
+    },
+    {
+      "id": "D05",
+      "severity": "warn",
+      "description": "knowledge.md references missing file paths (3 shown): .nexus/docs/, backdrop-blur-xl/3xl, bg-white/X.",
+      "fixHint": "Update stale references in knowledge.md so linked paths match current repository layout."
+    },
+    {
+      "id": "D08",
+      "severity": "warn",
+      "description": "Vital signs are missing.",
+      "fixHint": "Run `nexus sync` to capture current repo state.",
+      "autoFixable": true
+    }
+  ]
+}

@@ -26,11 +26,9 @@ related:
 # Skill: Skill Authoring (Shared)
 
 ## When to Read This
-
 Read this skill before creating any new `.md` skill file — whether it goes in `packages/core/shared/`, a framework subfolder, or a project's `custom/` directory. A poorly written skill is worse than no skill at all, because it gives an AI agent false confidence.
 
 ## Context
-
 NEXUS skills are the primary mechanism through which AI agents receive task-level instructions within a project. The quality of a skill directly determines the quality of the agent's output. This project follows the canonical NEXUS Skill Spec (`SKILL_SPEC.md`) and additional quality principles derived from Anthropic's guidance on prompt engineering, OpenAI's best practices for instruction clarity, and Google DeepMind's research on grounded, specific, and verifiable AI instructions. Skills are written for an AI audience first, a human audience second — but they must satisfy both.
 
 ---
@@ -42,8 +40,8 @@ NEXUS skills are the primary mechanism through which AI agents receive task-leve
 3. **Choose placement** — `shared/` for cross-framework concerns, a framework folder (`next.js/`, `react-vite/`, etc.) for framework-specific tasks, or a project's `custom/` for project-specific overrides.
 4. **Write the frontmatter** — Fill every required field (`skill`, `version`, `framework`, `category`, `triggers`, `author`, `status`). Start `version` at `1.0.0`. Start `status` as `draft`. Add optional fields (`updated`, `related`, `requires`) when they add real value.
 5. **Write 4–8 semantic triggers** — Write the phrases a developer would say in a standup, not code patterns or filenames. Cover synonyms and phrasing variations.
-6. **Write `## Context` as a project-specific briefing** — Not generic documentation. Explain _why this project does it this way_. Two to four sentences maximum. If you find yourself summarising a framework's docs, stop — that belongs in `## Notes`.
-7. **Write `## Steps` as executable instructions** — Number every step. Each step must be specific enough to perform without ambiguity. Prefer imperative verbs: _Create_, _Run_, _Confirm_, _Add_.
+6. **Write `## Context` as a project-specific briefing** — Not generic documentation. Explain *why this project does it this way*. Two to four sentences maximum. If you find yourself summarising a framework's docs, stop — that belongs in `## Notes`.
+7. **Write `## Steps` as executable instructions** — Number every step. Each step must be specific enough to perform without ambiguity. Prefer imperative verbs: *Create*, *Run*, *Confirm*, *Add*.
 8. **Write `## Anti-Patterns`** before `## Patterns We Use` mentally — the anti-patterns are often the highest-value section. Think: what does an agent do by default that is wrong here?
 9. **Write the `## Example`** — A real, runnable snippet. Not a pseudocode placeholder. If the skill is about a CLI command, show the command and its output. If it is about code, show the correct file.
 10. **Self-review using the Skill Quality Rubric** (see below) before committing.
@@ -55,7 +53,6 @@ NEXUS skills are the primary mechanism through which AI agents receive task-leve
 ## Patterns We Use
 
 ### Frontmatter Conventions
-
 - `skill` slug is always **kebab-case**, all lowercase, no framework name in the slug (the framework field handles that)
 - `version` starts at `1.0.0`; increment `PATCH` for typo/clarity fixes, `MINOR` for new sections, `MAJOR` for a change in the recommended pattern itself
 - `status: draft` for all new skills; promoted to `active` after review
@@ -63,7 +60,6 @@ NEXUS skills are the primary mechanism through which AI agents receive task-leve
 - `related` lists skills the agent might also need; do not list skills that are unrelated just to seem comprehensive
 
 ### Writing for AI Agents — Core Principles
-
 These are distilled from Anthropic's Claude prompt engineering guidelines, OpenAI's GPT system prompt best practices, and DeepMind's instruction-following research:
 
 - **Be specific, not general** — "Create the file at `src/features/[feature]/[Name].tsx`" beats "Create the component file". Agents follow precise instructions better than vague directives.
@@ -77,7 +73,6 @@ These are distilled from Anthropic's Claude prompt engineering guidelines, OpenA
 - **Write as if the agent has never seen the codebase** — It may not have. Do not assume implicit knowledge of file structure, naming, or conventions that are not written down.
 
 ### Trigger Writing
-
 - Triggers are **semantic phrases**, not regex or file patterns
 - Write in natural language a developer would use in conversation: "adding a new route", "writing a test for this function"
 - Include **both short** (`"new component"`) **and long** (`"creating a reusable React component for the UI"`) forms
@@ -85,7 +80,6 @@ These are distilled from Anthropic's Claude prompt engineering guidelines, OpenA
 - Triggers should be **task-level**, not technology-level: `"adding authentication"` not `"using JWT"`
 
 ### Example Quality Standard
-
 - Examples must be **copy-paste ready** — no `// TODO` placeholders, no `...` ellipsis omitting critical code
 - For code skills: show the complete file structure, not just the interesting parts
 - For CLI skills: show the exact command and the expected output or file produced
@@ -93,16 +87,15 @@ These are distilled from Anthropic's Claude prompt engineering guidelines, OpenA
 - Label examples clearly: `// ✅ Correct` / `// ❌ Wrong` when showing contrasts
 
 ### Category Selection
-
-| If the skill covers…                                    | Use category |
-| ------------------------------------------------------- | ------------ |
-| Components, layouts, design system                      | `ui`         |
-| Pages, navigation, URL structure                        | `routing`    |
-| Data fetching, caching, state, mutations                | `data`       |
-| Unit, integration, E2E tests                            | `testing`    |
-| API routes, server actions, endpoints                   | `api`        |
-| Config files, environment variables, tooling            | `config`     |
-| Git, code review, debugging, documentation, meta-skills | `workflow`   |
+| If the skill covers… | Use category |
+|---|---|
+| Components, layouts, design system | `ui` |
+| Pages, navigation, URL structure | `routing` |
+| Data fetching, caching, state, mutations | `data` |
+| Unit, integration, E2E tests | `testing` |
+| API routes, server actions, endpoints | `api` |
+| Config files, environment variables, tooling | `config` |
+| Git, code review, debugging, documentation, meta-skills | `workflow` |
 
 ---
 
@@ -149,18 +142,15 @@ related:
 # Skill: Error Handling (React + Vite)
 
 ## When to Read This
-
 Read this skill before implementing any error handling in async operations, API calls,
 or component boundaries.
 
 ## Context
-
 This project uses a centralized error handling approach: all async errors flow through
 `src/lib/errorHandler.ts`, which logs to Sentry and returns a standardised
 `AppError` object. Components receive errors as typed props, never raw `Error` instances.
 
 ## Steps
-
 1. Import `handleError` from `src/lib/errorHandler.ts`.
 2. Wrap every async operation in `try/catch`.
 3. Pass the caught error to `handleError(error)` — it returns an `AppError`.
@@ -169,13 +159,11 @@ This project uses a centralized error handling approach: all async errors flow t
 6. For component boundaries, wrap with `<ErrorBoundary fallback={<ErrorFallback />}>`.
 
 ## Patterns We Use
-
 - All errors go through `handleError()` — never `console.error` in production code
 - Components receive `error: AppError | null`, not raw `Error` objects
 - Error boundaries wrap every route-level component
 
 ## Anti-Patterns — Never Do This
-
 - ❌ Do not `console.error` in production code — use `handleError()`
 - ❌ Do not pass raw `Error` objects to components — convert via `handleError()` first
 - ❌ Do not silently swallow errors — every catch block must call `handleError()`
@@ -188,12 +176,12 @@ import { handleError } from '@/lib/errorHandler';
 import type { AppError } from '@/types/errors';
 
 export async function fetchUser(id: string): Promise<User | AppError> {
-try {
-const res = await api.get(`/users/${id}`);
-return res.data;
-} catch (err) {
-return handleError(err); // ✅ Always through handleError
-}
+  try {
+    const res = await api.get(`/users/${id}`);
+    return res.data;
+  } catch (err) {
+    return handleError(err);  // ✅ Always through handleError
+  }
 }
 \`\`\`
 ```
@@ -208,7 +196,6 @@ Use this as a self-review checklist before every skill commit:
 ## Skill Quality Rubric — Self-Review
 
 ### Spec Compliance
-
 - [ ] All required frontmatter fields present (`skill`, `version`, `framework`, `category`, `triggers`, `author`, `status`)
 - [ ] `skill` slug is kebab-case, matches the filename
 - [ ] `version` is valid semver starting at `1.0.0`
@@ -219,7 +206,6 @@ Use this as a self-review checklist before every skill commit:
 - [ ] All 6 required body sections are present in order
 
 ### Content Quality (Anthropic / AI-first standard)
-
 - [ ] Every step is specific enough to execute without further clarification
 - [ ] No step combines two actions — each step is a single, atomic instruction
 - [ ] Front-loaded: the most important constraint is the first sentence of each section
@@ -230,13 +216,11 @@ Use this as a self-review checklist before every skill commit:
 - [ ] Length matches task complexity — not padded, not truncated
 
 ### Routing Quality
-
 - [ ] Triggers are task-level phrases, not technology names or file patterns
 - [ ] Triggers cover multiple synonym phrasings of the same task
 - [ ] The skill covers exactly ONE task category — not multiple unrelated concerns
 
 ### Process
-
 - [ ] `status` is `draft` (not `active`) until PR review is approved
 - [ ] `knowledge.md` entry planned for post-merge
 - [ ] Checked `packages/core/` — no existing skill already covers this task
@@ -248,8 +232,8 @@ Use this as a self-review checklist before every skill commit:
 
 - **The Skill Spec is the contract** — `SKILL_SPEC.md` at the root of this repository is the authoritative format reference. This skill summarises the authoring workflow; the spec defines the rules. When they differ, the spec wins.
 - **Skills in `packages/core/` are published** — they ship in `@nexus-framework/skills` and are installed into every project that runs `nexus init` or `nexus upgrade`. Hold them to a higher standard than custom project skills. Every word in a core skill is read by AI agents in every project that uses NEXUS.
-- **Anthropic's key prompt engineering principle applied here** — per Anthropic's published guidance: _"Be specific about the desired output format and provide examples."_ Every skill must follow this: specify the exact output shape and provide a working example. An agent that knows what the output should look like will produce it far more reliably than one given only rules.
-- **OpenAI's system prompt best practice** — _"Use clear, direct language. Avoid hedging words like 'perhaps', 'maybe', 'you might want to'."_ Skill instructions use declarative imperatives: _Create, Run, Add, Confirm, Wrap_ — not _you could try, it might be a good idea to, consider_.
+- **Anthropic's key prompt engineering principle applied here** — per Anthropic's published guidance: *"Be specific about the desired output format and provide examples."* Every skill must follow this: specify the exact output shape and provide a working example. An agent that knows what the output should look like will produce it far more reliably than one given only rules.
+- **OpenAI's system prompt best practice** — *"Use clear, direct language. Avoid hedging words like 'perhaps', 'maybe', 'you might want to'."* Skill instructions use declarative imperatives: *Create, Run, Add, Confirm, Wrap* — not *you could try, it might be a good idea to, consider*.
 - **Token efficiency matters** — AI agents have context windows. A 5,000-line skill that covers everything is useless if it never fits in context alongside the task. Keep skills focused on one task. Reference other skills via `related` instead of duplicating content.
 - **Version discipline** — When a pattern changes and the skill is updated to a `MAJOR` version, the previous version's behaviour may still exist in older projects. Add a `## Notes` entry explaining what changed and when, so agents in those older projects can reconcile the difference.
 - **The `custom/` override pattern** — If a project team wants to override a core skill, they create a file with the same `skill` slug in their `.nexus/skills/custom/` directory. The NEXUS precedence rules (`custom/ > core/ > community/`) ensure the custom version is always used. Never modify files in `core/` directly for a single project — always use `custom/` overrides.

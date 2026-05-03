@@ -16,15 +16,12 @@ status: active
 # Skill: Database Patterns (Shared)
 
 ## When to Read This
-
 Read this skill when designing database schemas, writing queries, implementing migrations, or optimizing database performance.
 
 ## Context
-
 This project follows database best practices for schema design, query optimization, and data integrity. We use ORMs or query builders for type safety and maintainability while ensuring efficient database operations. Database design should support the application's data access patterns and scale appropriately with data growth.
 
 ## Steps
-
 1. Design database schema based on application requirements and relationships
 2. Use proper data types and constraints for data integrity
 3. Create indexes for frequently queried fields
@@ -35,7 +32,6 @@ This project follows database best practices for schema design, query optimizati
 8. Monitor and optimize query performance regularly
 
 ## Patterns We Use
-
 - ORM/Query Builder: Prisma, TypeORM, Sequelize, or Knex based on project choice
 - Migrations: Version-controlled schema changes with rollback capability
 - Indexing: Strategic indexes on foreign keys, frequently filtered fields, and sort columns
@@ -46,8 +42,7 @@ This project follows database best practices for schema design, query optimizati
 - Data validation: Database-level constraints plus application-level validation
 
 ## Anti-Patterns — Never Do This
-
-- ❌ Do not use SELECT \* in production queries
+- ❌ Do not use SELECT * in production queries
 - ❌ Do not ignore database connection limits and pooling
 - ❌ Do not create migrations that can't be rolled back
 - ❌ Do not forget to index foreign keys and frequently queried columns
@@ -76,11 +71,11 @@ model User {
   name      String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
+  
   // Relationships
   posts     Post[]
   profile   Profile?
-
+  
   @@map("users")
 }
 
@@ -91,22 +86,22 @@ model Post {
   published Boolean  @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
+  
   // Relationships
   authorId String
   author   User     @relation(fields: [authorId], references: [id])
   tags     Tag[]    @relation("PostTags")
-
+  
   @@map("posts")
 }
 
 model Tag {
   id    String @id @default(cuid())
   name  String @unique
-
+  
   // Relationships
   posts Post[] @relation("PostTags")
-
+  
   @@map("tags")
 }
 
@@ -114,17 +109,17 @@ model Profile {
   id     String @id @default(cuid())
   bio    String?
   userId String @unique
-
+  
   // Relationships
   user   User   @relation(fields: [userId], references: [id])
-
+  
   @@map("profiles")
 }
 ```
 
 ```typescript
 // ✅ Efficient querying with proper relationships
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
@@ -134,23 +129,23 @@ export async function getUsersWithPosts() {
     include: {
       posts: {
         where: { published: true },
-        orderBy: { createdAt: "desc" },
+        orderBy: { createdAt: 'desc' },
         take: 5,
       },
       profile: true,
     },
-    orderBy: { createdAt: "desc" },
+    orderBy: { createdAt: 'desc' },
   });
 }
 
 // ✅ Pagination with cursor-based approach
 export async function getPostsPaginated(cursor?: string, limit: number = 10) {
   const where = cursor ? { id: { gt: cursor } } : {};
-
+  
   const [posts, totalCount] = await Promise.all([
     prisma.post.findMany({
       where,
-      orderBy: { createdAt: "desc" },
+      orderBy: { createdAt: 'desc' },
       take: limit + 1, // Get one extra to check if there's a next page
       include: {
         author: {
@@ -223,8 +218,8 @@ CREATE TABLE "users" (
 CREATE UNIQUE INDEX "users_email_key" ON "users"("email");
 
 -- AddForeignKey (if needed)
-ALTER TABLE "posts" ADD CONSTRAINT "posts_author_id_fkey"
-FOREIGN KEY ("author_id") REFERENCES "users"("id")
+ALTER TABLE "posts" ADD CONSTRAINT "posts_author_id_fkey" 
+FOREIGN KEY ("author_id") REFERENCES "users"("id") 
 ON DELETE RESTRICT ON UPDATE CASCADE;
 ```
 
@@ -249,11 +244,11 @@ CREATE INDEX "idx_posts_published_created" ON "posts"("published", "created_at")
 ```typescript
 // ✅ Connection pooling configuration
 // database.ts
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient({
-  log: ["query", "error", "warn"],
-  errorFormat: "pretty",
+  log: ['query', 'error', 'warn'],
+  errorFormat: 'pretty',
   // Connection pooling configuration
   __internal: {
     engine: {
@@ -266,12 +261,12 @@ const prisma = new PrismaClient({
 });
 
 // Graceful shutdown
-process.on("SIGINT", async () => {
+process.on('SIGINT', async () => {
   await prisma.$disconnect();
   process.exit(0);
 });
 
-process.on("SIGTERM", async () => {
+process.on('SIGTERM', async () => {
   await prisma.$disconnect();
   process.exit(0);
 });
@@ -285,44 +280,53 @@ export class DatabaseError extends Error {
   constructor(
     public code: string,
     message: string,
-    public details?: any,
+    public details?: any
   ) {
     super(message);
   }
 }
 
-export async function handleDatabaseOperation<T>(operation: () => Promise<T>): Promise<T> {
+export async function handleDatabaseOperation<T>(
+  operation: () => Promise<T>
+): Promise<T> {
   try {
     return await operation();
   } catch (error) {
-    if (error.code === "P2002") {
+    if (error.code === 'P2002') {
       throw new DatabaseError(
-        "DUPLICATE_ENTRY",
-        "A record with this data already exists",
-        error.meta,
+        'DUPLICATE_ENTRY',
+        'A record with this data already exists',
+        error.meta
       );
     }
-
-    if (error.code === "P2025") {
-      throw new DatabaseError("RECORD_NOT_FOUND", "The requested record was not found", error.meta);
-    }
-
-    if (error.code === "P2010") {
+    
+    if (error.code === 'P2025') {
       throw new DatabaseError(
-        "FOREIGN_KEY_CONSTRAINT",
-        "Referenced record does not exist",
-        error.meta,
+        'RECORD_NOT_FOUND',
+        'The requested record was not found',
+        error.meta
       );
     }
-
+    
+    if (error.code === 'P2010') {
+      throw new DatabaseError(
+        'FOREIGN_KEY_CONSTRAINT',
+        'Referenced record does not exist',
+        error.meta
+      );
+    }
+    
     // Generic database error
-    throw new DatabaseError("DATABASE_ERROR", "A database error occurred", error);
+    throw new DatabaseError(
+      'DATABASE_ERROR',
+      'A database error occurred',
+      error
+    );
   }
 }
 ```
 
 ## Notes
-
 - Use database transactions for operations that must succeed or fail together
 - Implement proper backup and recovery strategies
 - Monitor slow queries and optimize with EXPLAIN ANALYZE

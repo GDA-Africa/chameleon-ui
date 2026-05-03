@@ -16,15 +16,12 @@ status: active
 # Skill: Data Fetching (React + Vite)
 
 ## When to Read This
-
 Read this skill when implementing API calls, data loading, caching, or state management for remote data in a React + Vite application.
 
 ## Context
-
 This project uses TanStack Query (React Query) for server state management with built-in caching, background updates, and optimization features. We follow a structured approach with proper error handling, loading states, and data transformation. API calls are centralized in service files with consistent patterns for different data operations.
 
 ## Steps
-
 1. Set up TanStack Query provider and configuration
 2. Create service files for API endpoints
 3. Implement hooks for data fetching with proper caching
@@ -35,7 +32,6 @@ This project uses TanStack Query (React Query) for server state management with 
 8. Handle pagination and infinite scrolling
 
 ## Patterns We Use
-
 - TanStack Query: Use for server state management with caching
 - Service layer: Centralize API calls in service files
 - Custom hooks: Create hooks for data fetching patterns
@@ -46,7 +42,6 @@ This project uses TanStack Query (React Query) for server state management with 
 - Background updates: Enable background refetching for fresh data
 
 ## Anti-Patterns — Never Do This
-
 - ❌ Do not use useEffect for data fetching without proper cleanup
 - ❌ Do not ignore error handling in API calls
 - ❌ Do not create multiple fetch requests for the same data
@@ -60,7 +55,7 @@ This project uses TanStack Query (React Query) for server state management with 
 
 ```typescript
 // src/services/api.ts
-import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from "axios";
+import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
 
 interface ApiError {
   message: string;
@@ -73,10 +68,10 @@ class ApiService {
 
   constructor() {
     this.api = axios.create({
-      baseURL: import.meta.env.VITE_API_BASE_URL || "/api",
+      baseURL: import.meta.env.VITE_API_BASE_URL || '/api',
       timeout: 10000,
       headers: {
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json',
       },
     });
 
@@ -87,7 +82,7 @@ class ApiService {
     // Request interceptor
     this.api.interceptors.request.use(
       (config) => {
-        const token = localStorage.getItem("auth_token");
+        const token = localStorage.getItem('auth_token');
         if (token) {
           config.headers.Authorization = `Bearer ${token}`;
         }
@@ -95,7 +90,7 @@ class ApiService {
       },
       (error) => {
         return Promise.reject(error);
-      },
+      }
     );
 
     // Response interceptor
@@ -104,29 +99,29 @@ class ApiService {
       (error) => {
         if (error.response?.status === 401) {
           // Handle unauthorized access
-          localStorage.removeItem("auth_token");
-          window.location.href = "/login";
+          localStorage.removeItem('auth_token');
+          window.location.href = '/login';
         }
         return Promise.reject(this.formatError(error));
-      },
+      }
     );
   }
 
   private formatError(error: any): ApiError {
     if (error.response) {
       return {
-        message: error.response.data?.message || "Server error",
+        message: error.response.data?.message || 'Server error',
         status: error.response.status,
         details: error.response.data,
       };
     } else if (error.request) {
       return {
-        message: "Network error - please check your connection",
+        message: 'Network error - please check your connection',
         status: 0,
       };
     } else {
       return {
-        message: error.message || "An unexpected error occurred",
+        message: error.message || 'An unexpected error occurred',
         status: -1,
       };
     }
@@ -163,8 +158,8 @@ export const api = new ApiService();
 
 ```typescript
 // src/services/userService.ts
-import { api } from "./api";
-import { User, CreateUserRequest, UpdateUserRequest } from "../types/user";
+import { api } from './api';
+import { User, CreateUserRequest, UpdateUserRequest } from '../types/user';
 
 export const userService = {
   async getUsers(params?: {
@@ -172,9 +167,9 @@ export const userService = {
     limit?: number;
     search?: string;
     sortBy?: string;
-    sortOrder?: "asc" | "desc";
+    sortOrder?: 'asc' | 'desc';
   }) {
-    return api.get<{ users: User[]; total: number; page: number; totalPages: number }>("/users", {
+    return api.get<{ users: User[]; total: number; page: number; totalPages: number }>('/users', {
       params,
     });
   },
@@ -184,7 +179,7 @@ export const userService = {
   },
 
   async createUser(userData: CreateUserRequest): Promise<User> {
-    return api.post<User>("/users", userData);
+    return api.post<User>('/users', userData);
   },
 
   async updateUser(id: string, userData: UpdateUserRequest): Promise<User> {
@@ -196,7 +191,7 @@ export const userService = {
   },
 
   async getCurrentUser(): Promise<User> {
-    return api.get<User>("/users/me");
+    return api.get<User>('/users/me');
   },
 };
 ```
@@ -208,7 +203,7 @@ export interface User {
   name: string;
   email: string;
   avatar?: string;
-  role: "admin" | "user" | "moderator";
+  role: 'admin' | 'user' | 'moderator';
   createdAt: string;
   updatedAt: string;
 }
@@ -217,32 +212,32 @@ export interface CreateUserRequest {
   name: string;
   email: string;
   password: string;
-  role?: User["role"];
+  role?: User['role'];
 }
 
 export interface UpdateUserRequest {
   name?: string;
   email?: string;
   avatar?: string;
-  role?: User["role"];
+  role?: User['role'];
 }
 ```
 
 ```typescript
 // src/hooks/useUsers.ts
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { userService } from "../services/userService";
-import { User, CreateUserRequest, UpdateUserRequest } from "../types/user";
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { userService } from '../services/userService';
+import { User, CreateUserRequest, UpdateUserRequest } from '../types/user';
 
 export const useUsers = (params?: {
   page?: number;
   limit?: number;
   search?: string;
   sortBy?: string;
-  sortOrder?: "asc" | "desc";
+  sortOrder?: 'asc' | 'desc';
 }) => {
   return useQuery({
-    queryKey: ["users", params],
+    queryKey: ['users', params],
     queryFn: () => userService.getUsers(params),
     staleTime: 5 * 60 * 1000, // 5 minutes
     cacheTime: 10 * 60 * 1000, // 10 minutes
@@ -254,7 +249,7 @@ export const useUsers = (params?: {
 
 export const useUser = (id: string) => {
   return useQuery({
-    queryKey: ["user", id],
+    queryKey: ['user', id],
     queryFn: () => userService.getUser(id),
     enabled: !!id,
     staleTime: 2 * 60 * 1000, // 2 minutes
@@ -269,12 +264,12 @@ export const useCreateUser = () => {
     mutationFn: (userData: CreateUserRequest) => userService.createUser(userData),
     onSuccess: (newUser) => {
       // Invalidate and refetch users list
-      queryClient.invalidateQueries({ queryKey: ["users"] });
-
+      queryClient.invalidateQueries({ queryKey: ['users'] });
+      
       // Update cache with new user
-      queryClient.setQueryData(["users"], (old: any) => {
+      queryClient.setQueryData(['users'], (old: any) => {
         if (!old) return { users: [newUser], total: 1, page: 1, totalPages: 1 };
-
+        
         return {
           ...old,
           users: [newUser, ...old.users],
@@ -283,7 +278,7 @@ export const useCreateUser = () => {
       });
     },
     onError: (error) => {
-      console.error("Failed to create user:", error);
+      console.error('Failed to create user:', error);
     },
   });
 };
@@ -296,23 +291,25 @@ export const useUpdateUser = () => {
       userService.updateUser(id, userData),
     onSuccess: (updatedUser, variables) => {
       // Update the specific user in cache
-      queryClient.setQueryData(["user", variables.id], updatedUser);
-
+      queryClient.setQueryData(['user', variables.id], updatedUser);
+      
       // Update user in users list
-      queryClient.setQueryData(["users"], (old: any) => {
+      queryClient.setQueryData(['users'], (old: any) => {
         if (!old) return old;
-
+        
         return {
           ...old,
-          users: old.users.map((user: User) => (user.id === variables.id ? updatedUser : user)),
+          users: old.users.map((user: User) =>
+            user.id === variables.id ? updatedUser : user
+          ),
         };
       });
-
+      
       // Invalidate users list to ensure consistency
-      queryClient.invalidateQueries({ queryKey: ["users"] });
+      queryClient.invalidateQueries({ queryKey: ['users'] });
     },
     onError: (error) => {
-      console.error("Failed to update user:", error);
+      console.error('Failed to update user:', error);
     },
   });
 };
@@ -324,31 +321,31 @@ export const useDeleteUser = () => {
     mutationFn: (id: string) => userService.deleteUser(id),
     onSuccess: (_, id) => {
       // Remove user from cache
-      queryClient.removeQueries({ queryKey: ["user", id] });
-
+      queryClient.removeQueries({ queryKey: ['user', id] });
+      
       // Update users list
-      queryClient.setQueryData(["users"], (old: any) => {
+      queryClient.setQueryData(['users'], (old: any) => {
         if (!old) return old;
-
+        
         return {
           ...old,
           users: old.users.filter((user: User) => user.id !== id),
           total: old.total - 1,
         };
       });
-
+      
       // Invalidate users list to ensure consistency
-      queryClient.invalidateQueries({ queryKey: ["users"] });
+      queryClient.invalidateQueries({ queryKey: ['users'] });
     },
     onError: (error) => {
-      console.error("Failed to delete user:", error);
+      console.error('Failed to delete user:', error);
     },
   });
 };
 
 export const useCurrentUser = () => {
   return useQuery({
-    queryKey: ["currentUser"],
+    queryKey: ['currentUser'],
     queryFn: () => userService.getCurrentUser(),
     staleTime: 5 * 60 * 1000, // 5 minutes
     cacheTime: 10 * 60 * 1000, // 10 minutes
@@ -358,25 +355,25 @@ export const useCurrentUser = () => {
 
 ```typescript
 // src/hooks/useInfiniteUsers.ts
-import { useInfiniteQuery } from "@tanstack/react-query";
-import { userService } from "../services/userService";
-import { User } from "../types/user";
+import { useInfiniteQuery } from '@tanstack/react-query';
+import { userService } from '../services/userService';
+import { User } from '../types/user';
 
 export const useInfiniteUsers = (search?: string) => {
   return useInfiniteQuery({
-    queryKey: ["infiniteUsers", search],
+    queryKey: ['infiniteUsers', search],
     queryFn: ({ pageParam = 1 }) =>
       userService.getUsers({
         page: pageParam,
         limit: 20,
         search,
-        sortBy: "createdAt",
-        sortOrder: "desc",
+        sortBy: 'createdAt',
+        sortOrder: 'desc',
       }),
     getNextPageParam: (lastPage, pages) => {
       const totalPages = lastPage.totalPages;
       const currentPage = pages.length;
-
+      
       return currentPage < totalPages ? currentPage + 1 : undefined;
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
@@ -387,29 +384,29 @@ export const useInfiniteUsers = (search?: string) => {
 
 ```tsx
 // src/components/UserList.tsx
-import { useState } from "react";
-import { useUsers } from "../hooks/useUsers";
-import { useCreateUser } from "../hooks/useCreateUser";
-import { useDeleteUser } from "../hooks/useDeleteUser";
-import { ErrorBoundary } from "../components/ErrorBoundary";
+import { useState } from 'react';
+import { useUsers } from '../hooks/useUsers';
+import { useCreateUser } from '../hooks/useCreateUser';
+import { useDeleteUser } from '../hooks/useDeleteUser';
+import { ErrorBoundary } from '../components/ErrorBoundary';
 
 export function UserList() {
   const [page, setPage] = useState(1);
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useState('');
   const [isCreating, setIsCreating] = useState(false);
-
+  
   const { data, isLoading, error, isError } = useUsers({
     page,
     limit: 10,
     search,
-    sortBy: "name",
-    sortOrder: "asc",
+    sortBy: 'name',
+    sortOrder: 'asc',
   });
 
   const { mutate: deleteUser, isPending: isDeleting } = useDeleteUser();
 
   const handleDelete = (userId: string) => {
-    if (window.confirm("Are you sure you want to delete this user?")) {
+    if (window.confirm('Are you sure you want to delete this user?')) {
       deleteUser(userId);
     }
   };
@@ -442,7 +439,7 @@ export function UserList() {
           />
           <button onClick={() => setPage(1)}>Search</button>
           <button onClick={() => setIsCreating(!isCreating)}>
-            {isCreating ? "Cancel" : "Add User"}
+            {isCreating ? 'Cancel' : 'Add User'}
           </button>
         </div>
       </div>
@@ -467,8 +464,11 @@ export function UserList() {
                   <td>{user.email}</td>
                   <td>{user.role}</td>
                   <td>
-                    <button onClick={() => handleDelete(user.id)} disabled={isDeleting}>
-                      {isDeleting ? "Deleting..." : "Delete"}
+                    <button 
+                      onClick={() => handleDelete(user.id)}
+                      disabled={isDeleting}
+                    >
+                      {isDeleting ? 'Deleting...' : 'Delete'}
                     </button>
                   </td>
                 </tr>
@@ -480,13 +480,17 @@ export function UserList() {
 
       {data && (
         <div className="pagination">
-          <button disabled={page === 1} onClick={() => setPage(page - 1)}>
+          <button 
+            disabled={page === 1}
+            onClick={() => setPage(page - 1)}
+          >
             Previous
           </button>
-          <span>
-            Page {page} of {data.totalPages}
-          </span>
-          <button disabled={page === data.totalPages} onClick={() => setPage(page + 1)}>
+          <span>Page {page} of {data.totalPages}</span>
+          <button
+            disabled={page === data.totalPages}
+            onClick={() => setPage(page + 1)}
+          >
             Next
           </button>
         </div>
@@ -498,10 +502,10 @@ export function UserList() {
 
 ```tsx
 // src/components/UserDetail.tsx
-import { useParams, useNavigate } from "react-router-dom";
-import { useUser } from "../hooks/useUser";
-import { useUpdateUser } from "../hooks/useUpdateUser";
-import { useState } from "react";
+import { useParams, useNavigate } from 'react-router-dom';
+import { useUser } from '../hooks/useUser';
+import { useUpdateUser } from '../hooks/useUpdateUser';
+import { useState } from 'react';
 
 export function UserDetail() {
   const { userId } = useParams();
@@ -510,8 +514,8 @@ export function UserDetail() {
   const { mutate: updateUser, isPending: isUpdating } = useUpdateUser();
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
-    name: "",
-    email: "",
+    name: '',
+    email: '',
   });
 
   const handleEdit = () => {
@@ -532,7 +536,7 @@ export function UserDetail() {
           onSuccess: () => {
             setIsEditing(false);
           },
-        },
+        }
       );
     }
   };
@@ -560,7 +564,7 @@ export function UserDetail() {
           {isEditing ? (
             <>
               <button onClick={handleSave} disabled={isUpdating}>
-                {isUpdating ? "Saving..." : "Save"}
+                {isUpdating ? 'Saving...' : 'Save'}
               </button>
               <button onClick={() => setIsEditing(false)}>Cancel</button>
             </>
@@ -576,10 +580,12 @@ export function UserDetail() {
             {user.avatar ? (
               <img src={user.avatar} alt={`${user.name}'s avatar`} />
             ) : (
-              <div className="avatar-placeholder">{user.name.charAt(0).toUpperCase()}</div>
+              <div className="avatar-placeholder">
+                {user.name.charAt(0).toUpperCase()}
+              </div>
             )}
           </div>
-
+          
           <div className="user-details">
             {isEditing ? (
               <div className="user-form">
@@ -618,7 +624,7 @@ export function UserDetail() {
 
 ```typescript
 // src/utils/queryClient.ts
-import { QueryClient } from "@tanstack/react-query";
+import { QueryClient } from '@tanstack/react-query';
 
 export const queryClient = new QueryClient({
   defaultOptions: {
@@ -643,16 +649,18 @@ export const queryClient = new QueryClient({
 
 ```tsx
 // src/App.tsx
-import { QueryClientProvider } from "@tanstack/react-query";
-import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
-import { queryClient } from "./utils/queryClient";
-import { AppRouter } from "./router";
+import { QueryClientProvider } from '@tanstack/react-query';
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
+import { queryClient } from './utils/queryClient';
+import { AppRouter } from './router';
 
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <AppRouter />
-      {process.env.NODE_ENV === "development" && <ReactQueryDevtools initialIsOpen={false} />}
+      {process.env.NODE_ENV === 'development' && (
+        <ReactQueryDevtools initialIsOpen={false} />
+      )}
     </QueryClientProvider>
   );
 }
@@ -662,12 +670,12 @@ export default App;
 
 ```typescript
 // src/hooks/useOptimisticUpdate.ts
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 export function useOptimisticUpdate<TData, TVariables>(
   queryKey: string[],
   updateFn: (oldData: TData, variables: TVariables) => TData,
-  mutationFn: (variables: TVariables) => Promise<TData>,
+  mutationFn: (variables: TVariables) => Promise<TData>
 ) {
   const queryClient = useQueryClient();
 
@@ -703,7 +711,6 @@ export function useOptimisticUpdate<TData, TVariables>(
 ```
 
 ## Notes
-
 - Use TanStack Query for server state management with built-in caching
 - Implement proper error handling and loading states
 - Use optimistic updates for better user experience

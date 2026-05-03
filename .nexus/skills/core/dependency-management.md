@@ -16,15 +16,12 @@ status: active
 # Skill: Dependency Management (Shared)
 
 ## When to Read This
-
 Read this skill when adding new dependencies, updating existing packages, or managing project dependencies.
 
 ## Context
-
 Proper dependency management is crucial for security, stability, and maintainability. This project follows strict guidelines for selecting, updating, and monitoring dependencies. We prioritize security, compatibility, and minimal bundle size while avoiding dependency bloat. Regular audits and updates are essential to maintain a healthy codebase.
 
 ## Steps
-
 1. Research and evaluate potential dependencies for security and maintenance
 2. Check compatibility with current project versions and constraints
 3. Add dependencies using appropriate commands (npm, yarn, pnpm)
@@ -35,7 +32,6 @@ Proper dependency management is crucial for security, stability, and maintainabi
 8. Remove unused dependencies regularly
 
 ## Patterns We Use
-
 - Package managers: npm, yarn, or pnpm based on project setup
 - Version pinning: Use exact versions (^ or ~) for production dependencies
 - Security scanning: Use npm audit, Snyk, or Dependabot for vulnerability detection
@@ -46,9 +42,8 @@ Proper dependency management is crucial for security, stability, and maintainabi
 - Automated updates: Use Dependabot or Renovate for automated dependency updates
 
 ## Anti-Patterns — Never Do This
-
 - ❌ Do not install dependencies without reviewing their security and maintenance
-- ❌ Do not use wildcard versions (\*) in production
+- ❌ Do not use wildcard versions (*) in production
 - ❌ Do not ignore security vulnerabilities in dependencies
 - ❌ Do not install development dependencies as production dependencies
 - ❌ Do not commit node_modules to version control
@@ -139,9 +134,9 @@ class FetchClient implements HttpClient {
 
   async post<T>(url: string, data: any): Promise<T> {
     const response = await fetch(url, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
     });
     return response.json();
   }
@@ -149,7 +144,7 @@ class FetchClient implements HttpClient {
 
 // Usage
 const client: HttpClient = new AxiosClient();
-const data = await client.get<User>("/api/users/1");
+const data = await client.get<User>('/api/users/1');
 ```
 
 ```json
@@ -210,7 +205,6 @@ function Dashboard() {
 ```
 
 ## Notes
-
 - Regularly run `npm audit` and `npm audit fix` to address security vulnerabilities
 - Use `npm ls` or `yarn why` to understand dependency trees and conflicts
 - Monitor bundle size with tools like webpack-bundle-analyzer
