@@ -317,6 +317,37 @@ last_updated: "2026-05-03"
 
 ---
 
+## 🚀 Release Ritual (Canonical)
+
+Use this for **every release** (`vX.Y.Z`) so package output, docs, and app UI stay aligned.
+
+1. **Bump version metadata**
+	- Update `package.json` version
+	- Keep lock metadata in sync when present (`package-lock.json`)
+2. **Update release notes**
+	- Add a new top entry in `CHANGELOG.md`
+3. **Run quality gates (must pass)**
+	- `tsc --noEmit`
+	- `vitest run`
+	- `eslint .`
+	- `npm run build`
+4. **If new features/functionality shipped, sync all consumer-facing surfaces**
+	- **Library docs**: `README.md`, `docs/00-index.md`, `docs/01-overview.md` (and any relevant docs in `docs/`)
+	- **Frontend app UI copy**: version strings / release labels in showcase/templates/pages
+	- **AI-facing docs/context**: `AI_INTEGRATION_GUIDE.md`, `public/context.md`, `public/llms.txt`, `src/app/components/chameleon/ai-manifest.ts` (`CHAMELEON_AI_SUMMARY.version`)
+5. **Update NEXUS memory**
+	- Append release progress in `.nexus/docs/index.md`
+	- Append non-obvious release learnings in `.nexus/docs/knowledge.md`
+6. **Ship**
+	- `git add -A`
+	- `git commit -m "chore: release vX.Y.Z"`
+	- `git tag vX.Y.Z`
+	- `git push origin main --tags`
+
+> Tag push is the CI/CD trigger (`publish.yml`) for npm publication.
+
+---
+
 ## ⚠️ AI Agent Operating Rules
 
 1. **READ this file before EVERY task** — it tells you what to do next
@@ -327,6 +358,7 @@ last_updated: "2026-05-03"
 6. **The progress log is your memory** — add entries so the next agent knows what happened
 7. **Scan `.nexus/docs/knowledge.md` before big decisions** — it prevents repeating mistakes
 8. **After every session, ensure this file reflects reality** — statuses, progress, blockers, next steps
+9. **For releases, follow the canonical release ritual above** — especially docs/UI/README/context sync when new functionality ships
 
 ---
 

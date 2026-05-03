@@ -178,6 +178,8 @@ Optional: Brief supporting detail (1-2 sentences max).
 
 **2026-04-17** — Release steps: (1) bump `package.json` version, (2) add CHANGELOG entry, (3) `tsc --noEmit && vitest run && eslint .` — all must pass, (4) `git add -A && git commit -m "chore: release vX.Y.Z"`, (5) `git tag vX.Y.Z && git push origin main --tags` — the `v*` tag triggers `publish.yml` on GitHub Actions which runs `npm publish`. Update NEXUS `index.md` after.
 
+**2026-05-03 (extension)** — If a release includes new features/functionality, also update all user-facing surfaces in the same release commit: `README.md`, relevant docs in `docs/`, frontend UI release/version strings, and AI/crawler context (`AI_INTEGRATION_GUIDE.md`, `public/context.md`, `public/llms.txt`, `CHAMELEON_AI_SUMMARY.version`). This prevents version drift between npm metadata and product/docs messaging.
+
 ### [gotcha] Light mode buttons with hardcoded white/opacity classes
 
 **2026-04-17** — Buttons styled with `bg-white/5 text-white/60 border-white/10` are invisible in light mode. Use CSS custom properties (`var(--muted)`, `var(--muted-foreground)`, `var(--border)`, `var(--accent)`) instead — these adapt to the active theme and mode automatically.
