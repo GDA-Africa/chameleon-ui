@@ -7,7 +7,7 @@
  * optimized for AI agent consumption. It includes component metadata, prop schemas,
  * usage examples, and complexity scores to help AI agents make intelligent decisions.
  *
- * @version 1.0.7
+ * @version 1.0.8
  * @ai-optimized true
  * @last-updated 2026-04-01
  */
@@ -889,7 +889,7 @@ export function selectRecipeForTask(taskDescription: string): string | null {
  * ════════════════════════════════════════════════════════════════════════════
  */
 export const CHAMELEON_AI_SUMMARY = {
-  version: "1.0.7",
+  version: "1.0.8",
   totalComponents: CHAMELEON_AI_MANIFEST.length,
   categories: {
     atoms: CHAMELEON_AI_MANIFEST.filter((c) => c.category === "atom").length,

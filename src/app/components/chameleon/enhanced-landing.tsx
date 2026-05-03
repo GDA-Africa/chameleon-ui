@@ -262,7 +262,7 @@ export const EnhancedLandingPage: React.FC<EnhancedLandingPageProps> = ({ onNavi
         <Animated type="fadeUp" delay={0}>
           <Badge className="px-4 py-2 text-xs font-black tracking-widest uppercase">
             <Sparkles className="w-3.5 h-3.5 mr-2" />
-            Version 1.0.7 • Stable Release
+            Version 1.0.8 • Stable Release
           </Badge>
         </Animated>
 

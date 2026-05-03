@@ -17,9 +17,14 @@ const SRC = path.join(ROOT, "src", "app", "components", "chameleon");
 const OUT = path.join(ROOT, "lib-src");
 
 const FILES = [
+  "utils.ts",
+  "context.tsx",
+  "animations.tsx",
   "atoms.tsx",
   "molecules.tsx",
   "composites.tsx",
+  "auth-components.tsx",
+  "auth-showcase.tsx",
   "templates.tsx",
   "comprehensive-templates.tsx",
   "comprehensive-templates-part2.tsx",

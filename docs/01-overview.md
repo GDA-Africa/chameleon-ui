@@ -65,7 +65,7 @@ export * from "./utils";         // cn, hexToRgb, generateVariations, getContras
 
 ## Distribution
 
-- npm: `@chameleon-ui-lib/react@1.0.7`
+- npm: `@chameleon-ui-lib/react@1.0.8`
 - Built outputs: `dist/index.js` (ESM), `dist/index.cjs` (CJS), `dist/index.d.ts` (types), `dist/styles.css` (compiled Tailwind)
 - Build pipeline: `vite build` → `vite-plugin-dts` for types → `scripts/build-css.mjs` for CSS
 - Peer deps: `react@18.3.1`, `react-dom@18.3.1` (both marked optional, but required at runtime)
