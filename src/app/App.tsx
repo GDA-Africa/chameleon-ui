@@ -158,7 +158,7 @@ function Workshop() {
         : "bg-[var(--card)]/95";
 
   return (
-    <div className={cn("flex min-h-screen transition-all duration-700 ease-in-out", mainBg, textPrimary)}>
+    <div className={cn("flex min-h-dvh transition-all duration-700 ease-in-out", mainBg, textPrimary)}>
 
       {/* ── Mobile backdrop overlay ───────────────────────────────────────── */}
       <AnimatePresence>
@@ -199,11 +199,11 @@ function Workshop() {
         {/* Logo row + close button (visible on mobile) */}
         <div className={cn("shrink-0 px-4 py-4 flex items-center gap-3 border-b border-[var(--border)]", sidebarCollapsed && "lg:justify-center lg:px-2")}>
           <motion.div
-            className="w-9 h-9 shrink-0 rounded-2xl bg-[var(--primary)] flex items-center justify-center text-[var(--primary-foreground)] shadow-xl shadow-[var(--primary)]/20"
+            className="w-9 h-9 shrink-0 rounded-2xl overflow-hidden shadow-xl shadow-[var(--primary)]/20 bg-white"
             whileHover={{ rotate: 15, scale: 1.1 }}
             transition={{ type: "spring", stiffness: 400, damping: 15 }}
           >
-            <Palette className="w-4 h-4" />
+            <img src="/logo.png" alt="Chameleon UI" className="w-full h-full object-cover" />
           </motion.div>
           <div className={cn("flex-1 min-w-0", sidebarCollapsed && "lg:hidden")}>
             <h1 className={cn("font-black text-sm tracking-tight leading-none truncate", textPrimary)}>Chameleon</h1>
@@ -412,7 +412,7 @@ function Workshop() {
         Mobile (<lg): full width (no offset)
         Desktop (lg+): offset by sidebar width (lg:ml-72)
       */}
-  <main className={cn("flex-1 min-w-0 min-h-dvh flex flex-col transition-[margin] duration-300", sidebarCollapsed ? "lg:ml-20" : "lg:ml-72")}>
+  <main className={cn("flex-1 min-w-0 flex flex-col transition-[margin] duration-300", sidebarCollapsed ? "lg:ml-20" : "lg:ml-72")}>
 
         {/* Header */}
         <header className={cn(
@@ -599,10 +599,10 @@ function Workshop() {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-10">
             <div className="sm:col-span-2 space-y-4">
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-xl bg-[var(--primary)] flex items-center justify-center text-[var(--primary-foreground)]">
-                  <Palette className="w-4 h-4" />
+                <div className="w-8 h-8 rounded-xl overflow-hidden bg-white shrink-0">
+                  <img src="/logo.png" alt="Chameleon UI" className="w-full h-full object-cover" />
                 </div>
-                <span className={cn("font-black text-xl tracking-tighter", textPrimary)}>Chameleon</span>
+                <span className={cn("font-black text-xl tracking-tighter", textPrimary)}>Chameleon UI</span>
               </div>
               <p className={cn("max-w-xs leading-relaxed text-sm font-medium", textMuted)}>
                 The future of polymorphic user interfaces. Built for developers who refuse to compromise on design.

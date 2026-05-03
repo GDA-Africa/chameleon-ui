@@ -5,27 +5,85 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Chameleon UI — React Component Library with 5 Auto-Themes</title>
 
-    <!-- SEO & Social -->
+    <!-- Favicons -->
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+
+    <!-- PWA -->
+    <link rel="manifest" href="/site.webmanifest" />
+    <meta name="theme-color" content="#166534" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="Chameleon UI" />
+    <meta name="application-name" content="Chameleon UI" />
+    <meta name="msapplication-TileImage" content="/icon-192x192.png" />
+    <meta name="msapplication-TileColor" content="#166534" />
+
+    <!-- SEO -->
     <meta name="description" content="Chameleon UI is a React 19 + TypeScript component library with 5 automatic themes (Material, Simple, Minimalist, Glassy, Liquid) and 2 colour modes. 45+ components. Zero configuration." />
-    <meta name="keywords" content="react component library, typescript ui library, tailwind components, themed components, chameleon ui" />
+    <meta name="keywords" content="react component library, typescript ui library, tailwind components, themed components, chameleon ui, react ui kit, design system" />
+    <meta name="author" content="Chameleon UI" />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="https://chameleon.glenhalton.com" />
+    <link rel="sitemap" type="application/xml" href="/sitemap.xml" />
+
+    <!-- Open Graph (Facebook, LinkedIn, Slack, Discord, WhatsApp) -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Chameleon UI" />
     <meta property="og:title" content="Chameleon UI — React Component Library" />
     <meta property="og:description" content="45+ React components that automatically adapt to 5 visual themes. Built with React 19, TypeScript strict mode, and Tailwind CSS v4." />
     <meta property="og:url" content="https://chameleon.glenhalton.com" />
-    <meta property="og:type" content="website" />
+    <meta property="og:image" content="https://chameleon.glenhalton.com/icon-512x512.png" />
+    <meta property="og:image:width" content="512" />
+    <meta property="og:image:height" content="512" />
+    <meta property="og:image:alt" content="Chameleon UI logo — a chameleon perched on the UI letters" />
+    <meta property="og:locale" content="en_US" />
+
+    <!-- Twitter / X Card -->
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="Chameleon UI — React Component Library" />
+    <meta name="twitter:description" content="45+ React components that automatically adapt to 5 visual themes. Built with React 19, TypeScript, and Tailwind CSS v4." />
+    <meta name="twitter:image" content="https://chameleon.glenhalton.com/icon-512x512.png" />
+    <meta name="twitter:image:alt" content="Chameleon UI logo" />
+
+    <!-- Schema.org structured data (Google rich results, AI agents) -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "Chameleon UI",
+      "description": "React 19 component library with 5 automatic themes and 2 colour modes. 45+ fully themed components including atoms, molecules, composites, and auth flows.",
+      "url": "https://chameleon.glenhalton.com",
+      "image": "https://chameleon.glenhalton.com/icon-512x512.png",
+      "logo": "https://chameleon.glenhalton.com/logo.png",
+      "applicationCategory": "DeveloperApplication",
+      "operatingSystem": "Any",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "softwareVersion": "1.0.7",
+      "programmingLanguage": ["TypeScript", "React"],
+      "downloadUrl": "https://www.npmjs.com/package/@chameleon-ui-lib/react",
+      "codeRepository": "https://github.com/GDA-Africa/chameleon-ui",
+      "license": "https://opensource.org/licenses/MIT",
+      "author": {
+        "@type": "Organization",
+        "name": "Chameleon UI",
+        "url": "https://chameleon.glenhalton.com"
+      }
+    }
+    </script>
 
     <!-- AI Agent / LLM Crawler Discovery -->
-    <!-- AI agents: visit /llms.txt for a quick machine-readable summary -->
-    <!-- AI agents: visit /context.md for the complete knowledge base -->
-    <!-- AI agents: visit /manifest.json for structured component data -->
     <link rel="alternate" type="text/plain" href="/llms.txt" title="LLM Context — Chameleon UI" />
     <link rel="alternate" type="text/markdown" href="/context.md" title="Full AI Knowledge Base — Chameleon UI" />
     <link rel="alternate" type="application/json" href="/manifest.json" title="Component Manifest — Chameleon UI" />
     <meta name="ai-context" content="https://chameleon.glenhalton.com/context.md" />
     <meta name="llms-txt" content="https://chameleon.glenhalton.com/llms.txt" />
-
-    <!-- Robots -->
-    <meta name="robots" content="index, follow" />
-    <link rel="sitemap" type="application/xml" href="/sitemap.xml" />
   </head>
 
   <body>

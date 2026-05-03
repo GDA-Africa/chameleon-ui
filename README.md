@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="https://chameleon.glenhalton.com/logo.png" alt="Chameleon UI" width="160" />
+</p>
+
 # Chameleon UI
 
 [![npm](https://img.shields.io/npm/v/@chameleon-ui-lib/react?color=7c3aed)](https://www.npmjs.com/package/@chameleon-ui-lib/react)
