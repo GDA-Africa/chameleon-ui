@@ -181,3 +181,7 @@ Optional: Brief supporting detail (1-2 sentences max).
 ### [gotcha] Light mode buttons with hardcoded white/opacity classes
 
 **2026-04-17** — Buttons styled with `bg-white/5 text-white/60 border-white/10` are invisible in light mode. Use CSS custom properties (`var(--muted)`, `var(--muted-foreground)`, `var(--border)`, `var(--accent)`) instead — these adapt to the active theme and mode automatically.
+
+### [package] npm publish filtering can silently drop dist artifacts
+
+**2026-05-03** — Because `.gitignore` excludes `dist/`, npm publish/pack can omit build outputs unless `package.json` explicitly whitelists them via `files`. This caused consumer `TS2307` errors for `@chameleon-ui-lib/react` since `exports` pointed at missing `dist/index.*` files. Keep a `files` whitelist and verify every release with `npm pack --dry-run`.

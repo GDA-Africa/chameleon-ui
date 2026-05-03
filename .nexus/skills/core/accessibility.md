@@ -16,15 +16,12 @@ status: active
 # Skill: Accessibility (React + Vite)
 
 ## When to Read This
-
 Read this skill when designing or implementing user interfaces, forms, navigation, or any interactive elements in React components.
 
 ## Context
-
 This project follows WCAG 2.1 AA guidelines and prioritizes accessibility for all users, including those with disabilities. We use semantic HTML, proper ARIA attributes, keyboard navigation, and screen reader compatibility. Accessibility is built into our development process with automated testing and manual verification.
 
 ## Steps
-
 1. Use semantic HTML elements and proper heading hierarchy
 2. Ensure all interactive elements are keyboard accessible
 3. Add appropriate ARIA labels and roles for complex widgets
@@ -35,7 +32,6 @@ This project follows WCAG 2.1 AA guidelines and prioritizes accessibility for al
 8. Validate accessibility with automated tools and manual testing
 
 ## Patterns We Use
-
 - Semantic HTML: Use proper HTML elements (button, nav, main, section, etc.)
 - Keyboard navigation: Tab order, focus indicators, keyboard shortcuts
 - ARIA attributes: Labels, roles, live regions, and state management
@@ -46,7 +42,6 @@ This project follows WCAG 2.1 AA guidelines and prioritizes accessibility for al
 - Testing: axe-core, eslint-plugin-jsx-a11y, manual screen reader testing
 
 ## Anti-Patterns — Never Do This
-
 - ❌ Do not use div or span for interactive elements
 - ❌ Do not remove focus outlines without providing alternatives
 - ❌ Do not rely solely on color to convey information
@@ -60,11 +55,11 @@ This project follows WCAG 2.1 AA guidelines and prioritizes accessibility for al
 
 ```tsx
 // src/components/Button/Button.tsx
-import { forwardRef } from "react";
-import styles from "./Button.module.css";
+import { forwardRef } from 'react';
+import styles from './Button.module.css';
 
-type ButtonVariant = "primary" | "secondary" | "ghost" | "danger";
-type ButtonSize = "sm" | "md" | "lg";
+type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger';
+type ButtonSize = 'sm' | 'md' | 'lg';
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: ButtonVariant;
@@ -78,30 +73,30 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   (
     {
       children,
-      variant = "primary",
-      size = "md",
+      variant = 'primary',
+      size = 'md',
       isLoading = false,
       leftIcon,
       rightIcon,
-      className = "",
+      className = '',
       disabled,
-      "aria-label": ariaLabel,
+      'aria-label': ariaLabel,
       ...props
     },
-    ref,
+    ref
   ) => {
     const buttonClasses = [
       styles.button,
       styles[`button--${variant}`],
       styles[`button--${size}`],
-      isLoading && styles["button--loading"],
+      isLoading && styles['button--loading'],
       className,
     ]
       .filter(Boolean)
-      .join(" ");
+      .join(' ');
 
     // Generate accessible name if no aria-label provided
-    const accessibleName = ariaLabel || (typeof children === "string" ? children : undefined);
+    const accessibleName = ariaLabel || (typeof children === 'string' ? children : undefined);
 
     return (
       <button
@@ -126,29 +121,22 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         {isLoading && (
           <span className={styles.spinner} aria-hidden="true">
             <svg className={styles.spinnerIcon} viewBox="0 0 50 50">
-              <circle
-                className={styles.spinnerPath}
-                cx="25"
-                cy="25"
-                r="20"
-                fill="none"
-                strokeWidth="4"
-              />
+              <circle className={styles.spinnerPath} cx="25" cy="25" r="20" fill="none" strokeWidth="4" />
             </svg>
           </span>
         )}
       </button>
     );
-  },
+  }
 );
 
-Button.displayName = "Button";
+Button.displayName = 'Button';
 ```
 
 ```tsx
 // src/components/Form/Form.tsx
-import { useState } from "react";
-import { useForm } from "./useForm";
+import { useState } from 'react';
+import { useForm } from './useForm';
 
 interface FormData {
   email: string;
@@ -158,32 +146,39 @@ interface FormData {
 }
 
 export function LoginForm() {
-  const { values, errors, isValid, handleChange, handleSubmit, isSubmitting } = useForm<FormData>({
+  const {
+    values,
+    errors,
+    isValid,
+    handleChange,
+    handleSubmit,
+    isSubmitting,
+  } = useForm<FormData>({
     initialValues: {
-      email: "",
-      password: "",
-      confirmPassword: "",
+      email: '',
+      password: '',
+      confirmPassword: '',
       newsletter: false,
     },
     validate: (values) => {
       const errors: Partial<FormData> = {};
-
+      
       if (!values.email) {
-        errors.email = "Email is required";
+        errors.email = 'Email is required';
       } else if (!/\S+@\S+\.\S+/.test(values.email)) {
-        errors.email = "Please enter a valid email address";
+        errors.email = 'Please enter a valid email address';
       }
-
+      
       if (!values.password) {
-        errors.password = "Password is required";
+        errors.password = 'Password is required';
       } else if (values.password.length < 8) {
-        errors.password = "Password must be at least 8 characters";
+        errors.password = 'Password must be at least 8 characters';
       }
-
+      
       if (values.password !== values.confirmPassword) {
-        errors.confirmPassword = "Passwords do not match";
+        errors.confirmPassword = 'Passwords do not match';
       }
-
+      
       return errors;
     },
   });
@@ -193,9 +188,9 @@ export function LoginForm() {
   const onSubmit = async (data: FormData) => {
     try {
       // Submit form
-      setSubmitMessage("Form submitted successfully!");
+      setSubmitMessage('Form submitted successfully!');
     } catch (error) {
-      setSubmitMessage("An error occurred. Please try again.");
+      setSubmitMessage('An error occurred. Please try again.');
     }
   };
 
@@ -203,7 +198,11 @@ export function LoginForm() {
     <form onSubmit={handleSubmit(onSubmit)} noValidate>
       {/* Live region for form messages */}
       {submitMessage && (
-        <div role="alert" aria-live="polite" className="form-message">
+        <div 
+          role="alert" 
+          aria-live="polite"
+          className="form-message"
+        >
           {submitMessage}
         </div>
       )}
@@ -218,8 +217,8 @@ export function LoginForm() {
           name="email"
           value={values.email}
           onChange={handleChange}
-          className={`form-input ${errors.email ? "error" : ""}`}
-          aria-describedby={errors.email ? "email-error" : undefined}
+          className={`form-input ${errors.email ? 'error' : ''}`}
+          aria-describedby={errors.email ? 'email-error' : undefined}
           required
           autoComplete="email"
         />
@@ -240,8 +239,8 @@ export function LoginForm() {
           name="password"
           value={values.password}
           onChange={handleChange}
-          className={`form-input ${errors.password ? "error" : ""}`}
-          aria-describedby={errors.password ? "password-error" : undefined}
+          className={`form-input ${errors.password ? 'error' : ''}`}
+          aria-describedby={errors.password ? 'password-error' : undefined}
           required
           autoComplete="current-password"
         />
@@ -262,8 +261,8 @@ export function LoginForm() {
           name="confirmPassword"
           value={values.confirmPassword}
           onChange={handleChange}
-          className={`form-input ${errors.confirmPassword ? "error" : ""}`}
-          aria-describedby={errors.confirmPassword ? "confirm-password-error" : undefined}
+          className={`form-input ${errors.confirmPassword ? 'error' : ''}`}
+          aria-describedby={errors.confirmPassword ? 'confirm-password-error' : undefined}
           required
           autoComplete="current-password"
         />
@@ -287,15 +286,15 @@ export function LoginForm() {
         </label>
       </div>
 
-      <button
-        type="submit"
+      <button 
+        type="submit" 
         className="btn btn--primary"
         disabled={!isValid || isSubmitting}
         aria-describedby="submit-help"
       >
-        {isSubmitting ? "Submitting..." : "Submit"}
+        {isSubmitting ? 'Submitting...' : 'Submit'}
       </button>
-
+      
       <div id="submit-help" className="form-help">
         Fields marked with * are required
       </div>
@@ -306,8 +305,8 @@ export function LoginForm() {
 
 ```tsx
 // src/components/Modal/Modal.tsx
-import { useEffect, useRef, ReactNode } from "react";
-import { createPortal } from "react-dom";
+import { useEffect, useRef, ReactNode } from 'react';
+import { createPortal } from 'react-dom';
 
 interface ModalProps {
   isOpen: boolean;
@@ -324,12 +323,12 @@ export function Modal({ isOpen, onClose, title, children }: ModalProps) {
     if (isOpen) {
       // Store the previously focused element
       previousActiveElement.current = document.activeElement as HTMLElement;
-
+      
       // Focus the modal
       const focusableElement = modalRef.current?.querySelector(
-        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
       ) as HTMLElement;
-
+      
       if (focusableElement) {
         focusableElement.focus();
       }
@@ -342,13 +341,13 @@ export function Modal({ isOpen, onClose, title, children }: ModalProps) {
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (isOpen && e.key === "Escape") {
+      if (isOpen && e.key === 'Escape') {
         onClose();
       }
     };
 
-    document.addEventListener("keydown", handleKeyDown);
-    return () => document.removeEventListener("keydown", handleKeyDown);
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, onClose]);
 
   if (!isOpen) return null;
@@ -365,44 +364,59 @@ export function Modal({ isOpen, onClose, title, children }: ModalProps) {
         }
       }}
     >
-      <div ref={modalRef} className="modal-content" role="document">
+      <div
+        ref={modalRef}
+        className="modal-content"
+        role="document"
+      >
         <header className="modal-header">
           <h2 id="modal-title">{title}</h2>
-          <button className="modal-close" onClick={onClose} aria-label="Close modal" type="button">
+          <button
+            className="modal-close"
+            onClick={onClose}
+            aria-label="Close modal"
+            type="button"
+          >
             ×
           </button>
         </header>
-        <div className="modal-body">{children}</div>
+        <div className="modal-body">
+          {children}
+        </div>
       </div>
     </div>,
-    document.body,
+    document.body
   );
 }
 ```
 
 ```tsx
 // src/components/SkipLink/SkipLink.tsx
-import { useEffect } from "react";
+import { useEffect } from 'react';
 
 export function SkipLink() {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       // Show skip link when Tab is pressed
-      if (e.key === "Tab" && !e.shiftKey) {
-        const skipLink = document.getElementById("skip-to-content");
+      if (e.key === 'Tab' && !e.shiftKey) {
+        const skipLink = document.getElementById('skip-to-content');
         if (skipLink) {
-          skipLink.style.opacity = "1";
-          skipLink.style.transform = "translateY(0)";
+          skipLink.style.opacity = '1';
+          skipLink.style.transform = 'translateY(0)';
         }
       }
     };
 
-    document.addEventListener("keydown", handleKeyDown);
-    return () => document.removeEventListener("keydown", handleKeyDown);
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
   }, []);
 
   return (
-    <a id="skip-to-content" href="#main-content" className="skip-link">
+    <a
+      id="skip-to-content"
+      href="#main-content"
+      className="skip-link"
+    >
       Skip to main content
     </a>
   );
@@ -411,7 +425,7 @@ export function SkipLink() {
 
 ```tsx
 // src/hooks/useFocusTrap.ts
-import { useEffect, useRef } from "react";
+import { useEffect, useRef } from 'react';
 
 export function useFocusTrap(isActive: boolean) {
   const containerRef = useRef<HTMLElement>(null);
@@ -421,14 +435,14 @@ export function useFocusTrap(isActive: boolean) {
 
     const container = containerRef.current;
     const focusableElements = container.querySelectorAll(
-      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
+      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
     );
-
+    
     const firstElement = focusableElements[0] as HTMLElement;
     const lastElement = focusableElements[focusableElements.length - 1] as HTMLElement;
 
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Tab") {
+      if (e.key === 'Tab') {
         if (e.shiftKey) {
           if (document.activeElement === firstElement) {
             e.preventDefault();
@@ -443,8 +457,8 @@ export function useFocusTrap(isActive: boolean) {
       }
     };
 
-    document.addEventListener("keydown", handleKeyDown);
-    return () => document.removeEventListener("keydown", handleKeyDown);
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
   }, [isActive]);
 
   return containerRef;
@@ -506,9 +520,7 @@ a:focus {
   border: 2px solid var(--border-color);
   border-radius: 4px;
   font-size: 1rem;
-  transition:
-    border-color 0.2s ease,
-    box-shadow 0.2s ease;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .form-input:focus {
@@ -613,7 +625,6 @@ a:focus {
 ```
 
 ## Notes
-
 - Use semantic HTML5 elements for better screen reader support
 - Implement skip links for keyboard users
 - Test color contrast with tools like WebAIM Contrast Checker

@@ -16,15 +16,12 @@ status: active
 # Skill: Code Review (Shared)
 
 ## When to Read This
-
 Read this skill before reviewing pull requests or when your code is being reviewed.
 
 ## Context
-
 Code review is a critical quality gate that ensures code correctness, maintainability, and knowledge sharing. Reviews should be constructive, thorough, and focused on the code rather than the person. The goal is to improve code quality while maintaining a positive team culture. All team members are expected to participate in code reviews.
 
 ## Steps
-
 1. Understand the context and purpose of the changes
 2. Review the code for correctness, readability, and maintainability
 3. Check for security vulnerabilities and performance issues
@@ -33,7 +30,6 @@ Code review is a critical quality gate that ensures code correctness, maintainab
 6. Approve when satisfied or request changes if issues remain
 
 ## Patterns We Use
-
 - Focus on logic, architecture, and potential edge cases
 - Look for consistent coding style and naming conventions
 - Verify error handling and input validation
@@ -42,7 +38,6 @@ Code review is a critical quality gate that ensures code correctness, maintainab
 - Confirm tests cover the changes adequately
 
 ## Anti-Patterns — Never Do This
-
 - ❌ Do not focus on minor style issues in the main review
 - ❌ Do not make personal comments or use negative language
 - ❌ Do not approve code with known security vulnerabilities
@@ -84,14 +79,13 @@ interface User {
 
 function processUser(user: User | null): string {
   if (!user) {
-    throw new Error("User is required");
+    throw new Error('User is required');
   }
   return user.name.toUpperCase();
 }
 ```
 
 ## Notes
-
 - Use emojis to provide quick feedback (👍 approve, 🤔 request changes, 🚀 ready to merge)
 - Focus on high-impact issues first (security, performance, correctness)
 - Suggest improvements with reasoning, not just criticism

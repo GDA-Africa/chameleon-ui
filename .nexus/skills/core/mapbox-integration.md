@@ -26,11 +26,9 @@ status: active
 # Skill: Mapbox Integration (Shared)
 
 ## When to Read This
-
 Read this skill when adding Mapbox maps to any application — whether initializing the SDK for the first time, building geospatial features, optimizing tile costs, implementing offline-first behaviour, or designing map UX. Read it before writing a single line of Mapbox code.
 
 ## Context
-
 Mapbox is a powerful but cost-sensitive platform. Every tile load, every API call to the Directions/Geocoding/Search APIs, every SDK initialisation can accumulate real billing. A senior developer treats the Mapbox account budget as a first-class product concern alongside UX. This skill codifies patterns that simultaneously keep maps fast, beautiful, offline-capable, and within budget. It is framework-agnostic and applies to React, Next.js, Vue, Svelte, React Native, and plain JS.
 
 ---
@@ -53,14 +51,12 @@ Mapbox is a powerful but cost-sensitive platform. Every tile load, every API cal
 ## Patterns We Use
 
 ### Token Management
-
 - **One scoped token per environment** — dev, staging, prod each have separate tokens with minimum required scopes.
 - **Tokens live in environment variables only** — `NEXT_PUBLIC_MAPBOX_TOKEN`, `VITE_MAPBOX_TOKEN`, `EXPO_PUBLIC_MAPBOX_TOKEN` etc. Never in source code or committed files.
 - **URL restrictions on production tokens** — lock the prod token to the production domain via Mapbox token URL restrictions. This prevents token abuse from third parties who find it in your JS bundle.
 - **Rotate tokens on any accidental exposure** — treat a leaked token like a leaked password. Revoke immediately and rotate.
 
 ### SDK Initialisation
-
 - **Single map instance** — store the `mapboxgl.Map` instance in a module-level ref or a React ref. Never re-create the instance; update data through sources and layers instead.
 - **`preserveDrawingBuffer: false`** (default) — only set `true` if you need `canvas.toDataURL()`. It cuts GPU memory usage.
 - **`fadeDuration: 0`** during testing — avoids flaky screenshot assertions. Restore to `300` (default) in production for smooth tile transitions.
@@ -68,7 +64,6 @@ Mapbox is a powerful but cost-sensitive platform. Every tile load, every API cal
 - **`collectResourceTiming: false`** in production — reduces overhead unless you are profiling tile load times.
 
 ### Cost Optimisation
-
 - **Style simplification** — every layer in a style costs render time and tile size. Remove unused layers in Studio before publishing. A stripped-down style can cut tile bandwidth 30–50%.
 - **Vector over raster tiles** — use vector styles (`mapbox://styles/mapbox/streets-v12`) instead of raster when you need interactivity. Vector tiles are smaller and style changes don't require new tile downloads.
 - **Tighten `maxZoom` and `minZoom`** — if your app never zooms past 16, set `maxZoom: 16`. Tiles above that level are never requested.
@@ -79,7 +74,6 @@ Mapbox is a powerful but cost-sensitive platform. Every tile load, every API cal
 - **Avoid map loads in tests** — mock the Mapbox SDK in unit and integration tests. Do not initialise a real map in CI — it counts against your MAU quota and is slow.
 
 ### Source & Layer Architecture
-
 ```
 Map
 ├── Source: geojson-points    (raw GeoJSON, cluster: true)
@@ -92,22 +86,20 @@ Map
 ├── Layer: routes             (line)
 └── Layer: route-arrows       (symbol, icon-image: arrow)
 ```
-
 - **One source, many layers** — never duplicate source data. Drive multiple visual layers from a single GeoJSON source.
 - **Use expressions, not JavaScript filtering** — `filter` and `paint` expressions run on the GPU render thread. Filtering in JS and re-setting source data forces a CPU round-trip.
 - **Update data, not layers** — call `source.setData(newGeoJSON)` to update map data. Do not remove and re-add layers; it causes a flash.
 - **Add layers after `map.on('load')`** — never add layers before the style is fully loaded. Use a ready-state flag or queue pending operations.
 
 ### Offline-First (Web)
-
 ```javascript
 // service-worker.js — cache Mapbox tiles with a Cache-First strategy
-const TILE_CACHE = "mapbox-tiles-v1";
-const TILE_ORIGINS = ["https://api.mapbox.com", "https://events.mapbox.com"];
+const TILE_CACHE = 'mapbox-tiles-v1';
+const TILE_ORIGINS = ['https://api.mapbox.com', 'https://events.mapbox.com'];
 
-self.addEventListener("fetch", (event) => {
+self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
-  if (TILE_ORIGINS.some((origin) => url.origin === origin) && event.request.method === "GET") {
+  if (TILE_ORIGINS.some((origin) => url.origin === origin) && event.request.method === 'GET') {
     event.respondWith(
       caches.open(TILE_CACHE).then(async (cache) => {
         const cached = await cache.match(event.request);
@@ -115,69 +107,61 @@ self.addEventListener("fetch", (event) => {
         const response = await fetch(event.request);
         if (response.ok) cache.put(event.request, response.clone());
         return response;
-      }),
+      })
     );
   }
 });
 ```
-
 - **Cache-first for tiles, network-first for style JSON** — tiles are immutable once served (their URL encodes the version). Style JSON must reflect the latest published version.
 - **Prefetch a bounding-box tile set** — for apps that know which region the user will view (e.g. a field worker's assigned zone), prefetch that bounding box at zoom levels 10–16 on first login.
 - **Storage quota guard** — check `navigator.storage.estimate()` before prefetching. Abort and warn the user if available quota is below a safe threshold (e.g. 50 MB).
 - **Stale-while-revalidate for Geocoding** — cache geocode results in IndexedDB. Serve the cached result immediately, revalidate in the background, and update if the result has changed.
 
 ### Offline-First (React Native / Mobile)
-
 - **Use the Mapbox Offline SDK** — `OfflineManager.createPack()` with a precise bounding box, min/max zoom, and the style URL. One offline pack per user region, not one global pack.
 - **Measure pack size before download** — call `estimateTiles()` before creating a pack. Display estimated MB to the user and request confirmation for packs > 20 MB.
 - **Incremental sync on reconnect** — when the device comes back online, check whether the offline pack is stale (compare `updatedAt` with the cached style version) and offer to refresh.
 - **Delete stale packs** — run `OfflineManager.deletePack()` on logout and on app uninstall hook to respect device storage.
 
 ### Markers, Popups & Clustering
-
 ```typescript
 // ✅ Efficient cluster + popup pattern (React)
-import Map, { Source, Layer, Popup } from "react-map-gl";
-import type { MapLayerMouseEvent } from "react-map-gl";
+import Map, { Source, Layer, Popup } from 'react-map-gl';
+import type { MapLayerMouseEvent } from 'react-map-gl';
 
 const clusterLayer: LayerProps = {
-  id: "clusters",
-  type: "circle",
-  source: "my-data",
-  filter: ["has", "point_count"],
+  id: 'clusters',
+  type: 'circle',
+  source: 'my-data',
+  filter: ['has', 'point_count'],
   paint: {
-    "circle-color": ["step", ["get", "point_count"], "#51bbd6", 10, "#f1f075", 30, "#f28cb1"],
-    "circle-radius": ["step", ["get", "point_count"], 20, 10, 30, 30, 40],
+    'circle-color': ['step', ['get', 'point_count'], '#51bbd6', 10, '#f1f075', 30, '#f28cb1'],
+    'circle-radius': ['step', ['get', 'point_count'], 20, 10, 30, 30, 40],
   },
 };
 
 const unclusteredLayer: LayerProps = {
-  id: "unclustered-point",
-  type: "circle",
-  source: "my-data",
-  filter: ["!", ["has", "point_count"]],
-  paint: { "circle-color": "#11b4da", "circle-radius": 8 },
+  id: 'unclustered-point',
+  type: 'circle',
+  source: 'my-data',
+  filter: ['!', ['has', 'point_count']],
+  paint: { 'circle-color': '#11b4da', 'circle-radius': 8 },
 };
 
 // Click handler: expand cluster or show popup
 function onMapClick(event: MapLayerMouseEvent, mapRef: RefObject<MapRef>) {
   const map = mapRef.current?.getMap();
   if (!map) return;
-  const features = map.queryRenderedFeatures(event.point, {
-    layers: ["clusters", "unclustered-point"],
-  });
+  const features = map.queryRenderedFeatures(event.point, { layers: ['clusters', 'unclustered-point'] });
   if (!features.length) return;
   const feature = features[0];
 
-  if (feature.layer.id === "clusters") {
+  if (feature.layer.id === 'clusters') {
     const clusterId = feature.properties?.cluster_id;
-    const source = map.getSource("my-data") as mapboxgl.GeoJSONSource;
+    const source = map.getSource('my-data') as mapboxgl.GeoJSONSource;
     source.getClusterExpansionZoom(clusterId, (err, zoom) => {
       if (err || zoom === null) return;
-      map.easeTo({
-        center: (feature.geometry as GeoJSON.Point).coordinates as [number, number],
-        zoom,
-      });
+      map.easeTo({ center: (feature.geometry as GeoJSON.Point).coordinates as [number, number], zoom });
     });
   } else {
     // Show popup for individual point
@@ -185,13 +169,11 @@ function onMapClick(event: MapLayerMouseEvent, mapRef: RefObject<MapRef>) {
   }
 }
 ```
-
 - **Never use HTML Markers for > 500 points** — `mapboxgl.Marker` creates a DOM element per point. Use symbol layers + GeoJSON instead; they render on the GPU.
 - **Popups are singletons** — keep one `Popup` instance and move it. Do not create/destroy popups on each click.
 - **Accessibility on popups** — add `aria-live="polite"` to the popup container and trap focus inside when open. Provide a keyboard-accessible close trigger.
 
 ### Geocoding & Search
-
 ```typescript
 // ✅ Debounced, aborted, typed geocoding
 let geocodeController: AbortController | null = null;
@@ -200,12 +182,10 @@ async function geocode(query: string): Promise<GeocodingFeature[]> {
   if (geocodeController) geocodeController.abort();
   geocodeController = new AbortController();
 
-  const url = new URL(
-    "https://api.mapbox.com/geocoding/v5/mapbox.places/" + encodeURIComponent(query) + ".json",
-  );
-  url.searchParams.set("access_token", import.meta.env.VITE_MAPBOX_TOKEN);
-  url.searchParams.set("limit", "5");
-  url.searchParams.set("country", "za"); // Restrict to relevant countries — ALWAYS do this
+  const url = new URL('https://api.mapbox.com/geocoding/v5/mapbox.places/' + encodeURIComponent(query) + '.json');
+  url.searchParams.set('access_token', import.meta.env.VITE_MAPBOX_TOKEN);
+  url.searchParams.set('limit', '5');
+  url.searchParams.set('country', 'za'); // Restrict to relevant countries — ALWAYS do this
 
   const res = await fetch(url, { signal: geocodeController.signal });
   if (!res.ok) throw new Error(`Geocoding failed: ${res.status}`);
@@ -213,14 +193,12 @@ async function geocode(query: string): Promise<GeocodingFeature[]> {
   return data.features;
 }
 ```
-
 - **Always set `country` and `bbox` parameters** — restricts results to your app's operational geography and reduces irrelevant suggestions. This also saves API calls because less fuzzy matching occurs server-side.
 - **Set `types`** — pass `types=address,poi` or whichever types your app needs. Broader types return more suggestions and cost the same per call, but waste round-trips displaying irrelevant results.
 - **Debounce at 300 ms minimum** — fire the geocode request only after the user pauses typing.
 - **Cache results in memory by query string** — a `Map<string, GeocodingFeature[]>` prevents re-fetching the same query within a session.
 
 ### Directions & Navigation
-
 ```typescript
 // ✅ Directions with caching and abort
 const directionsCache = new Map<string, DirectionsRoute>();
@@ -228,18 +206,18 @@ const directionsCache = new Map<string, DirectionsRoute>();
 async function getRoute(
   origin: [number, number],
   destination: [number, number],
-  profile: "driving" | "walking" | "cycling" = "driving",
+  profile: 'driving' | 'walking' | 'cycling' = 'driving'
 ): Promise<DirectionsRoute> {
-  const cacheKey = `${profile}:${origin.join(",")}:${destination.join(",")}`;
+  const cacheKey = `${profile}:${origin.join(',')}:${destination.join(',')}`;
   if (directionsCache.has(cacheKey)) return directionsCache.get(cacheKey)!;
 
   const url = new URL(
-    `https://api.mapbox.com/directions/v5/mapbox/${profile}/${origin.join(",")};${destination.join(",")}.json`,
+    `https://api.mapbox.com/directions/v5/mapbox/${profile}/${origin.join(',')};${destination.join(',')}.json`
   );
-  url.searchParams.set("access_token", import.meta.env.VITE_MAPBOX_TOKEN);
-  url.searchParams.set("geometries", "geojson");
-  url.searchParams.set("overview", "full");
-  url.searchParams.set("steps", "true");
+  url.searchParams.set('access_token', import.meta.env.VITE_MAPBOX_TOKEN);
+  url.searchParams.set('geometries', 'geojson');
+  url.searchParams.set('overview', 'full');
+  url.searchParams.set('steps', 'true');
 
   const res = await fetch(url);
   if (!res.ok) throw new Error(`Directions failed: ${res.status}`);
@@ -249,19 +227,16 @@ async function getRoute(
   return route;
 }
 ```
-
 - **Route on the server for authenticated workflows** — if the user is logged in, proxy Directions calls through your backend. This hides the token entirely from the client and lets you rate-limit per user.
 - **`overview: simplified`** unless you need the full route — simplified geometry is 70–90% smaller and sufficient for displaying a route line without turn-by-turn arrows.
 
 ### Custom Styles
-
 - **Create styles in Studio, load by URL** — do not define styles in code. A style URL (`mapbox://styles/your-account/style-id`) allows updating the style without a code deploy.
 - **Use `slot` API (GL JS v3+)** — add custom layers to named slots (`'bottom'`, `'middle'`, `'top'`) so they survive style updates without layer ordering hacks.
 - **Dark/light mode** — keep two published styles (one light, one dark). Switch by calling `map.setStyle(newStyleUrl, { diff: true })`. The `diff: true` option applies only changed layers, preserving custom sources and layers already added by your app.
 - **Sprite sheet hygiene** — only include icons you use in the sprite sheet. Large sprite sheets increase style load time.
 
 ### Responsive & UX Patterns
-
 - **`map.resize()` on container size change** — call this inside a `ResizeObserver` callback. Without it, the canvas does not fill its container after a layout shift.
 - **`fitBounds` with padding** — always pass `padding` to `fitBounds` / `flyTo` so map UI overlays (sidebars, bottom sheets) don't obscure the points of interest.
 - **Disable scroll-to-zoom inside page** — set `scrollZoom: false` on maps embedded inside a scrollable page. Enable it only on mouse-enter and disable on mouse-leave, or only when the user holds a modifier key.
@@ -270,12 +245,11 @@ async function getRoute(
 - **Navigation controls placement** — place `NavigationControl` in the top-right by convention. If right-to-left (RTL) languages are supported, mirror to top-left or let the locale drive it.
 
 ### React-Specific Patterns (react-map-gl)
-
 ```tsx
 // ✅ Controlled map with persisted viewport
-import Map, { NavigationControl, GeolocateControl } from "react-map-gl";
-import { useState, useCallback } from "react";
-import type { ViewState } from "react-map-gl";
+import Map, { NavigationControl, GeolocateControl } from 'react-map-gl';
+import { useState, useCallback } from 'react';
+import type { ViewState } from 'react-map-gl';
 
 const INITIAL_VIEW: ViewState = {
   longitude: 28.047305,
@@ -292,19 +266,18 @@ export function AppMap() {
   // Persist viewport to localStorage so returning users land where they left off
   const onMove = useCallback(({ viewState }: { viewState: ViewState }) => {
     setViewState(viewState);
-    localStorage.setItem("map-viewport", JSON.stringify(viewState));
+    localStorage.setItem('map-viewport', JSON.stringify(viewState));
   }, []);
 
   return (
     <Map
       {...viewState}
       onMove={onMove}
-      style={{ width: "100%", height: "100%" }}
+      style={{ width: '100%', height: '100%' }}
       mapStyle="mapbox://styles/mapbox/streets-v12"
       mapboxAccessToken={import.meta.env.VITE_MAPBOX_TOKEN}
-      reuseMaps // ← Reuse WebGL context across component remounts
-      maxBounds={[
-        // ← Restrict to Southern Africa
+      reuseMaps                 // ← Reuse WebGL context across component remounts
+      maxBounds={[             // ← Restrict to Southern Africa
         [16.0, -35.0],
         [33.0, -22.0],
       ]}
@@ -319,20 +292,17 @@ export function AppMap() {
   );
 }
 ```
-
 - **`reuseMaps` prop** — always set this on `react-map-gl`. It reuses the WebGL context and the map's backing canvas when the component remounts, which counts as one map load rather than two.
 - **Wrap the map in `React.memo`** — the map container should not re-render from unrelated parent state changes.
 - **Co-locate layer definitions as constants outside the component** — layer style objects are compared by reference. Defining them inline causes React to treat them as new objects on every render, triggering unnecessary re-renders in child layer components.
 
 ### Security
-
-- **Never use your secret token in a browser app** — the secret token has write access to your account. Use a public (pk.\*) token in all client-facing code.
+- **Never use your secret token in a browser app** — the secret token has write access to your account. Use a public (pk.*) token in all client-facing code.
 - **Proxy sensitive API calls server-side** — Geocoding, Search, and Directions called from a server can use your secret token, keeping it out of the browser entirely. The client talks to your API, your API talks to Mapbox.
 - **Environment-specific tokens** — use a restricted dev token (localhost-only) during local development. This prevents accidental API quota usage when running hot-reload servers.
 - **Set token expiry** — use time-limited tokens for ephemeral use cases (e.g. shared public embeds). Rotate before expiry.
 
 ### Testing
-
 - **Mock the Mapbox SDK in unit tests** — the real SDK requires a browser WebGL context. Use `vi.mock('mapbox-gl')` or a manual mock that returns stub methods.
 - **Use `@testing-library/user-event` for interaction tests** — simulate clicks on cluster circles by firing events on the canvas element, not by calling internal map methods.
 - **Snapshot style layer configs** — snapshot test your layer/source configurations to catch accidental paint expression changes that break the map style.
@@ -365,14 +335,12 @@ Use this before merging any PR that touches Mapbox:
 ## Mapbox PR Checklist
 
 ### Token & Security
-
 - [ ] No token committed to source code
 - [ ] Token is environment-variable only
 - [ ] Production token has URL restrictions set
 - [ ] Dev token is localhost-restricted
 
 ### Cost
-
 - [ ] Map is lazy-mounted (Intersection Observer or conditional render)
 - [ ] `maxBounds` is set to the operational region
 - [ ] `maxZoom` is capped appropriately
@@ -382,7 +350,6 @@ Use this before merging any PR that touches Mapbox:
 - [ ] No map initialisations in test suites (mock in place)
 
 ### Performance
-
 - [ ] > 500 points use GeoJSON cluster layers, not HTML Markers
 - [ ] Layer data updates use `setData()`, not layer removal + re-add
 - [ ] Layer style objects are defined outside React component functions
@@ -390,13 +357,11 @@ Use this before merging any PR that touches Mapbox:
 - [ ] Map container wrapped in `React.memo`
 
 ### Offline
-
 - [ ] Service Worker tile cache implemented (web) OR Offline SDK pack created (mobile)
 - [ ] Stale pack / cache invalidation strategy defined
 - [ ] Storage quota guard in place before prefetch
 
 ### UX
-
 - [ ] Loading skeleton shown while map initialises
 - [ ] `map.resize()` wired to `ResizeObserver`
 - [ ] `fitBounds` / `flyTo` includes `padding` for UI overlays
@@ -405,7 +370,6 @@ Use this before merging any PR that touches Mapbox:
 - [ ] Tested on mobile (touch zoom, overlay legibility)
 
 ### Observability
-
 - [ ] Billing alert set in Mapbox account dashboard
 - [ ] MAU and tile request metrics wired to application observability
 ```

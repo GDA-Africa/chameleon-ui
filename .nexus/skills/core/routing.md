@@ -16,15 +16,12 @@ status: active
 # Skill: Routing (React + Vite)
 
 ## When to Read This
-
 Read this skill when implementing navigation, URL routing, or page transitions in a React + Vite application.
 
 ## Context
-
 This project uses React Router v6 for client-side routing with a structured approach to route organization, lazy loading, and route protection. We follow a file-based routing pattern where possible and implement proper error boundaries, loading states, and SEO considerations. Route guards and authentication checks are implemented consistently across protected routes.
 
 ## Steps
-
 1. Set up React Router with proper configuration
 2. Create route structure with lazy loading for performance
 3. Implement route guards for authentication and authorization
@@ -35,7 +32,6 @@ This project uses React Router v6 for client-side routing with a structured appr
 8. Set up route-based code splitting
 
 ## Patterns We Use
-
 - React Router v6: Use latest version with modern patterns
 - Lazy loading: Use React.lazy and Suspense for route components
 - Route guards: Implement authentication and authorization checks
@@ -46,7 +42,6 @@ This project uses React Router v6 for client-side routing with a structured appr
 - SEO: Implement proper meta tags and structured data
 
 ## Anti-Patterns — Never Do This
-
 - ❌ Do not use class components for route components
 - ❌ Do not ignore error boundaries for routes
 - ❌ Do not hardcode navigation paths
@@ -165,9 +160,9 @@ export function AppRouter() {
 
 ```tsx
 // src/components/ProtectedRoute.tsx
-import { useUserStore } from "../stores";
-import { Navigate, useLocation } from "react-router-dom";
-import { useEffect } from "react";
+import { useUserStore } from '../stores';
+import { Navigate, useLocation } from 'react-router-dom';
+import { useEffect } from 'react';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -208,9 +203,9 @@ export function ProtectedRoute({ children, requiredRole }: ProtectedRouteProps) 
 
 ```tsx
 // src/components/Layout.tsx
-import { Outlet, Link, useLocation } from "react-router-dom";
-import { useUserStore } from "../stores";
-import { useState } from "react";
+import { Outlet, Link, useLocation } from 'react-router-dom';
+import { useUserStore } from '../stores';
+import { useState } from 'react';
 
 export function Layout() {
   const { user, logout } = useUserStore();
@@ -218,24 +213,24 @@ export function Layout() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const navigation = [
-    { name: "Home", path: "/", protected: false },
-    { name: "About", path: "/about", protected: false },
-    { name: "Dashboard", path: "/dashboard", protected: true },
-    { name: "Profile", path: "/profile", protected: true },
-    { name: "Users", path: "/users", protected: true, role: "admin" },
-    { name: "Settings", path: "/settings", protected: true },
+    { name: 'Home', path: '/', protected: false },
+    { name: 'About', path: '/about', protected: false },
+    { name: 'Dashboard', path: '/dashboard', protected: true },
+    { name: 'Profile', path: '/profile', protected: true },
+    { name: 'Users', path: '/users', protected: true, role: 'admin' },
+    { name: 'Settings', path: '/settings', protected: true },
   ];
 
-  const filteredNavigation = navigation.filter((navItem) => {
+  const filteredNavigation = navigation.filter(navItem => {
     // Show all non-protected routes
     if (!navItem.protected) return true;
-
+    
     // Show protected routes only if user is authenticated
     if (!user) return false;
-
+    
     // Check role requirements
     if (navItem.role && user.role !== navItem.role) return false;
-
+    
     return true;
   });
 
@@ -250,14 +245,14 @@ export function Layout() {
           <Link to="/" className="logo">
             MyApp
           </Link>
-
+          
           <nav className="desktop-nav">
             {filteredNavigation.map((item) => (
               <Link
                 key={item.path}
                 to={item.path}
-                className={`nav-link ${location.pathname === item.path ? "active" : ""}`}
-                aria-current={location.pathname === item.path ? "page" : undefined}
+                className={`nav-link ${location.pathname === item.path ? 'active' : ''}`}
+                aria-current={location.pathname === item.path ? 'page' : undefined}
               >
                 {item.name}
               </Link>
@@ -277,7 +272,7 @@ export function Layout() {
                 Login
               </Link>
             )}
-
+            
             <button
               className="mobile-menu-toggle"
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -294,7 +289,7 @@ export function Layout() {
               <Link
                 key={item.path}
                 to={item.path}
-                className={`mobile-nav-link ${location.pathname === item.path ? "active" : ""}`}
+                className={`mobile-nav-link ${location.pathname === item.path ? 'active' : ''}`}
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 {item.name}
@@ -327,11 +322,11 @@ export function Layout() {
 
 ```tsx
 // src/pages/UserDetail.tsx
-import { useParams, useNavigate, useLoaderData } from "react-router-dom";
-import { useState, useEffect } from "react";
-import { useUserStore } from "../stores";
-import { userService } from "../services/userService";
-import { LoadingSpinner } from "../components/LoadingSpinner";
+import { useParams, useNavigate, useLoaderData } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useUserStore } from '../stores';
+import { userService } from '../services/userService';
+import { LoadingSpinner } from '../components/LoadingSpinner';
 
 interface UserDetailLoaderData {
   user: any;
@@ -342,7 +337,7 @@ export async function userDetailLoader({ params }: any): Promise<UserDetailLoade
     const user = await userService.getUser(params.userId);
     return { user };
   } catch (error) {
-    throw new Response("User not found", { status: 404 });
+    throw new Response('User not found', { status: 404 });
   }
 }
 
@@ -353,8 +348,8 @@ export function UserDetailPage() {
   const { user } = useLoaderData() as UserDetailLoaderData;
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
-    name: user?.name || "",
-    email: user?.email || "",
+    name: user?.name || '',
+    email: user?.email || '',
   });
 
   useEffect(() => {
@@ -371,17 +366,17 @@ export function UserDetailPage() {
       await userService.updateUser(user.id, formData);
       setIsEditing(false);
     } catch (error) {
-      console.error("Failed to update user:", error);
+      console.error('Failed to update user:', error);
     }
   };
 
   const handleDelete = async () => {
-    if (window.confirm("Are you sure you want to delete this user?")) {
+    if (window.confirm('Are you sure you want to delete this user?')) {
       try {
         await userService.deleteUser(user.id);
-        navigate("/users");
+        navigate('/users');
       } catch (error) {
-        console.error("Failed to delete user:", error);
+        console.error('Failed to delete user:', error);
       }
     }
   };
@@ -398,10 +393,13 @@ export function UserDetailPage() {
         </button>
         <h1>User Details</h1>
         <div className="user-detail-actions">
-          {currentUser?.role === "admin" && (
+          {currentUser?.role === 'admin' && (
             <>
-              <button onClick={() => setIsEditing(!isEditing)} className="edit-btn">
-                {isEditing ? "Cancel" : "Edit"}
+              <button
+                onClick={() => setIsEditing(!isEditing)}
+                className="edit-btn"
+              >
+                {isEditing ? 'Cancel' : 'Edit'}
               </button>
               <button onClick={handleDelete} className="delete-btn">
                 Delete
@@ -417,10 +415,12 @@ export function UserDetailPage() {
             {user.avatar ? (
               <img src={user.avatar} alt={`${user.name}'s avatar`} />
             ) : (
-              <div className="avatar-placeholder">{user.name.charAt(0).toUpperCase()}</div>
+              <div className="avatar-placeholder">
+                {user.name.charAt(0).toUpperCase()}
+              </div>
             )}
           </div>
-
+          
           <div className="user-details">
             {isEditing ? (
               <div className="user-form">
@@ -462,14 +462,14 @@ export function UserDetailPage() {
 
 ```tsx
 // src/pages/Dashboard.tsx
-import { useUserStore } from "../stores";
-import { useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useUserStore } from '../stores';
+import { useNavigate } from 'react-router-dom';
+import { useState } from 'react';
 
 export function DashboardPage() {
   const { user } = useUserStore();
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState("overview");
+  const [activeTab, setActiveTab] = useState('overview');
 
   const handleNavigation = (path: string) => {
     navigate(path);
@@ -488,27 +488,27 @@ export function DashboardPage() {
 
       <div className="dashboard-tabs">
         <button
-          className={`tab ${activeTab === "overview" ? "active" : ""}`}
-          onClick={() => setActiveTab("overview")}
+          className={`tab ${activeTab === 'overview' ? 'active' : ''}`}
+          onClick={() => setActiveTab('overview')}
         >
           Overview
         </button>
         <button
-          className={`tab ${activeTab === "analytics" ? "active" : ""}`}
-          onClick={() => setActiveTab("analytics")}
+          className={`tab ${activeTab === 'analytics' ? 'active' : ''}`}
+          onClick={() => setActiveTab('analytics')}
         >
           Analytics
         </button>
         <button
-          className={`tab ${activeTab === "reports" ? "active" : ""}`}
-          onClick={() => setActiveTab("reports")}
+          className={`tab ${activeTab === 'reports' ? 'active' : ''}`}
+          onClick={() => setActiveTab('reports')}
         >
           Reports
         </button>
       </div>
 
       <div className="dashboard-content">
-        {activeTab === "overview" && (
+        {activeTab === 'overview' && (
           <div className="overview-grid">
             <div className="card">
               <h3>Total Users</h3>
@@ -525,14 +525,14 @@ export function DashboardPage() {
           </div>
         )}
 
-        {activeTab === "analytics" && (
+        {activeTab === 'analytics' && (
           <div className="analytics">
             <h2>Analytics Coming Soon</h2>
             <p>This section is under development.</p>
           </div>
         )}
 
-        {activeTab === "reports" && (
+        {activeTab === 'reports' && (
           <div className="reports">
             <h2>Reports Coming Soon</h2>
             <p>This section is under development.</p>
@@ -546,8 +546,8 @@ export function DashboardPage() {
 
 ```typescript
 // src/hooks/useRouteParams.ts
-import { useParams, useSearchParams } from "react-router-dom";
-import { useMemo } from "react";
+import { useParams, useSearchParams } from 'react-router-dom';
+import { useMemo } from 'react';
 
 export function useRouteParams() {
   const params = useParams();
@@ -582,15 +582,15 @@ export function useRouteParams() {
 ```typescript
 // src/utils/routeUtils.ts
 export const routes = {
-  home: "/",
-  about: "/about",
-  login: "/login",
-  dashboard: "/dashboard",
-  profile: "/profile",
-  users: "/users",
+  home: '/',
+  about: '/about',
+  login: '/login',
+  dashboard: '/dashboard',
+  profile: '/profile',
+  users: '/users',
   userDetail: (id: string) => `/users/${id}`,
-  settings: "/settings",
-  notFound: "/404",
+  settings: '/settings',
+  notFound: '/404',
 } as const;
 
 export function getRoutePath(route: keyof typeof routes, ...args: any[]): string {
@@ -598,37 +598,44 @@ export function getRoutePath(route: keyof typeof routes, ...args: any[]): string
   if (!routeTemplate) {
     throw new Error(`Unknown route: ${route}`);
   }
-
+  
   // Replace placeholders with arguments
   let path = routeTemplate;
   let argIndex = 0;
-
+  
   path = path.replace(/:[^/]+/g, () => {
     if (args[argIndex] === undefined) {
       throw new Error(`Missing parameter for route: ${route}`);
     }
     return args[argIndex++];
   });
-
+  
   return path;
 }
 
 export function isProtectedRoute(path: string): boolean {
-  const protectedRoutes = ["/dashboard", "/profile", "/users", "/settings"];
-
-  return protectedRoutes.some((route) => path.startsWith(route));
+  const protectedRoutes = [
+    '/dashboard',
+    '/profile',
+    '/users',
+    '/settings',
+  ];
+  
+  return protectedRoutes.some(route => path.startsWith(route));
 }
 
 export function requiresAdminRole(path: string): boolean {
-  const adminRoutes = ["/users"];
-
-  return adminRoutes.some((route) => path.startsWith(route));
+  const adminRoutes = [
+    '/users',
+  ];
+  
+  return adminRoutes.some(route => path.startsWith(route));
 }
 ```
 
 ```tsx
 // src/components/NotFound.tsx
-import { Link } from "react-router-dom";
+import { Link } from 'react-router-dom';
 
 export function NotFoundPage() {
   return (
@@ -652,7 +659,6 @@ export function NotFoundPage() {
 ```
 
 ## Notes
-
 - Use lazy loading for better performance and faster initial load times
 - Implement proper error boundaries to handle route-level errors
 - Use route guards for authentication and authorization

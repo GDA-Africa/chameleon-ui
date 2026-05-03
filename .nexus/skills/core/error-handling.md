@@ -16,15 +16,12 @@ status: active
 # Skill: Error Handling (React + Vite)
 
 ## When to Read This
-
 Read this skill when implementing error handling for components, API calls, or user interactions in a React + Vite application.
 
 ## Context
-
 This project follows a comprehensive error handling strategy with multiple layers: React Error Boundaries for component errors, try-catch blocks for synchronous errors, error states for async operations, and global error handling for uncaught errors. All errors should be user-friendly, provide actionable feedback, and include proper logging for debugging.
 
 ## Steps
-
 1. Implement Error Boundaries for component-level error catching
 2. Use try-catch blocks for synchronous operations that might fail
 3. Implement error states for async operations (API calls, data fetching)
@@ -35,7 +32,6 @@ This project follows a comprehensive error handling strategy with multiple layer
 8. Provide fallback UIs for failed operations
 
 ## Patterns We Use
-
 - Error Boundaries: Class components or hooks for catching component errors
 - Error states: useState for managing error states in components
 - Error boundaries: Use react-error-boundary library for modern error boundaries
@@ -46,7 +42,6 @@ This project follows a comprehensive error handling strategy with multiple layer
 - Error recovery: Retry mechanisms and user-initiated recovery
 
 ## Anti-Patterns — Never Do This
-
 - ❌ Do not ignore errors — always handle them appropriately
 - ❌ Do not show technical error messages to users
 - ❌ Do not use console.error for user-facing errors
@@ -60,8 +55,8 @@ This project follows a comprehensive error handling strategy with multiple layer
 
 ```tsx
 // src/components/ErrorBoundary/ErrorBoundary.tsx
-import { Component, ReactNode } from "react";
-import { ErrorFallback } from "./ErrorFallback";
+import { Component, ReactNode } from 'react';
+import { ErrorFallback } from './ErrorFallback';
 
 interface ErrorBoundaryState {
   hasError: boolean;
@@ -87,15 +82,15 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     this.setState({ error, errorInfo });
-
+    
     // Log error for debugging
-    console.error("ErrorBoundary caught an error:", error, errorInfo);
-
+    console.error('ErrorBoundary caught an error:', error, errorInfo);
+    
     // Call custom error handler if provided
     if (this.props.onError) {
       this.props.onError(error, errorInfo);
     }
-
+    
     // Send error to logging service
     this.logErrorToService(error, errorInfo);
   }
@@ -103,12 +98,12 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
   logErrorToService = (error: Error, errorInfo: ErrorInfo) => {
     // Send to error tracking service (Sentry, LogRocket, etc.)
     // Example: Sentry.captureException(error, { contexts: { react: errorInfo } });
-
+    
     // Log to console in development
-    if (process.env.NODE_ENV === "development") {
-      console.group("🚨 Error Details");
-      console.error("Error:", error);
-      console.error("Error Info:", errorInfo);
+    if (process.env.NODE_ENV === 'development') {
+      console.group('🚨 Error Details');
+      console.error('Error:', error);
+      console.error('Error Info:', errorInfo);
       console.groupEnd();
     }
   };
@@ -119,8 +114,11 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
 
   render() {
     if (this.state.hasError) {
-      return (
-        this.props.fallback || <ErrorFallback error={this.state.error} onRetry={this.handleRetry} />
+      return this.props.fallback || (
+        <ErrorFallback
+          error={this.state.error}
+          onRetry={this.handleRetry}
+        />
       );
     }
 
@@ -131,7 +129,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
 
 ```tsx
 // src/components/ErrorBoundary/ErrorFallback.tsx
-import { ErrorInfo } from "react";
+import { ErrorInfo } from 'react';
 
 interface ErrorFallbackProps {
   error?: Error;
@@ -146,7 +144,7 @@ export function ErrorFallback({ error, onRetry }: ErrorFallbackProps) {
         <p>
           We're sorry, but something unexpected happened. Don't worry, our team has been notified.
         </p>
-
+        
         {error && (
           <details className="error-fallback__details">
             <summary>Error Details (for developers)</summary>
@@ -162,19 +160,25 @@ export function ErrorFallback({ error, onRetry }: ErrorFallbackProps) {
             </pre>
           </details>
         )}
-
+        
         <div className="error-fallback__actions">
           <button onClick={onRetry} className="btn btn--primary">
             Try Again
           </button>
-          <button onClick={() => window.location.reload()} className="btn btn--secondary">
+          <button 
+            onClick={() => window.location.reload()} 
+            className="btn btn--secondary"
+          >
             Refresh Page
           </button>
-          <button onClick={() => (window.location.href = "/")} className="btn btn--ghost">
+          <button 
+            onClick={() => window.location.href = '/'} 
+            className="btn btn--ghost"
+          >
             Go Home
           </button>
         </div>
-
+        
         <p className="error-fallback__help">
           If this problem persists, please contact our support team.
         </p>
@@ -186,7 +190,7 @@ export function ErrorFallback({ error, onRetry }: ErrorFallbackProps) {
 
 ```tsx
 // src/hooks/useAsync.ts
-import { useState, useCallback } from "react";
+import { useState, useCallback } from 'react';
 
 interface UseAsyncOptions {
   onSuccess?: (data: any) => void;
@@ -204,7 +208,7 @@ interface UseAsyncReturn<T> {
 
 export function useAsync<T = any>(
   asyncFunction: (...args: any[]) => Promise<T>,
-  options: UseAsyncOptions = {},
+  options: UseAsyncOptions = {}
 ): UseAsyncReturn<T> {
   const [data, setData] = useState<T | null>(null);
   const [error, setError] = useState<Error | null>(null);
@@ -215,36 +219,36 @@ export function useAsync<T = any>(
       try {
         setIsLoading(true);
         setError(null);
-
+        
         if (options.onLoading) {
           options.onLoading(true);
         }
 
         const result = await asyncFunction(...args);
         setData(result);
-
+        
         if (options.onSuccess) {
           options.onSuccess(result);
         }
       } catch (err) {
-        const error = err instanceof Error ? err : new Error("An unexpected error occurred");
+        const error = err instanceof Error ? err : new Error('An unexpected error occurred');
         setError(error);
-
+        
         if (options.onError) {
           options.onError(error);
         }
-
+        
         // Log error for debugging
-        console.error("Async operation failed:", error);
+        console.error('Async operation failed:', error);
       } finally {
         setIsLoading(false);
-
+        
         if (options.onLoading) {
           options.onLoading(false);
         }
       }
     },
-    [asyncFunction, options],
+    [asyncFunction, options]
   );
 
   const reset = useCallback(() => {
@@ -265,27 +269,27 @@ export function useAsync<T = any>(
 
 ```tsx
 // src/components/UserList.tsx
-import { useState } from "react";
-import { useUsers } from "../hooks/useUsers";
-import { ErrorBoundary } from "../components/ErrorBoundary";
-import { ErrorFallback } from "../components/ErrorBoundary/ErrorFallback";
+import { useState } from 'react';
+import { useUsers } from '../hooks/useUsers';
+import { ErrorBoundary } from '../components/ErrorBoundary';
+import { ErrorFallback } from '../components/ErrorBoundary/ErrorFallback';
 
 export function UserList() {
   const [retryCount, setRetryCount] = useState(0);
-
+  
   const { data, error, isLoading, refetch } = useUsers({
     page: 1,
     limit: 10,
   });
 
   const handleRetry = () => {
-    setRetryCount((prev) => prev + 1);
+    setRetryCount(prev => prev + 1);
     refetch();
   };
 
   const handleGlobalError = (error: Error, errorInfo: ErrorInfo) => {
     // Custom error handling logic
-    console.error("Global error caught:", error, errorInfo);
+    console.error('Global error caught:', error, errorInfo);
   };
 
   if (isLoading) {
@@ -316,7 +320,7 @@ export function UserList() {
     >
       <div className="user-list">
         <h2>Users</h2>
-        {data?.users.map((user) => (
+        {data?.users.map(user => (
           <UserCard key={user.id} user={user} />
         ))}
       </div>
@@ -332,10 +336,10 @@ export class AppError extends Error {
     public message: string,
     public code: string,
     public statusCode?: number,
-    public originalError?: Error,
+    public originalError?: Error
   ) {
     super(message);
-    this.name = "AppError";
+    this.name = 'AppError';
   }
 }
 
@@ -343,48 +347,75 @@ export function handleApiError(error: any): AppError {
   if (error.response) {
     // Server responded with error status
     const { status, data } = error.response;
-
+    
     switch (status) {
       case 400:
-        return new AppError(data?.message || "Invalid request", "BAD_REQUEST", status);
+        return new AppError(
+          data?.message || 'Invalid request',
+          'BAD_REQUEST',
+          status
+        );
       case 401:
-        return new AppError("You need to log in to access this resource", "UNAUTHORIZED", status);
+        return new AppError(
+          'You need to log in to access this resource',
+          'UNAUTHORIZED',
+          status
+        );
       case 403:
         return new AppError(
-          "You do not have permission to access this resource",
-          "FORBIDDEN",
-          status,
+          'You do not have permission to access this resource',
+          'FORBIDDEN',
+          status
         );
       case 404:
-        return new AppError("The requested resource was not found", "NOT_FOUND", status);
+        return new AppError(
+          'The requested resource was not found',
+          'NOT_FOUND',
+          status
+        );
       case 422:
-        return new AppError(data?.message || "Validation failed", "VALIDATION_ERROR", status);
+        return new AppError(
+          data?.message || 'Validation failed',
+          'VALIDATION_ERROR',
+          status
+        );
       case 500:
-        return new AppError("Server error. Please try again later.", "SERVER_ERROR", status);
+        return new AppError(
+          'Server error. Please try again later.',
+          'SERVER_ERROR',
+          status
+        );
       default:
-        return new AppError(data?.message || `Server error (${status})`, "SERVER_ERROR", status);
+        return new AppError(
+          data?.message || `Server error (${status})`,
+          'SERVER_ERROR',
+          status
+        );
     }
   } else if (error.request) {
     // Network error
-    return new AppError("Network error. Please check your connection.", "NETWORK_ERROR");
+    return new AppError(
+      'Network error. Please check your connection.',
+      'NETWORK_ERROR'
+    );
   } else {
     // Other error
     return new AppError(
-      error.message || "An unexpected error occurred",
-      "UNKNOWN_ERROR",
+      error.message || 'An unexpected error occurred',
+      'UNKNOWN_ERROR',
       undefined,
-      error,
+      error
     );
   }
 }
 
 export function logError(error: Error, context?: Record<string, any>) {
   // Log to console in development
-  if (process.env.NODE_ENV === "development") {
-    console.group("🚨 Application Error");
-    console.error("Error:", error);
+  if (process.env.NODE_ENV === 'development') {
+    console.group('🚨 Application Error');
+    console.error('Error:', error);
     if (context) {
-      console.error("Context:", context);
+      console.error('Context:', context);
     }
     console.groupEnd();
   }
@@ -394,41 +425,43 @@ export function logError(error: Error, context?: Record<string, any>) {
     // Example: Sentry.captureException(error, { extra: context });
     // Example: LogRocket.captureException(error, { extra: context });
   } catch (loggingError) {
-    console.error("Failed to log error:", loggingError);
+    console.error('Failed to log error:', loggingError);
   }
 }
 ```
 
 ```tsx
 // src/App.tsx
-import { useEffect } from "react";
-import { ErrorBoundary } from "./components/ErrorBoundary";
+import { useEffect } from 'react';
+import { ErrorBoundary } from './components/ErrorBoundary';
 
 function App() {
   useEffect(() => {
     // Global error handlers
     const handleGlobalError = (event: ErrorEvent) => {
-      console.error("Global error:", event.error);
+      console.error('Global error:', event.error);
       // Send to error tracking service
     };
 
     const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
-      console.error("Unhandled promise rejection:", event.reason);
+      console.error('Unhandled promise rejection:', event.reason);
       // Send to error tracking service
     };
 
-    window.addEventListener("error", handleGlobalError);
-    window.addEventListener("unhandledrejection", handleUnhandledRejection);
+    window.addEventListener('error', handleGlobalError);
+    window.addEventListener('unhandledrejection', handleUnhandledRejection);
 
     return () => {
-      window.removeEventListener("error", handleGlobalError);
-      window.removeEventListener("unhandledrejection", handleUnhandledRejection);
+      window.removeEventListener('error', handleGlobalError);
+      window.removeEventListener('unhandledrejection', handleUnhandledRejection);
     };
   }, []);
 
   return (
     <ErrorBoundary>
-      <div className="app">{/* App content */}</div>
+      <div className="app">
+        {/* App content */}
+      </div>
     </ErrorBoundary>
   );
 }
@@ -437,7 +470,6 @@ export default App;
 ```
 
 ## Notes
-
 - Use Error Boundaries to catch component-level errors gracefully
 - Implement proper error states for async operations
 - Always provide user-friendly error messages with recovery options

@@ -16,15 +16,12 @@ status: active
 # Skill: Performance Optimization (React + Vite)
 
 ## When to Read This
-
 Read this skill when experiencing slow render times, large bundle sizes, or when optimizing application performance in a React + Vite project.
 
 ## Context
-
 This project prioritizes performance with a focus on fast load times, smooth interactions, and efficient resource usage. We use Vite's built-in optimizations along with React-specific performance patterns. Performance optimization should be considered throughout development, with regular monitoring and profiling to identify bottlenecks.
 
 ## Steps
-
 1. Analyze bundle size and identify large dependencies
 2. Implement code splitting and lazy loading for routes and components
 3. Optimize render performance with memoization and virtualization
@@ -35,7 +32,6 @@ This project prioritizes performance with a focus on fast load times, smooth int
 8. Monitor performance metrics and set performance budgets
 
 ## Patterns We Use
-
 - Code splitting: Use React.lazy and dynamic imports for route-based splitting
 - Memoization: Use useMemo and useCallback for expensive calculations
 - Virtualization: Use react-window or react-virtualized for long lists
@@ -46,7 +42,6 @@ This project prioritizes performance with a focus on fast load times, smooth int
 - Performance monitoring: Use Web Vitals and performance APIs
 
 ## Anti-Patterns — Never Do This
-
 - ❌ Do not render large lists without virtualization
 - ❌ Do not create new objects/functions in render methods
 - ❌ Do not ignore bundle size growth
@@ -60,13 +55,13 @@ This project prioritizes performance with a focus on fast load times, smooth int
 
 ```tsx
 // src/components/LazyComponent.tsx
-import { lazy, Suspense } from "react";
-import { ErrorBoundary } from "../components/ErrorBoundary";
+import { lazy, Suspense } from 'react';
+import { ErrorBoundary } from '../components/ErrorBoundary';
 
 // Lazy load heavy components
-const HeavyChart = lazy(() => import("./HeavyChart"));
-const AnalyticsDashboard = lazy(() => import("./AnalyticsDashboard"));
-const ImageGallery = lazy(() => import("./ImageGallery"));
+const HeavyChart = lazy(() => import('./HeavyChart'));
+const AnalyticsDashboard = lazy(() => import('./AnalyticsDashboard'));
+const ImageGallery = lazy(() => import('./ImageGallery'));
 
 export function LazyComponent() {
   return (
@@ -83,8 +78,8 @@ export function LazyComponent() {
 
 ```tsx
 // src/components/VirtualizedList.tsx
-import { FixedSizeList as List } from "react-window";
-import { memo } from "react";
+import { FixedSizeList as List } from 'react-window';
+import { memo } from 'react';
 
 interface ListItem {
   id: string;
@@ -100,7 +95,7 @@ interface VirtualizedListProps {
 
 const ListItem = memo(({ index, style, data }: any) => {
   const item = data[index];
-
+  
   return (
     <div style={style} className="list-item">
       <h3>{item.title}</h3>
@@ -126,7 +121,7 @@ export function VirtualizedList({ items, height, itemHeight }: VirtualizedListPr
 
 ```tsx
 // src/components/OptimizedComponent.tsx
-import { useState, useMemo, useCallback, memo } from "react";
+import { useState, useMemo, useCallback, memo } from 'react';
 
 interface Props {
   items: Array<{ id: string; name: string; value: number }>;
@@ -135,7 +130,7 @@ interface Props {
 }
 
 // Memoize expensive calculations
-const ExpensiveCalculation = memo(({ items }: { items: Props["items"] }) => {
+const ExpensiveCalculation = memo(({ items }: { items: Props['items'] }) => {
   const totalValue = useMemo(() => {
     return items.reduce((sum, item) => sum + item.value, 0);
   }, [items]);
@@ -156,17 +151,16 @@ export function OptimizedComponent({ items, filter, onItemSelect }: Props) {
   // Memoize filtered items to prevent recalculation on every render
   const filteredItems = useMemo(() => {
     if (!filter) return items;
-
-    return items.filter((item) => item.name.toLowerCase().includes(filter.toLowerCase()));
+    
+    return items.filter(item =>
+      item.name.toLowerCase().includes(filter.toLowerCase())
+    );
   }, [items, filter]);
 
   // Memoize callback to prevent child re-renders
-  const handleItemSelect = useCallback(
-    (item: any) => {
-      onItemSelect(item);
-    },
-    [onItemSelect],
-  );
+  const handleItemSelect = useCallback((item: any) => {
+    onItemSelect(item);
+  }, [onItemSelect]);
 
   // Memoize expensive calculations
   const expensiveResult = useMemo(() => {
@@ -178,8 +172,12 @@ export function OptimizedComponent({ items, filter, onItemSelect }: Props) {
     <div className="optimized-component">
       <ExpensiveCalculation items={filteredItems} />
       <div className="item-list">
-        {filteredItems.map((item) => (
-          <ItemCard key={item.id} item={item} onSelect={handleItemSelect} />
+        {filteredItems.map(item => (
+          <ItemCard
+            key={item.id}
+            item={item}
+            onSelect={handleItemSelect}
+          />
         ))}
       </div>
       <p>Expensive result: {expensiveResult.toFixed(2)}</p>
@@ -219,7 +217,7 @@ export class PerformanceMonitor {
 
     const duration = performance.now() - startTime;
     this.measurements.delete(name);
-
+    
     console.log(`${name}: ${duration.toFixed(2)}ms`);
     return duration;
   }
@@ -227,7 +225,7 @@ export class PerformanceMonitor {
   static measureAsync<T>(name: string, fn: () => Promise<T>): Promise<T> {
     return new Promise(async (resolve, reject) => {
       this.startMeasurement(name);
-
+      
       try {
         const result = await fn();
         this.endMeasurement(name);
@@ -240,9 +238,9 @@ export class PerformanceMonitor {
   }
 
   static logWebVitals() {
-    if ("web-vital" in window) {
+    if ('web-vital' in window) {
       // Log Core Web Vitals
-      import("web-vitals").then(({ getCLS, getFID, getFCP, getLCP, getTTFB }) => {
+      import('web-vitals').then(({ getCLS, getFID, getFCP, getLCP, getTTFB }) => {
         getCLS(console.log);
         getFID(console.log);
         getFCP(console.log);
@@ -256,41 +254,41 @@ export class PerformanceMonitor {
 
 ```typescript
 // vite.config.ts - Performance optimizations
-import { defineConfig } from "vite";
-import react from "@vitejs/plugin-react";
-import { visualizer } from "rollup-plugin-visualizer";
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+import { visualizer } from 'rollup-plugin-visualizer';
 
 export default defineConfig({
   plugins: [
     react(),
     // Bundle analyzer
     visualizer({
-      filename: "dist/stats.html",
+      filename: 'dist/stats.html',
       open: true,
       gzipSize: true,
       brotliSize: true,
     }),
   ],
-
+  
   build: {
     // Enable minification
-    minify: "terser",
-
+    minify: 'terser',
+    
     // Optimize chunk size
     chunkSizeWarningLimit: 1000,
-
+    
     // Rollup options for better tree shaking
     rollupOptions: {
       output: {
         manualChunks: {
-          vendor: ["react", "react-dom"],
-          router: ["react-router-dom"],
-          state: ["zustand"],
-          utils: ["lodash", "date-fns"],
+          vendor: ['react', 'react-dom'],
+          router: ['react-router-dom'],
+          state: ['zustand'],
+          utils: ['lodash', 'date-fns'],
         },
       },
     },
-
+    
     // Terser options for better minification
     terserOptions: {
       compress: {
@@ -299,22 +297,22 @@ export default defineConfig({
       },
     },
   },
-
+  
   // Optimize dev server
   server: {
     hmr: {
       overlay: false,
     },
   },
-
+  
   // Optimize assets
-  assetsInclude: ["**/*.wasm", "**/*.glb"],
+  assetsInclude: ['**/*.wasm', '**/*.glb'],
 });
 ```
 
 ```tsx
 // src/components/OptimizedImage.tsx
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect } from 'react';
 
 interface OptimizedImageProps {
   src: string;
@@ -325,13 +323,13 @@ interface OptimizedImageProps {
   className?: string;
 }
 
-export function OptimizedImage({
-  src,
-  alt,
-  width,
-  height,
+export function OptimizedImage({ 
+  src, 
+  alt, 
+  width, 
+  height, 
   placeholder,
-  className,
+  className 
 }: OptimizedImageProps) {
   const [isLoaded, setIsLoaded] = useState(false);
   const [hasError, setHasError] = useState(false);
@@ -339,15 +337,15 @@ export function OptimizedImage({
 
   useEffect(() => {
     const img = new Image();
-
+    
     img.onload = () => {
       setIsLoaded(true);
     };
-
+    
     img.onerror = () => {
       setHasError(true);
     };
-
+    
     img.src = src;
   }, [src]);
 
@@ -359,26 +357,35 @@ export function OptimizedImage({
   };
 
   return (
-    <div className={`optimized-image ${className || ""}`}>
+    <div className={`optimized-image ${className || ''}`}>
       {placeholder && !isLoaded && !hasError && (
-        <img src={placeholder} alt="" className="placeholder" style={{ width, height }} />
+        <img 
+          src={placeholder} 
+          alt="" 
+          className="placeholder"
+          style={{ width, height }}
+        />
       )}
-
+      
       <img
         ref={imgRef}
-        src={isLoaded ? src : ""}
+        src={isLoaded ? src : ''}
         alt={alt}
         width={width}
         height={height}
         loading="lazy"
-        className={`image ${isLoaded ? "loaded" : ""}`}
-        style={{
+        className={`image ${isLoaded ? 'loaded' : ''}`}
+        style={{ 
           opacity: isLoaded ? 1 : 0,
-          transition: "opacity 0.3s ease",
+          transition: 'opacity 0.3s ease'
         }}
       />
-
-      {hasError && <div className="error-fallback">Failed to load image</div>}
+      
+      {hasError && (
+        <div className="error-fallback">
+          Failed to load image
+        </div>
+      )}
     </div>
   );
 }
@@ -430,14 +437,13 @@ export function OptimizedImage({
 
 /* Optimize fonts */
 @font-face {
-  font-family: "CustomFont";
-  src: url("/fonts/CustomFont.woff2") format("woff2");
+  font-family: 'CustomFont';
+  src: url('/fonts/CustomFont.woff2') format('woff2');
   font-display: swap; /* Optimize font loading */
 }
 ```
 
 ## Notes
-
 - Use React DevTools Profiler to identify performance bottlenecks
 - Implement proper memoization for expensive calculations
 - Use virtualization for long lists and tables
