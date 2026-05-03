@@ -16,14 +16,14 @@ last_updated: "2026-05-03"
 **Framework:** React 19 + Vite 6
 **Package Manager:** pnpm
 **Created:** 2026-04-04
-**Status:** 🟢 v1.0.6 released — packaging reliability + docs/frontend version sync complete
+**Status:** 🟢 v1.0.7 released — template page complete + CLI source publishing fixed
 
 ---
 
 ## 🎯 Current Objective
 
 **Current Phase:** Phase 8 — AI polish + developer experience ✅ COMPLETE
-**Active Task:** None — v1.0.6 shipped
+**Active Task:** None — v1.0.7 shipped
 **Blocked:** None
 **Next Up:** Phase 9 — expand test coverage (molecules + composites), publish audit, Liquid theme light mode audit
 
@@ -314,6 +314,15 @@ last_updated: "2026-05-03"
 - ✅ Updated frontend/app-visible release strings (`enhanced-landing.tsx`, docs callouts, AI summary version)
 - ✅ Updated AI crawler context files (`public/context.md`, `public/llms.txt`) to `1.0.6`
 - ✅ Quality gates passed locally: typecheck, tests, lint, build
+
+### 2026-05-03 — Workshop docs IA + auth navigation upgrade
+- ✅ Restored `Auth Showcase` in sidebar navigation and footer quick links
+- ✅ Added direct CTA from Templates page to open `Auth Showcase`
+- ✅ Kept auth flow visible inside Templates via `Authentication Flow` template entry
+- ✅ Upgraded templates directory UX: searchable list, expandable details, editable color token snippet, copy-ready starter code, AI-copy button
+- ✅ Rebuilt component documentation as a searchable directory with per-component dropdown panels showing previews, usage snippets, full props tables, and copy context for AI
+- ✅ Added compatibility bridge file (`component-docs-page.tsx`) re-exporting new implementation to avoid import churn
+- ✅ Quality gates passed locally after refactor: typecheck, tests, lint
 
 ---
 
