@@ -10,7 +10,7 @@ ZIP_NAME="chameleon.zip"
 
 # ── 1. Build ──────────────────────────────────────────────────────────────────
 echo "Building workshop app..."
-npm run build:app
+pnpm build:app
 
 if [ ! -d "$BUILD_DIR" ]; then
   echo "ERROR: Build failed — $BUILD_DIR directory not found."
