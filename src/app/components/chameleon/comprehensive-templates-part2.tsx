@@ -74,6 +74,7 @@ import {
 } from "./molecules";
 import { useThemeClasses, useChameleon } from "./context";
 import { cn } from "./utils";
+import { AuthShowcase } from "./auth-showcase";
 
 // ═══════════════════════════════════════════════════════════════════════════
 // 5. USER PROFILE TEMPLATE
@@ -800,16 +801,17 @@ export const SettingsPanelTemplate: React.FC = () => {
 export const AuthFlowTemplate: React.FC = () => {
   // This references the comprehensive auth components we built earlier
   return (
-    <div className="min-h-[600px] flex items-center justify-center p-6">
-      <div className="max-w-md w-full space-y-4 text-center">
-        <h2 className="text-2xl font-bold">Authentication Template</h2>
-        <p className="text-sm text-[var(--muted-foreground)]">
-          See the <strong>Auth Showcase</strong> page for the complete authentication flow with all
-          components.
-        </p>
-        <Badge>Comprehensive auth components available separately</Badge>
-      </div>
-    </div>
+    <AuthShowcase />
+    // <div className="min-h-[600px] flex items-center justify-center p-6">
+    //   <div className="max-w-md w-full space-y-4 text-center">
+    //     <h2 className="text-2xl font-bold">Authentication Template</h2>
+    //     <p className="text-sm text-[var(--muted-foreground)]">
+    //       See the <strong>Auth Showcase</strong> page for the complete authentication flow with all
+    //       components.
+    //     </p>
+    //     <Badge>Comprehensive auth components available separately</Badge>
+    //   </div>
+    // </div>
   );
 };
 

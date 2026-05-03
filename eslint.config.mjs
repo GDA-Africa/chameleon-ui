@@ -8,7 +8,16 @@ export default ts.config(
   js.configs.recommended,
   ...ts.configs.recommended,
   {
-    ignores: ["dist", "dist-app", "node_modules", "dist-ssr", "scripts", "test-rewrite.js", "src/app/components/ui/sidebar.tsx"],
+    ignores: [
+      "dist",
+      "dist-app",
+      "node_modules",
+      "dist-ssr",
+      "scripts",
+      "test-rewrite.js",
+      "src/app/components/ui/sidebar.tsx",
+      "src/app/components/chameleon/component-docs-page.tsx",
+    ],
   },
   {
     files: ["**/*.js", "bin/**/*.js", "packages/**/*.js"],

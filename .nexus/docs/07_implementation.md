@@ -104,6 +104,20 @@ last_updated: "2026-05-03"
 | README for npm                      | `README.md`                                 | ✅ Done | Minimal, pure-value copy                                      |
 | Brain + docs updated                | `.nexus/docs/index.md`, `02_architecture.md`| ✅ Done | Reflects full Phase 4+5 state                                 |
 
+### Phase 9: Workshop Documentation IA Refresh ✅ COMPLETE (2026-05-03)
+
+**Goal:** Improve discoverability and integration-readiness across sidebar auth navigation, template usage, and component docs.
+
+| Task | File(s) | Status | Notes |
+| --- | --- | --- | --- |
+| Restore Auth Showcase nav entry | `src/app/App.tsx` | ✅ Done | Added sidebar + footer link and dedicated page route handling |
+| Direct template CTA to auth showcase | `src/app/App.tsx`, `src/app/components/chameleon/template-showcase.tsx` | ✅ Done | Template header + auth template row button now deep-link directly |
+| Keep auth flow visible in templates | `src/app/components/chameleon/template-showcase.tsx` | ✅ Done | Authentication Flow template remains in tabs and searchable directory |
+| Templates housing/code panels upgrade | `src/app/components/chameleon/template-showcase.tsx` | ✅ Done | Searchable expandable directory, color token override, copy-ready code snippets |
+| Full component docs directory experience | `src/app/components/chameleon/component-docs-directory-page.tsx` | ✅ Done | Search + filter + per-component dropdown with props/usages/previews + AI context copy |
+| Backward compatibility export bridge | `src/app/components/chameleon/component-docs-page.tsx` | ✅ Done | Legacy import path now re-exports new docs directory page |
+| Validate gates | project scripts | ✅ Done | `npm run typecheck`, `npm run test`, `npm run lint` all pass |
+
 ---
 
 ## 📁 File-by-File Plan (Phase 2 Focus)
