@@ -1,7 +1,7 @@
 # Chameleon UI — Complete Knowledge Base
 > Machine-readable context file for AI agents, LLMs, and crawlers.
 > URL: https://chameleon.glenhalton.com/context.md
-> Package: @chameleon-ui-lib/react | Version: 1.0.0 | Updated: 2026-04-17
+> Package: @chameleon-ui-lib/react | Version: 1.0.6 | Updated: 2026-05-03
 
 ---
 

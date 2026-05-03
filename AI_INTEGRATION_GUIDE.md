@@ -1,6 +1,6 @@
 # Chameleon UI - AI Integration Guide
 
-> **Version 1.0.0** | **AI-Optimized Component Library**
+> **Version 1.0.6** | **AI-Optimized Component Library**
 
 ## 🤖 Why Chameleon UI for AI Agents?
 

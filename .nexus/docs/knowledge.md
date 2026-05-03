@@ -185,3 +185,7 @@ Optional: Brief supporting detail (1-2 sentences max).
 ### [package] npm publish filtering can silently drop dist artifacts
 
 **2026-05-03** — Because `.gitignore` excludes `dist/`, npm publish/pack can omit build outputs unless `package.json` explicitly whitelists them via `files`. This caused consumer `TS2307` errors for `@chameleon-ui-lib/react` since `exports` pointed at missing `dist/index.*` files. Keep a `files` whitelist and verify every release with `npm pack --dry-run`.
+
+### [convention] Release versions must be synchronized across docs and app copy
+
+**2026-05-03** — In addition to bumping `package.json`, release versions are displayed in frontend copy (`enhanced-landing`, docs templates), AI manifest summary, and crawlable context files (`public/context.md`, `public/llms.txt`). Keep these in lockstep during every release to avoid mismatched guidance between npm metadata and app/docs surfaces.

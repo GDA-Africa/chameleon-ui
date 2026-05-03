@@ -16,14 +16,14 @@ last_updated: "2026-05-03"
 **Framework:** React 19 + Vite 6
 **Package Manager:** pnpm
 **Created:** 2026-04-04
-**Status:** 🟢 v1.0.1 released — Phase 8 complete: DatePicker, AI briefing copy, CLI copy, crawlable static files, deploy.sh, full-width CLIMockup, light mode fixes
+**Status:** 🟢 v1.0.6 released — packaging reliability + docs/frontend version sync complete
 
 ---
 
 ## 🎯 Current Objective
 
 **Current Phase:** Phase 8 — AI polish + developer experience ✅ COMPLETE
-**Active Task:** None — v1.0.1 shipped
+**Active Task:** None — v1.0.6 shipped
 **Blocked:** None
 **Next Up:** Phase 9 — expand test coverage (molecules + composites), publish audit, Liquid theme light mode audit
 
@@ -307,6 +307,13 @@ last_updated: "2026-05-03"
 - ✅ Added `files` whitelist in `package.json` so npm tarballs include `dist/` + runtime files instead of repo source tree
 - ✅ Added `prepare` lifecycle script to ensure build artifacts exist before packing/publishing and for git-based installs
 - ✅ Verified with `npm pack --dry-run`: tarball now contains `dist/index.js`, `dist/index.cjs`, `dist/index.d.ts`, and `dist/styles.css`
+
+### 2026-05-03 — Release v1.0.6 (docs + frontend sync)
+- ✅ Bumped package metadata to `1.0.6`
+- ✅ Updated library-facing docs (`CHANGELOG.md`, `docs/00-index.md`, `docs/01-overview.md`, `AI_INTEGRATION_GUIDE.md`)
+- ✅ Updated frontend/app-visible release strings (`enhanced-landing.tsx`, docs callouts, AI summary version)
+- ✅ Updated AI crawler context files (`public/context.md`, `public/llms.txt`) to `1.0.6`
+- ✅ Quality gates passed locally: typecheck, tests, lint, build
 
 ---
 
