@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.7] - 2026-05-03
+
+### Added
+- **Template Library page** — `TemplateShowcase` now includes a searchable directory of all 10 templates with collapsible cards, accent-color picker, copy-paste starter code, and quick usage snippets, above the existing live-preview tabs.
+- **`lib-src/` in published package** — CLI scaffoldable source files (`atoms.tsx`, `molecules.tsx`, `composites.tsx`, `templates.tsx`, `comprehensive-templates.tsx`, `comprehensive-templates-part2.tsx`) are now copied into `lib-src/` at build time and included in the npm package, fixing `chameleon template` and `chameleon add` failing with "Source file not found" in consumer projects.
+
+### Fixed
+- **`chameleon template <name>` source not found** — CLI `LIB_SRC` path now resolves to the published `lib-src/` directory when installed from npm, falling back to the dev source tree for local development.
+- **TS7053 in `component-docs-directory-page.tsx`** — cast `component.category` to `DocsCategory` when indexing `categoryIcon` to satisfy strict TypeScript, since the manifest's `"template"` category is filtered out at runtime but not narrowed by `.filter()`.
+
 ## [1.0.6] - 2026-05-03
 
 ### Changed

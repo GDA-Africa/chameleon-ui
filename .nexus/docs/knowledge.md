@@ -191,3 +191,11 @@ Optional: Brief supporting detail (1-2 sentences max).
 ### [convention] Release versions must be synchronized across docs and app copy
 
 **2026-05-03** — In addition to bumping `package.json`, release versions are displayed in frontend copy (`enhanced-landing`, docs templates), AI manifest summary, and crawlable context files (`public/context.md`, `public/llms.txt`). Keep these in lockstep during every release to avoid mismatched guidance between npm metadata and app/docs surfaces.
+
+### [convention] Run isolated consumer smoke test before release
+
+**2026-05-03** — Added `npm run verify:consumer` (`scripts/verify-consumer.mjs`) to pack the library, install it in a clean temp app, and verify both TS imports and runtime exports (`ChameleonProvider`, `Button`). Run this before publishing any release to catch packaging/export regressions customers would see.
+
+### [convention] Keep stable page module names during docs IA refactors
+
+**2026-05-03** — When rebuilding large frontend docs pages, keep the old module path as a thin re-export bridge (for example, `component-docs-page.tsx` → `component-docs-directory-page.tsx`) so imports across the app and downstream tooling don't break during migration.

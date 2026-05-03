@@ -24,7 +24,9 @@ const c = {
 
 const VERSION = "0.0.1";
 const LIB_ROOT   = path.resolve(__dirname, "..");
-const LIB_SRC    = path.join(LIB_ROOT, "src", "app", "components", "chameleon");
+const LIB_SRC    = fs.existsSync(path.join(LIB_ROOT, "lib-src"))
+  ? path.join(LIB_ROOT, "lib-src")
+  : path.join(LIB_ROOT, "src", "app", "components", "chameleon");
 const CONFIG_FILE = path.join(process.cwd(), "chameleon.config.json");
 
 // Real Component Registry — sourced from atoms.tsx, molecules.tsx, composites.tsx

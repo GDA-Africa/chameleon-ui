@@ -1,7 +1,7 @@
 {
   "name": "@chameleon-ui-lib/react",
   "private": false,
-  "version": "1.0.6",
+  "version": "1.0.7",
   "type": "module",
   "homepage": "https://chameleon.glenhalton.com",
   "bin": {
@@ -17,8 +17,10 @@
     "./styles": "./dist/styles.css"
   },
   "scripts": {
-    "build": "vite build && npm run build:css",
+    "build": "vite build && npm run build:css && npm run build:src",
     "build:css": "node scripts/build-css.mjs",
+    "build:src": "node scripts/build-src.mjs",
+    "verify:consumer": "node scripts/verify-consumer.mjs",
     "prepare": "npm run build",
     "build:app": "vite build --config vite.config.app.ts",
     "dev": "vite",
@@ -34,6 +36,7 @@
   "files": [
     "dist",
     "bin",
+    "lib-src",
     "README.md",
     "CHANGELOG.md"
   ],
