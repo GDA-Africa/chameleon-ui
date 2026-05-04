@@ -199,3 +199,35 @@ Optional: Brief supporting detail (1-2 sentences max).
 ### [convention] Keep stable page module names during docs IA refactors
 
 **2026-05-03** — When rebuilding large frontend docs pages, keep the old module path as a thin re-export bridge (for example, `component-docs-page.tsx` → `component-docs-directory-page.tsx`) so imports across the app and downstream tooling don't break during migration.
+
+### [package] vite-plugin-dts rollupTypes incompatible with TypeScript 6
+
+**2026-05-03** — `vite-plugin-dts` bundles api-extractor pinned to TypeScript 5.9.3. Enabling `rollupTypes: true` against project TypeScript 6.0.2 fails CI. Workaround applied in `b0d8c23`: leave `rollupTypes` disabled and let `vite-plugin-dts` emit per-file declarations that get rolled up via the package `exports` map. Re-evaluate when api-extractor catches up.
+
+### [gotcha] Global version-bump scripts can corrupt transitive lockfile entries
+
+**2026-05-03** — A simple `sed`-style bump that targets all `"version": "1.0.7"` strings in `pnpm-lock.yaml` will incorrectly rewrite unrelated transitive dependencies (`path-parse`, `available-typed-arrays`, `typed-array-length`) that happen to be at version 1.0.7. The CI fix in `b0d8c23` had to manually restore those. For future bumps, scope the find/replace to the package's own `version:` block at the top of the file, not the whole file.
+
+### [architecture] v1.0.9 composite-first plan — 31 atomic tasks across 4 phases
+
+**2026-05-03** — The v1.0.9 plan lives in `.nexus/plans/composite-fix-*.md` (blueprint, vision, architecture, implementation). Key locked-in decisions: (1) composites are *sections* composed of molecules — not atoms, not pages; (2) props flow Template → Composite → Molecule → Atom via a `styleConfig` object on templates; (3) all 40–50 composites land in a new top-level `src/composites/` tree with central `index.ts` and `types.ts`; (4) zero breaking changes — `styleConfig` is optional and defaults preserve current behavior; (5) subpath exports `/composites`, `/templates`, `/types` ship in package.json. Templates re-export their own composites so downstream code can import from either location.
+
+### [package] Subpath exports can map to root bundle in single-entry builds
+
+**2026-05-04** — With the current Vite library setup using a single entry (`src/app/components/chameleon/index.ts`), subpath exports (`/composites`, `/templates`, `/types`) can safely point to the same compiled `dist/index.*` files to preserve import ergonomics without changing the build graph. If true per-subpath tree shaking is needed later, introduce explicit multi-entry outputs first.
+
+### [bug-fix] Typed template `styleConfig` must be verified for runtime usage
+
+**2026-05-04** — Several templates had valid `styleConfig` typings but still used `void styleConfig` internally, so overrides were silently ignored at runtime. For composite-first work, always verify both type acceptance and actual template-level pass-through behavior.
+
+### [pattern] Auth forms should expose dual-mode state + slot styling APIs
+
+**2026-05-04** — For reusable auth flows, the safest contract is dual-mode state (`value`/`defaultValue`/`onChange`) plus slot-level styling maps (`classNames` and `styles`). This allows turnkey internal handling by default while still supporting full external orchestration and per-element visual customization without forks.
+
+### [convention] Keep composites docs separate from atom/molecule docs
+
+**2026-05-04** — The component directory should focus on primitives (atoms + molecules), while composites live on their own searchable page with full prop/reference detail. This prevents duplicate entries and makes “where to look” unambiguous for users and AI agents.
+
+### [gotcha] Block-commenting legacy JSX can fail on embedded `{/* ... */}`
+
+**2026-05-04** — During large docs-page refactors, wrapping old JSX in a single `/* ... */` block can break unexpectedly because JSX inline comments contain `*/`, which prematurely terminates the outer block comment. For heavily mixed legacy files, prefer one-shot full-file overwrite to avoid parser drift.

@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from "react";
-import { Search, Code, Copy, Check, Atom, Layers, Puzzle } from "lucide-react";
+import { Search, Code, Copy, Check, Atom, Layers } from "lucide-react";
 import { Button, Input, Badge, Progress, DatePicker } from "./atoms";
 import {
   Card,
@@ -22,20 +22,18 @@ import { cn } from "./utils";
 import { CopyPageForAIPanel } from "./ai-helpers";
 import { CHAMELEON_AI_MANIFEST, type AIComponentMetadata } from "./ai-manifest";
 
-type DocsCategory = "atom" | "molecule" | "organism";
+type DocsCategory = "atom" | "molecule";
 type CategoryFilter = "all" | DocsCategory;
 
-const categoryOrder: CategoryFilter[] = ["all", "atom", "molecule", "organism"];
+const categoryOrder: CategoryFilter[] = ["all", "atom", "molecule"];
 const categoryLabel: Record<CategoryFilter, string> = {
   all: "All",
   atom: "Atoms",
   molecule: "Molecules",
-  organism: "Composites",
 };
 const categoryIcon: Record<DocsCategory, React.ElementType> = {
   atom: Atom,
   molecule: Layers,
-  organism: Puzzle,
 };
 
 const COMPONENT_DOCS_MARKDOWN = `# Chameleon UI — Component Directory\n\nSearch components, expand for props/usages, and copy context for AI.`;
@@ -117,7 +115,12 @@ export const ComponentDocsDirectoryPage: React.FC = () => {
   const [copiedContextId, setCopiedContextId] = useState<string | null>(null);
 
   const components = useMemo(
-    () => CHAMELEON_AI_MANIFEST.filter((component) => component.category !== "template").slice().sort((a, b) => a.name.localeCompare(b.name)),
+    () =>
+      CHAMELEON_AI_MANIFEST.filter(
+        (component) => component.category !== "template" && component.category !== "organism",
+      )
+        .slice()
+        .sort((a, b) => a.name.localeCompare(b.name)),
     [],
   );
 
@@ -153,9 +156,19 @@ export const ComponentDocsDirectoryPage: React.FC = () => {
 
         <h1 className={cn("text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight mb-3", textPrimary)}>Component Docs</h1>
         <p className={cn("text-base sm:text-lg max-w-3xl leading-relaxed", textMuted)}>
-          Search every documented component, expand a panel to see usage + full props, and copy a component-specific AI briefing in one click.
+          Search every documented atom and molecule, expand a panel to see usage + full props, and copy a component-specific AI briefing in one click.
         </p>
       </div>
+
+      <Alert variant="info" animated>
+        <div className="space-y-1">
+          <p className="font-bold text-sm">Need composite-level documentation?</p>
+          <p className="text-sm">
+            Composites now have a dedicated page with searchable entries, full props, and complete
+            usage examples. This page stays focused on atoms and molecules.
+          </p>
+        </div>
+      </Alert>
 
       <div className="rounded-2xl border border-[var(--border)] bg-[var(--muted)]/20 p-4 sm:p-6 space-y-4">
         <div className="relative max-w-xl">

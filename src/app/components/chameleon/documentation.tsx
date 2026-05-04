@@ -96,6 +96,7 @@ export const DocumentationPage: React.FC = () => {
       <Tabs defaultValue="quickstart">
         <TabsList className="mb-8">
           <TabsTrigger value="quickstart">Quick Start</TabsTrigger>
+          <TabsTrigger value="styling-flow">Styling Flow</TabsTrigger>
           <TabsTrigger value="theming">Theming Guide</TabsTrigger>
           <TabsTrigger value="installation">Installation</TabsTrigger>
           <TabsTrigger value="components">Components</TabsTrigger>
@@ -390,6 +391,138 @@ function App() {
                     <ArrowRight className="w-4 h-4 text-[var(--muted-foreground)]" />
                   </div>
                 </div>
+              </CardContent>
+            </Card>
+          </section>
+        </TabsContent>
+
+        {/* Styling Flow Tab */}
+        <TabsContent value="styling-flow" className="space-y-10">
+          <section className="space-y-6">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-2xl bg-violet-500/10 flex items-center justify-center">
+                <Layers className="w-6 h-6 text-violet-600" />
+              </div>
+              <div>
+                <h2 className={cn("text-3xl font-black tracking-tight", textPrimary)}>
+                  End-to-End Styling Flow
+                </h2>
+                <p className={cn("text-base", textMuted)}>
+                  Pass visual intent from atoms all the way up to templates using structured
+                  style props.
+                </p>
+              </div>
+            </div>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Layer hierarchy</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {[
+                  {
+                    title: "Atoms",
+                    body: "Primitive controls (Button, Input, Badge, Avatar) expose the smallest styling knobs.",
+                  },
+                  {
+                    title: "Molecules",
+                    body: "Molecules compose atoms and centralize shared visual behavior (cards, forms, tabs, alerts).",
+                  },
+                  {
+                    title: "Composites",
+                    body: "Composites provide business-focused sections and accept typed style configs for each region.",
+                  },
+                  {
+                    title: "Templates",
+                    body: "Templates consume styleConfig and forward settings to headings, sections, stats, auth, docs, and page-level layouts.",
+                  },
+                ].map((item, index) => (
+                  <div
+                    key={item.title}
+                    className="flex gap-3 p-3 rounded-xl border border-[var(--border)]"
+                  >
+                    <Badge className="h-fit">{index + 1}</Badge>
+                    <div>
+                      <p className={cn("font-bold", textPrimary)}>{item.title}</p>
+                      <p className={cn("text-sm", textMuted)}>{item.body}</p>
+                    </div>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Template styleConfig example</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <p className={cn("text-sm", textMuted)}>
+                  Use typed template config objects to control headings, profile data, dashboard
+                  cards, ecommerce summaries, auth copy, and documentation navigation.
+                </p>
+                <div className="bg-slate-950 text-slate-50 p-4 rounded-xl font-mono text-xs border border-white/10 overflow-x-auto">
+                  <pre>{`import {
+  UserProfileTemplate,
+  AdminDashboardTemplate,
+  DocumentationTemplate,
+} from "@chameleon-ui-lib/react/templates";
+
+<UserProfileTemplate
+  styleConfig={{
+    profileSection: {
+      user: {
+        name: "Ada Lovelace",
+        email: "ada@analytical.engine",
+        role: "Computing Pioneer",
+      },
+    },
+    statsCards: [
+      { label: "Followers", value: "12.4K" },
+      { label: "Projects", value: "87" },
+      { label: "Articles", value: "31" },
+    ],
+  }}
+/>
+
+<AdminDashboardTemplate
+  styleConfig={{
+    topBar: { title: "Operations", subtitle: "Weekly performance snapshot" },
+    dataTable: { heading: "Latest transactions" },
+  }}
+/>
+
+<DocumentationTemplate
+  styleConfig={{
+    pageHeader: { title: "Platform Docs", subtitle: "Integration and API guide" },
+    sideNav: {
+      items: [
+        { label: "Overview", href: "#getting-started" },
+        { label: "Install", href: "#installation" },
+      ],
+    },
+  }}
+/>`}</pre>
+                </div>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() =>
+                    copyToClipboard(
+                      `import { UserProfileTemplate, AdminDashboardTemplate, DocumentationTemplate } from "@chameleon-ui-lib/react/templates";\n\n<UserProfileTemplate styleConfig={{ profileSection: { user: { name: \"Ada Lovelace\", email: \"ada@analytical.engine\", role: \"Computing Pioneer\" } }, statsCards: [{ label: \"Followers\", value: \"12.4K\" }, { label: \"Projects\", value: \"87\" }, { label: \"Articles\", value: \"31\" }] }} />\n\n<AdminDashboardTemplate styleConfig={{ topBar: { title: \"Operations\", subtitle: \"Weekly performance snapshot\" }, dataTable: { heading: \"Latest transactions\" } }} />\n\n<DocumentationTemplate styleConfig={{ pageHeader: { title: \"Platform Docs\", subtitle: \"Integration and API guide\" }, sideNav: { items: [{ label: \"Overview\", href: \"#getting-started\" }, { label: \"Install\", href: \"#installation\" }] } }} />`,
+                      "styling-flow-example",
+                    )
+                  }
+                >
+                  {copiedCode === "styling-flow-example" ? (
+                    <>
+                      <CheckCircle className="w-3 h-3 mr-1" /> Copied!
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="w-3 h-3 mr-1" /> Copy Example
+                    </>
+                  )}
+                </Button>
               </CardContent>
             </Card>
           </section>

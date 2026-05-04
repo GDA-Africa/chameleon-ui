@@ -102,15 +102,26 @@ import {
 } from "./molecules";
 import { useThemeClasses, useChameleon } from "./context";
 import { cn } from "./utils";
+import type {
+  LandingPageTemplateProps,
+  BlogArticleTemplateProps,
+  PricingPageTemplateProps,
+  ContactSupportTemplateProps,
+} from "./template-styles";
 
 // ═══════════════════════════════════════════════════════════════════════════
 // 1. LANDING PAGE TEMPLATE
 // ═══════════════════════════════════════════════════════════════════════════
 
-export const LandingPageTemplate: React.FC = () => {
+export const LandingPageTemplate: React.FC<LandingPageTemplateProps> = ({ styleConfig = {}, animated = true }) => {
   const { textPrimary, textMuted, cardClass, theme } = useThemeClasses();
 
-  const features = [
+  const heroConfig = styleConfig.heroSection ?? {};
+  const featuresConfig = styleConfig.featureCards ?? {};
+  const ctaConfig = styleConfig.ctaSection ?? {};
+  const testimonialsConfig = styleConfig.testimonialCarousel ?? {};
+
+  const features = featuresConfig.features ?? [
     { icon: Zap, title: "Lightning Fast", desc: "Optimized for speed and performance" },
     { icon: Shield, title: "Secure by Default", desc: "Enterprise-grade security built-in" },
     { icon: Layers, title: "Easy Integration", desc: "Works with your existing tools" },
@@ -119,7 +130,7 @@ export const LandingPageTemplate: React.FC = () => {
     { icon: Globe, title: "Global Scale", desc: "Deployed across 50+ countries" },
   ];
 
-  const testimonials = [
+  const testimonials = testimonialsConfig.testimonials ?? [
     {
       name: "Sarah Chen",
       role: "CTO, TechCorp",
@@ -146,10 +157,12 @@ export const LandingPageTemplate: React.FC = () => {
       <section className="relative text-center space-y-6 sm:space-y-8 pt-12 sm:pt-20 pb-10 sm:pb-16 px-4">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-[500px] bg-gradient-to-b from-[var(--primary)]/15 to-transparent blur-3xl -z-10 opacity-60" />
 
-        <Badge className="mx-auto">
-          <Star className="w-3 h-3 mr-2" />
-          Trusted by 50,000+ teams
-        </Badge>
+        {(heroConfig.badge ?? "Trusted by 50,000+ teams") && (
+          <Badge className="mx-auto">
+            <Star className="w-3 h-3 mr-2" />
+            {heroConfig.badge ?? "Trusted by 50,000+ teams"}
+          </Badge>
+        )}
 
         <h1
           className={cn(
@@ -157,12 +170,11 @@ export const LandingPageTemplate: React.FC = () => {
             textPrimary,
           )}
         >
-          Build Better Products <span className="text-[var(--primary)]">10x Faster</span>
+          {heroConfig.heading ?? <>Build Better Products <span className="text-[var(--primary)]">10x Faster</span></>}
         </h1>
 
         <p className={cn("text-lg sm:text-xl md:text-2xl max-w-2xl mx-auto leading-relaxed px-4", textMuted)}>
-          The all-in-one platform for modern teams. Ship features faster, collaborate better, and
-          scale effortlessly.
+          {heroConfig.subheading ?? "The all-in-one platform for modern teams. Ship features faster, collaborate better, and scale effortlessly."}
         </p>
 
         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-4">
@@ -227,7 +239,7 @@ export const LandingPageTemplate: React.FC = () => {
                           : "bg-[var(--primary)]/10 rounded-2xl",
                   )}
                 >
-                  <feature.icon className="w-7 h-7" />
+                  {(() => { const Icon = feature.icon; return Icon ? <Icon className="w-7 h-7" /> : null; })()}
                 </div>
                 <h3 className={cn("text-xl font-bold", textPrimary)}>{feature.title}</h3>
                 <p className={cn("text-sm leading-relaxed", textMuted)}>{feature.desc}</p>
@@ -279,17 +291,17 @@ export const LandingPageTemplate: React.FC = () => {
         )}
       >
         <h2 className={cn("text-4xl md:text-5xl font-black tracking-tight", textPrimary)}>
-          Ready to Get Started?
+          {ctaConfig.heading ?? "Ready to Get Started?"}
         </h2>
         <p className={cn("text-lg max-w-2xl mx-auto", textMuted)}>
-          Join 50,000+ teams already building with our platform
+          {ctaConfig.subheading ?? "Join 50,000+ teams already building with our platform"}
         </p>
         <Button
           size="lg"
           animated
           className="h-14 px-8 text-lg font-bold shadow-xl shadow-[var(--primary)]/20"
         >
-          Start Your Free Trial
+          {ctaConfig.ctaLabel ?? "Start Your Free Trial"}
           <ArrowRight className="ml-2 w-5 h-5" />
         </Button>
         <p className={cn("text-sm", textMuted)}>No credit card required • 14-day free trial</p>
@@ -302,8 +314,9 @@ export const LandingPageTemplate: React.FC = () => {
 // 2. BLOG/ARTICLE TEMPLATE
 // ═══════════════════════════════════════════════════════════════════════════
 
-export const BlogArticleTemplate: React.FC = () => {
+export const BlogArticleTemplate: React.FC<BlogArticleTemplateProps> = ({ styleConfig = {} }) => {
   const { textPrimary, textMuted, cardClass } = useThemeClasses();
+  const { author = {}, meta = {} } = styleConfig;
 
   const relatedPosts = [
     { title: "Getting Started with React 19", date: "Mar 15, 2026", readTime: "5 min" },
@@ -500,9 +513,10 @@ export const BlogArticleTemplate: React.FC = () => {
 // 3. PRICING PAGE TEMPLATE
 // ═══════════════════════════════════════════════════════════════════════════
 
-export const PricingPageTemplate: React.FC = () => {
+export const PricingPageTemplate: React.FC<PricingPageTemplateProps> = ({ styleConfig = {} }) => {
   const { textPrimary, textMuted } = useThemeClasses();
   const [annual, setAnnual] = useState(false);
+  const pricingConfig = styleConfig.pricingTable ?? {};
 
   const plans = [
     {
@@ -704,7 +718,7 @@ export const PricingPageTemplate: React.FC = () => {
 // 4. CONTACT/SUPPORT TEMPLATE
 // ═══════════════════════════════════════════════════════════════════════════
 
-export const ContactSupportTemplate: React.FC = () => {
+export const ContactSupportTemplate: React.FC<ContactSupportTemplateProps> = ({ styleConfig = {} }) => {
   const { textPrimary, textMuted, cardClass } = useThemeClasses();
 
   return (

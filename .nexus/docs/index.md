@@ -4,7 +4,7 @@ id: "project_index"
 title: "Project Index — AI Agent Brain"
 status: populated
 confidence: high
-last_updated: "2026-05-03"
+last_updated: "2026-05-04"
 ---
 
 # Chameleon UI — Project Index
@@ -13,19 +13,23 @@ last_updated: "2026-05-03"
 > Read this file before every task. Update it after every task. No exceptions.
 
 **Project:** Chameleon UI (`@chameleon-ui-lib/react`)
-**Framework:** React 19 + Vite 6
-**Package Manager:** pnpm
+**Framework:** React 18.3 + Vite 6.3 (TypeScript 6.0)
+**Package Manager:** pnpm (yarn supported via lock-compat scripts)
 **Created:** 2026-04-04
-**Status:** 🟢 v1.0.8 released — template page complete + CLI source publishing fixed
+**Latest Release:** v1.0.9 (2026-05-03)
+**Working Tree:** dirty — agent ruleset files (`CLAUDE.md`, `.clinerules`, `.cursorrules`, `.windsurfrules`, `AGENTS.md`) and v1.0.9 composite plan are uncommitted
+**Status:** 🟡 v1.0.9 shipped · v1.0.9 composite-first architecture **in progress (Phase 4 implementation complete, publish pending)**
 
 ---
 
 ## 🎯 Current Objective
 
-**Current Phase:** Phase 8 — AI polish + developer experience ✅ COMPLETE
-**Active Task:** None — v1.0.8 shipped
+**Current Phase:** Phase 9 — **Composite-First Architecture (v1.0.9)** — � Phase 4 implementation complete
+**Active Task:** Phase 4.6 release operation pending (`git tag` + publish) after owner approval
 **Blocked:** None
-**Next Up:** Phase 9 — expand test coverage (molecules + composites), publish audit, Liquid theme light mode audit
+**Next Up:** Decide release action for v1.0.9 (tag/publish) and run optional consumer smoke test before publish.
+
+> **Note:** the original "Phase 9" planning bullets (test coverage expansion, Liquid light mode audit, `--all-templates` CLI flag) have been folded into the v1.0.9 plan or deferred to v1.1 — see "What's Next" below.
 
 ---
 
@@ -53,9 +57,14 @@ last_updated: "2026-05-03"
 | 📏 Linting                     | ✅ Configured                 | ESLint (flat config) + Prettier                              |
 | 📦 NPM Package                 | ✅ Configured                 | Vite lib mode — ESM + CJS + types in `dist/`                 |
 | 🖥️ CLI Tool                    | ✅ Phase 7 Complete          | F21–F25 all shipped: Tailwind auto-config, self-contained add, CSS exports, strict types, doctor checks |
-| 🚀 CI/CD Pipeline              | ✅ Configured                 | `.github/workflows/ci.yml` + `publish.yml`                   |
-| 🖼️ Workshop UI                 | ✅ Production-ready           | 7 pages, 4 sidebar groups, clean navigation                  |
-| 📄 README                      | ✅ Updated                    | Minimal, high-value npm-facing copy                          |
+| 🚀 CI/CD Pipeline              | ✅ Green                      | Lockfile + TS 6 incompat fixed (2026-05-03, `b0d8c23`)       |
+| 🖼️ Workshop UI                 | ✅ Production-ready           | 7 pages + collapsible sidebar, PWA + SEO + logo branding     |
+| 📄 README                      | ✅ Updated                    | Minimal, high-value npm-facing copy + hosted logo            |
+| 📱 PWA + SEO                   | ✅ Shipped (2026-05-03)       | `vite-plugin-pwa`, OG/Twitter tags, JSON-LD, full icon set   |
+| 🤖 Agent Rulesets              | ✅ Generated, untracked       | `CLAUDE.md`, `.clinerules`, `.cursorrules`, `.windsurfrules`, `AGENTS.md` from `.nexus/ai/instructions.md` |
+| 🧪 Consumer Smoke Test         | ✅ `npm run verify:consumer`  | `scripts/verify-consumer.mjs` packs lib + verifies in temp app |
+| 📦 Published Source (`lib-src/`)| ✅ Bundled in tarball        | CLI scaffolding sources copied at build time, fixes `chameleon add/template` "not found" |
+| 🧩 Composites Folder           | ✅ Populated in `chameleon/composites/` | 26 extracted composites + central index + types + AI manifest in `src/app/components/chameleon/composites/` |
 
 ---
 
@@ -90,6 +99,29 @@ last_updated: "2026-05-03"
 | F25 | `chameleon doctor` integration checks | P1 | ✅ Done    | 7  | Detect missing plugin, CSS import, dep issues, lint risk |
 | F26 | Framework quickstart guides  | P2       | ✅ Done    | 7  | Vite + React + TS + Tailwind v4 known-good snippets      |
 | F27 | CSS `@import` ordering / single entry | P2 | ✅ Done    | 7  | Consolidated CSS entry to avoid PostCSS warnings         |
+| F28 | DatePicker atom + AI crawl files | P1   | ✅ Done    | 8  | DatePicker shipped, `public/llms.txt`/`context.md`/`manifest.json`/`sitemap.xml`, AI copy button |
+| F29 | Hooks & Utils public exports + docs page | P1 | ✅ Done | 8  | `b8b5ffe` — exposed library hooks/utils + dedicated docs page |
+| F30 | `dist/index.d.ts` rollup        | P0       | ✅ Done    | 8  | `cc31731` — fixes consumer `TS2307` from missing types   |
+| F31 | Bulk `chameleon add` flags + barrel `index.ts` | P1 | ✅ Done | 8 | `f4d9224` — `--all-atoms/--all-molecules/--all-composites/--all` |
+| F32 | `CopyPageForAIPanel` across docs | P1     | ✅ Done    | 8  | `67a4206` — one-click copy on every docs page            |
+| F33 | Header theme dropdown switcher  | P2       | ✅ Done    | 8  | `49bab1d` — replaces static badge                        |
+| F34 | Custom brand color + color utils | P1     | ✅ Done    | 8  | `36f4544`/`c2afc90` — global brand color, shared utilities |
+| F35 | Templates Library directory page | P1     | ✅ Done    | 8  | v1.0.6/1.0.9 `TemplateShowcase` searchable directory     |
+| F36 | Auth Showcase nav restoration   | P1       | ✅ Done    | 8  | Sidebar + footer + Templates CTA wired (2026-05-03)      |
+| F37 | Component docs directory rebuild | P1     | ✅ Done    | 8  | Searchable per-component dropdowns + AI copy             |
+| F38 | `lib-src/` published bundle     | P0       | ✅ Done    | 8  | v1.0.7 — fixes `chameleon add/template` "Source not found" in installed packages |
+| F39 | `npm run verify:consumer`       | P0       | ✅ Done    | 8  | Pack + temp-install smoke test catches packaging regressions |
+| F40 | `package.json files` whitelist + `prepare` | P0 | ✅ Done | 8  | v1.0.9 — fixes consumer TS2307 from missing `dist/`     |
+| F41 | PWA + Logo + Full SEO           | P1       | ✅ Done    | 8  | v1.0.7 (`ec1420b`) — `vite-plugin-pwa`, OG/Twitter, JSON-LD |
+| F42 | Mobile `min-h-dvh` white-space fix | P1   | ✅ Done    | 8  | v1.0.7 — switches outer wrapper to actual visual viewport |
+| F43 | Collapsible sidebar navigation  | P2       | ✅ Done    | 8  | v1.0.7 (`b7ade33`) — sidebar collapse for desktop        |
+| F44 | TypeScript 6 + lockfile CI fix  | P0       | ✅ Done    | 8  | `b0d8c23` — disabled rollupTypes (api-extractor TS5/6 mismatch), restored corrupted transitive deps |
+| F45 | Composite-First Architecture (v1.0.9) | P0 | � In Progress | 9 | Phases 1–4 implementation artifacts delivered locally; publish/tag step pending |
+| F46 | Composite registry + types | P0   | ✅ Done | 9  | Implemented under `src/app/components/chameleon/composites/` (`types.ts`, per-composite files, `index.ts`) |
+| F47 | Templates accept `styleConfig` prop | P0  | ✅ Done | 9  | Typed style config contracts in `template-styles.ts`; templates accept optional `styleConfig` |
+| F48 | Composite unit tests (80%+ coverage target) | P1 | ✅ Done | 9 | Composite import/reuse/unit tests present; suite passing |
+| F49 | `COMPOSITES.md` + API/TYPES/MIGRATION docs | P1 | ✅ Done | 9 | Added `COMPOSITES.md`, `docs/COMPOSITES_API.md`, `docs/TYPES.md`, `docs/MIGRATION_v1.0.9.md`, README/CLAUDE updates |
+| F50 | Subpath exports `/composites`, `/templates`, `/types` | P1 | ✅ Done | 9 | Added subpath exports in `package.json` |
 
 ---
 
@@ -97,22 +129,28 @@ last_updated: "2026-05-03"
 
 ### Source Files
 
-| Module              | File(s)                                                  | Lines  | Description                                                          |
-| ------------------- | -------------------------------------------------------- | ------ | -------------------------------------------------------------------- |
-| Theme System        | `context.tsx`                                            | ~706   | Provider, hooks, tokens, translations, GlassyBackground, LiquidBackground (both React.memo + useMemo) |
-| Atoms               | `atoms.tsx`                                              | ~412   | Button, Input, Badge, Progress — full theme adaptation               |
-| Molecules           | `molecules.tsx`                                          | ~557   | Card, Tabs, Dialog, Alert, StatCard, PricingCard, Avatar, Tooltip    |
-| Composites/Organisms | `composites.tsx`                                        | ~1800  | DataTable, Charts, KanbanBoard, Calendar, FileUpload, Gallery        |
-| Auth                | `auth-components.tsx`                                    | —      | 7 auth flow components                                               |
-| Animations          | `animations.tsx`                                         | —      | `Animated`, `AnimatedList`, 5 theme-specific presets                 |
-| Templates           | `templates.tsx` + `comprehensive-templates*.tsx`         | —      | 14 full-page layouts                                                 |
-| AI Manifest         | `ai-manifest.ts`                                         | ~909   | Machine-readable component catalog for AI agents                     |
-| Workshop App        | `App.tsx`                                                | ~558   | 7 pages, 4 sidebar groups, all glassy dark-hardcodes removed         |
-| CLI Docs Page       | `cli-docs-page.tsx`                                      | ~400   | 13-command reference, two-panel, search, quick-ref table             |
-| Component Docs Page | `component-docs-page.tsx`                                | ~380   | 4-tab unified docs (Atoms, Molecules, Composites, Auth)              |
-| CLI Binary          | `bin/chameleon.js`                                       | —      | 13 commands, real FS ops, ANSI polish. Registered via `bin` in package.json |
-| Styles              | `styles/` (4 files)                                      | —      | Tailwind v4, theme CSS, fonts, keyframe animations                   |
-| NEXUS docs          | `.nexus/docs/` (10 files)                                | —      | All populated                                                        |
+> Library source lives in `src/app/components/chameleon/` and is mirrored to `lib-src/` at build time so CLI scaffolding works in installed packages. The v1.0.9 plan (F45) introduces a new top-level `src/composites/` tree — currently empty.
+
+| Module              | File(s)                                                  | Description                                                          |
+| ------------------- | -------------------------------------------------------- | -------------------------------------------------------------------- |
+| Theme System        | `chameleon/context.tsx`                                  | Provider, hooks, tokens, translations, GlassyBackground/LiquidBackground (React.memo + useMemo) |
+| Atoms               | `chameleon/atoms.tsx`                                    | Button, Input, Badge, Progress, DatePicker — full theme adaptation   |
+| Molecules           | `chameleon/molecules.tsx`                                | Card, Tabs, Dialog, Alert, StatCard, PricingCard, Avatar, Tooltip    |
+| Composites/Organisms | `chameleon/composites.tsx` (legacy — to be split in F45) | DataTable, Charts, KanbanBoard, Calendar, FileUpload, Gallery       |
+| Auth                | `chameleon/auth-components.tsx` + `auth-showcase.tsx`    | 7 auth flow components + showcase page                               |
+| Animations          | `chameleon/animations.tsx`                               | `Animated`, `AnimatedList`, 5 theme-specific presets                 |
+| Templates           | `chameleon/templates.tsx` + `comprehensive-templates*.tsx` + `template-showcase.tsx` | 14 full-page layouts + searchable directory page |
+| AI Manifest         | `chameleon/ai-manifest.ts`                               | Machine-readable component catalog (`CHAMELEON_AI_SUMMARY.version` synced per release) |
+| AI Helpers          | `chameleon/ai-helpers.tsx` + `ai-docs-page.tsx`          | Validation utilities + AI docs page with `CopyPageForAIPanel`        |
+| Hooks/Utils Docs    | `chameleon/hooks-utils-docs.tsx`                         | Public hooks + utils documentation page                              |
+| Workshop App        | `app/App.tsx`                                            | Workshop shell — 7 pages, collapsible sidebar, PWA, full SEO meta    |
+| CLI Docs Page       | `chameleon/cli-docs-page.tsx`                            | 13-command reference, two-panel, search, quick-ref table             |
+| Component Docs      | `chameleon/component-docs-directory-page.tsx` (+ thin `component-docs-page.tsx` re-export bridge) | Searchable directory with per-component dropdowns + copy-for-AI |
+| CLI Binary          | `bin/chameleon.js`                                       | 13 commands + bulk `--all-*` flags, dynamic version from `package.json`. Registered via `bin` in package.json |
+| Styles              | `src/styles/` (4 files) → `dist/styles.css`              | Tailwind v4, theme CSS, fonts, keyframe animations. Public entry: `@chameleon-ui-lib/react/styles` |
+| Build Scripts       | `scripts/build-css.mjs`, `scripts/build-src.mjs`, `scripts/verify-consumer.mjs` | CSS bundle, `lib-src/` mirror, consumer smoke test |
+| Public AI Files     | `public/llms.txt`, `public/context.md`, `public/manifest.json`, `public/sitemap.xml` | Crawlable by AI agents via chameleon.glenhalton.com   |
+| NEXUS docs          | `.nexus/docs/` (10 spec files + index + knowledge) + `.nexus/plans/composite-fix-*.md` (4 v1.0.9 plan docs) | All populated |
 
 ### CLI Commands (all working, real FS operations)
 
@@ -231,89 +269,39 @@ last_updated: "2026-05-03"
 
 ## 🎯 What's Next (Prioritized)
 
-### ✅ Phase 8 — 2026-04-17 (complete)
-- ✅ **DatePicker atom** — single date + date range, all 5 themes, keyboard accessible, minDate/maxDate
-- ✅ **AI briefing copy button** — banner on AI Docs page with one-click copy of full markdown writeup for pasting into any AI agent
-- ✅ **Crawlable static files** — `public/llms.txt`, `public/context.md`, `public/manifest.json`, `public/sitemap.xml` — AI agents can visit chameleon.glenhalton.com and parse the full knowledge base
-- ✅ **index.html meta** — `<link rel="alternate">` + `<meta name="ai-context">` pointing to context files
-- ✅ Registered DatePicker in `CHAMELEON_AI_MANIFEST` and CLI `COMPONENTS` registry
+### 🔴 Phase 9 — Composite-First Architecture (v1.0.9) — ACTIVE
 
-### 🟡 Phase 9 (upcoming)
-- **Expand test coverage** — molecule and composite tests
-- **Publish to npm** — bump to `0.1.0`
-- **Liquid theme light mode audit**
-- **`--all-templates` flag** on CLI (scaffold templates into pagesDir)
+> **Plan source of truth:** `.nexus/plans/composite-fix-07_implementation.md` (31 atomic tasks)
+> **Vision:** `.nexus/plans/composite-fix-01_vision.md`
+> **Architecture:** `.nexus/plans/composite-fix-02_architecture.md`
+> **Blueprint:** `.nexus/plans/composite-fix-00_blueprint.md`
+> **Owner-facing summary:** `.nexus/docs/1.0.9-FINAL_SUMMARY.md`
 
----
+**Goal:** Decompose the monolithic `composites.tsx` and 14 templates into 40–50 standalone, fully-typed, prop-customisable composites. Templates become assemblers that accept a `styleConfig` prop. Zero breaking changes.
 
-## 🎯 What's Next — Phase 7: Consumer Integration Quality (from BrandDrop Review)
+| Phase | Tasks | Goal | Status |
+| ----- | ----- | ---- | ------ |
+| 1     | 1.1–1.12 | Extract composites + central registry (`src/composites/`) | ✅ Verified complete (implemented under `src/app/components/chameleon/composites/`) |
+| 2     | 2.1–2.9  | Add `styleConfig` prop to all 10 templates                | ✅ Verified complete |
+| 3     | 3.1–3.5  | Unit tests (90%+ coverage) + composite AI manifest        | ✅ Verified complete |
+| 4     | 4.1–4.12 | `COMPOSITES.md` + API/TYPES/MIGRATION docs + `CompositeShowcase` page + subpath exports + publish v1.0.9 | 🟡 4.1–4.5 + 4.7–4.12 complete; 4.6 publish/tag pending |
 
-> **Source:** Real-world integration test by BrandDrop coding agent (2026-04-17)
-> All items below are P0/P1 — they directly block adoption.
+**Estimated:** 5–9 days end-to-end.
 
-### P0 — Must Fix Before Next Release
+### 🟢 Carry-overs (fold into v1.0.9 phases or defer to v1.1)
 
-| #   | ID  | Title                                       | Effort | Notes                                                                                   |
-| --- | --- | ------------------------------------------- | ------ | --------------------------------------------------------------------------------------- |
-| 1   | F21 | `chameleon init` auto-configures Tailwind v4 plugin | M | Detect missing `@tailwindcss/vite` in host project — add to `vite.config.ts` automatically |
-| 2   | F22 | Self-contained generated components         | L      | `chameleon add` must auto-scaffold all local deps (`context`, `utils`, `animations`) or import from package exports |
-| 3   | F23 | Stable public CSS/component exports         | M      | Export `@chameleon-ui-lib/react/styles` as a public entry point; no internal path imports required |
+- **Composite + molecule unit tests** → folded into Phase 3 (F48)
+- **Liquid theme light-mode audit** → defer to v1.1 (still outstanding)
+- **`--all-templates` CLI flag** → defer to v1.1 (similar to existing `--all-atoms/--all-molecules/--all-composites` shipped in F31)
+- **`chameleon doctor` deeper integration checks** → defer to v1.1 unless Phase 4 surfaces gaps
+- **Storybook integration** → v1.1+ (out of scope per v1.0.9 vision doc)
+- **Playwright E2E tests** → v1.1+
 
-### P1 — Fix in Same Release
+### 🟡 Housekeeping (do alongside v1.0.9)
 
-| #   | ID  | Title                                       | Effort | Notes                                                                                   |
-| --- | --- | ------------------------------------------- | ------ | --------------------------------------------------------------------------------------- |
-| 4   | F24 | Strict-mode-safe code generation            | M      | Generated files must pass strict TS + ESLint with zero violations (no `any`, no unused imports) |
-| 5   | F25 | `chameleon doctor` integration health checks | M     | Detect: missing bundler plugin, missing CSS import, unresolved generated deps, lint-risk patterns |
-
-### P2 — Next Iteration
-
-| #   | ID  | Title                                       | Effort | Notes                                                                                   |
-| --- | --- | ------------------------------------------- | ------ | --------------------------------------------------------------------------------------- |
-| 6   | F26 | Framework-specific quickstart guides        | S      | Vite + React + TS + Tailwind v4 known-good config snippet in README/docs                |
-| 7   | F27 | CSS `@import` ordering fix / single entry   | S      | Ship a consolidated CSS entry to avoid PostCSS `@import` order warnings in host apps   |
-
-### 2026-04-17 — Phase 7 Planning (BrandDrop Integration Review)
-- ✅ Received real-world integration feedback from BrandDrop coding agent
-- ✅ Identified 7 new backlog items (F21–F27) across 3 priority tiers
-- ✅ Added Phase 7 "Consumer Integration Quality" to roadmap
-- ✅ Updated NEXUS index, feature backlog, status matrix, and knowledge base
-
-### 2026-04-17 — Phase 7 F21 Tailwind v4 Auto-Config
-- ✅ Modified `chameleon init` to check host `vite.config` and auto-inject `@tailwindcss/vite` import + plugin
-- ✅ Added auto-insertion of `@import "tailwindcss"` in the configured CSS file
-
-### 2026-04-17 — Phase 7 F22 Self-contained Generated Components
-- ✅ Modified `chameleon add` to dynamically map local component imports (`./utils`, `./atoms`, etc) to `@chameleon-ui-lib/react`
-- ✅ Applied same rewrite strategy to `chameleon template` scaffolding
-- ✅ Updated `diff` and `update` commands to understand the re-mapped imports and preserve diffing logic
-- ✅ CLI now outputs mapped dependency lists upon generation
-
-### 2026-04-17 — Phase 7 F23 Stable Public CSS Exports
-- ✅ Created `scripts/build-css.mjs` to aggregate `fonts.css`, `theme.css`, and custom classes from `index.css` without stripping local Tailwind utilities
-- ✅ Hooked script into `npm run build:css`
-- ✅ Exported `./styles` route in `package.json` pointing to `dist/styles.css`
-- ✅ Updated README quickstart to show `import "@chameleon-ui-lib/react/styles"`
-- ✅ Completed F24 (Strict-mode-safe generation) by removing `any` from component primitives
-- ✅ Resolved testing errors with testing-library overrides
-- ✅ Completed F25 (`chameleon doctor` expansion): Handled missing CSS, undefined components, Vite TS setup, and lint checks.
-- ✅ Restored `scripts/build-css.mjs` (was accidentally overwritten with stdout text)
-- ✅ Completed F26 (Framework quickstart guide): Added 7-step Vite+React+TS+Tailwind v4 setup to README, Troubleshooting section, `chameleon init` now prints next-steps guide
-- ✅ Completed F27 (CSS @import ordering): `build-css.mjs` strips all @import lines from bundle, `chameleon doctor` now detects rules-before-imports ordering issues
-- 🔲 Phase 7 Sprint 2 & 3 complete — all F21–F27 items shipped
-
-### 2026-05-03 — Packaging hotfix: resolvable consumer imports
-- ✅ Diagnosed `TS2307` consumer failure for `@chameleon-ui-lib/react` as publish artifact filtering issue
-- ✅ Added `files` whitelist in `package.json` so npm tarballs include `dist/` + runtime files instead of repo source tree
-- ✅ Added `prepare` lifecycle script to ensure build artifacts exist before packing/publishing and for git-based installs
-- ✅ Verified with `npm pack --dry-run`: tarball now contains `dist/index.js`, `dist/index.cjs`, `dist/index.d.ts`, and `dist/styles.css`
-
-### 2026-05-03 — Release v1.0.8 (docs + frontend sync)
-- ✅ Bumped package metadata to `1.0.8`
-- ✅ Updated library-facing docs (`CHANGELOG.md`, `docs/00-index.md`, `docs/01-overview.md`, `AI_INTEGRATION_GUIDE.md`)
-- ✅ Updated frontend/app-visible release strings (`enhanced-landing.tsx`, docs callouts, AI summary version)
-- ✅ Updated AI crawler context files (`public/context.md`, `public/llms.txt`) to `1.0.8`
-- ✅ Quality gates passed locally: typecheck, tests, lint, build
+- Commit the agent ruleset files (`CLAUDE.md`, `.clinerules`, `.cursorrules`, `.windsurfrules`, `AGENTS.md`) so contributors see consistent guidance
+- Resolve the 5 doctor warnings in `.nexus/state/doctor.json` (placeholders in `05_business_logic.md` and `07_implementation.md`)
+- Re-run `nexus sync` after each merge so Vital Signs (below) stays current
 
 ### 2026-05-03 — Workshop docs IA + auth navigation upgrade
 - ✅ Restored `Auth Showcase` in sidebar navigation and footer quick links
@@ -323,6 +311,87 @@ last_updated: "2026-05-03"
 - ✅ Rebuilt component documentation as a searchable directory with per-component dropdown panels showing previews, usage snippets, full props tables, and copy context for AI
 - ✅ Added compatibility bridge file (`component-docs-page.tsx`) re-exporting new implementation to avoid import churn
 - ✅ Quality gates passed locally after refactor: typecheck, tests, lint
+
+### 2026-05-04 — Phase 4 implementation completion (verification + docs/showcase/exports)
+- ✅ Verified Phase 1–3.5 artifacts are present and functional (`composites/types.ts`, composite registry, style config contracts, tests, AI manifest)
+- ✅ Added `COMPOSITES.md` composite catalog and usage guide
+- ✅ Added `docs/COMPOSITES_API.md`, `docs/TYPES.md`, and `docs/MIGRATION_v1.0.9.md`
+- ✅ Added interactive workshop page `src/app/components/chameleon/composite-showcase.tsx` and wired `composites` nav route in `src/app/App.tsx`
+- ✅ Updated package subpath exports: `/composites`, `/templates`, `/types`
+- ✅ Updated README with composite-first architecture section and links
+- ✅ Updated `CLAUDE.md` with composite architecture addendum
+- ✅ Quality gates passing locally: `npm run typecheck`, `npm run test`, `npm run lint`, `npm run build`
+- ✅ Bundle measurement captured from build: `dist/index.js` gzip **213.00 kB**
+- 🟡 Remaining release operation: Phase 4.6 publish/tag (not executed in this task)
+
+### 2026-05-03 — Release v1.0.6 + v1.0.7 (PWA / SEO / Logo / Sidebar / lib-src publishing)
+- ✅ v1.0.6 (`31744da`) — canonical release ritual codified, knowledge base extended
+- ✅ v1.0.7 (`973cd4f`) — `lib-src/` shipped in tarball: CLI scaffolding sources copied at build time so `chameleon add` / `chameleon template` resolve when installed from npm
+- ✅ Fixed `template-showcase.tsx` truncated JSX and TS7053 in `component-docs-directory-page.tsx`
+- ✅ Logo + PWA + SEO (`ec1420b`) — `vite-plugin-pwa` (generateSW), `public/site.webmanifest`, full favicon set, OG/Twitter tags, Schema.org JSON-LD; mobile bottom white-space fixed by switching outer wrapper to `min-h-dvh`
+- ✅ Collapsible sidebar (`b7ade33`) added to workshop shell
+
+### 2026-05-03 — Release v1.0.9 (initial bump + docs sync)
+- ✅ Bumped package metadata to `1.0.9`
+- ✅ Updated library-facing docs (`CHANGELOG.md`, `docs/00-index.md`, `docs/01-overview.md`, `AI_INTEGRATION_GUIDE.md`)
+- ✅ Updated frontend/app-visible release strings (`enhanced-landing.tsx`, docs callouts, AI summary version)
+- ✅ Updated AI crawler context files (`public/context.md`, `public/llms.txt`) to `1.0.9`
+- ✅ Quality gates passed locally: typecheck, tests, lint, build
+
+### 2026-05-03 — Release v1.0.9 (CI hotfix)
+- ✅ Bumped `package.json` to `1.0.9`, refreshed all docs/UI/AI-context version strings (`46cf4cb`)
+- ✅ CI failure fix (`b0d8c23`):
+  - Restored `path-parse` / `available-typed-arrays` / `typed-array-length` versions in `pnpm-lock.yaml` that the version-bump script had globally overwritten
+  - Removed stale `vite-plugin-pwa` entry from lockfile
+  - Disabled `rollupTypes` in `vite-plugin-dts` config — bundled api-extractor uses TypeScript 5.9.3 which is incompatible with project's TypeScript 6.0.2
+- ✅ Refactor pass (`5b64188`, `fa16813`) for readability/maintainability
+- ✅ All quality gates green; `npm run verify:consumer` passing
+
+### 2026-05-03 — Composite-First Architecture v1.0.9 PLANNED
+- ✅ Authored 4 NEXUS planning docs in `.nexus/plans/`:
+  - `composite-fix-00_blueprint.md` — full architectural blueprint (hierarchical prop flow, target state)
+  - `composite-fix-01_vision.md` — product vision, 4 user stories, 7 feature requirements, success metrics
+  - `composite-fix-02_architecture.md` — folder structure, type patterns, export strategy
+  - `composite-fix-07_implementation.md` — 31 atomic tasks across 4 phases with acceptance criteria
+- ✅ Authored `.nexus/docs/1.0.9-FINAL_SUMMARY.md` summarising the plan for the human owner
+- ✅ Generated agent ruleset files from `.nexus/ai/instructions.md`: `CLAUDE.md`, `.clinerules`, `.cursorrules`, `.windsurfrules`, `AGENTS.md` (untracked)
+- 🔴 **Implementation NOT started** — `src/composites/` does not yet exist; existing composites still live in legacy `src/app/components/chameleon/composites.tsx`
+
+### 2026-05-04 — Brain refresh (this update)
+- ✅ Audited git history since 2026-05-03 — 14 commits accounted for
+- ✅ Updated status matrix: PWA/SEO row, agent rulesets row, consumer smoke test row, lib-src publishing row, composite folder row
+- ✅ Extended feature backlog F28–F50 (covers everything shipped through v1.0.9 + planned v1.0.9 work)
+- ✅ Replaced "What's Next" with v1.0.9 Phase 1 kickoff plus rolled-in carry-overs (test coverage, Liquid light mode audit, `--all-templates` flag)
+- ✅ Marked "Source Files" inventory current and noted the v1.0.9 `src/composites/` move
+
+### 2026-05-04 — Composite style propagation completion + frontend docs sync
+- ✅ Completed runtime `styleConfig` pass-through for remaining templates in `comprehensive-templates-part2.tsx` (UserProfile, AdminDashboard, EcommerceProduct, SettingsPanel, AuthFlow, Documentation)
+- ✅ Removed placeholder-only config paths and applied template-level overrides to headings, stats, profile/user data, danger actions, and side-nav/page header docs wiring
+- ✅ Updated frontend docs surfaces (`documentation.tsx`, `component-docs-directory-page.tsx`) with explicit atoms → molecules → composites → templates customization guidance and copyable examples
+- ✅ Quality gates green after changes: `npx tsc --noEmit`, `npm run test`, `npm run lint`, `npm run build`
+
+### 2026-05-04 — Auth flow customization upgrade (controlled + internal)
+- ✅ Refactored all auth flow components in `src/app/components/chameleon/auth-components.tsx` to support both internal form state and controlled external values (`value` / `defaultValue` / `onChange`) without breaking existing usage
+- ✅ Standardized richer submit payload support across auth forms while preserving legacy callback shapes (e.g., login supports object payload with `rememberMe` and legacy `(email, password)`)
+- ✅ Added slot-level class/style override hooks per form (`classNames` + `styles`) to support deep per-element customization (inputs, action buttons, submit buttons, etc.)
+- ✅ Added auth-focused tests in `src/app/components/chameleon/__tests__/auth-components.test.tsx` covering payload completeness and controlled-mode change behavior
+- ✅ Quality gates green after refactor: `npx tsc --noEmit`, `npm run test`, `npm run lint`, `npm run build`
+
+### 2026-05-04 — Composite docs IA split (dedicated directory page)
+- ✅ Rebuilt `src/app/components/chameleon/composite-showcase.tsx` to use the same expandable docs-directory structure as component docs (search, import path, minimal/full examples, full props table, copy context)
+- ✅ Composite docs are now sourced from `CHAMELEON_AI_MANIFEST` filtered to `category === "organism"`, ensuring each composite appears in one dedicated place
+- ✅ Updated `src/app/components/chameleon/component-docs-directory-page.tsx` to focus only on atoms and molecules (removed composite category/listing)
+- ✅ Quality gates green after IA split: `npx tsc --noEmit`, `npm run test`, `npm run lint`, `npm run build`
+
+### 2026-05-04 — Composite docs 0/0 hotfix
+- ✅ Fixed composites page empty state (`Showing 0 of 0`) by switching `composite-showcase.tsx` to source entries from `src/app/components/chameleon/composites/ai-manifest.ts` (`COMPOSITES_MANIFEST`) instead of relying on root manifest `organism` category entries.
+- ✅ Added runtime adapter for composite manifest shape to docs-directory display schema (props table + minimal/full examples + AI context copy).
+- ✅ Validation green: `npx tsc --noEmit`, `npm run build`.
+
+### 2026-05-04 — Hooks & Utils docs standardized to directory format
+- ✅ Rebuilt `src/app/components/chameleon/hooks-utils-docs.tsx` to match the same docs-directory UX as component/composite pages (search, kind filters, expandable entries, import snippets, minimal/full examples, full API table, AI context copy).
+- ✅ Restored page stability after prior partial-edit corruption by performing a hard file overwrite with a single canonical implementation.
+- ✅ Quality gates green after migration: `npx tsc --noEmit`, `npm run test`, `npm run lint`, `npm run build`.
 
 ---
 
@@ -378,13 +447,13 @@ _Generated by [NEXUS CLI](https://github.com/GDA-Africa/nexus-cli) v0.3.2_
 <!-- NEXUS:VITAL_SIGNS:START — managed by `nexus sync` -->
 ## 🩺 Vital Signs (auto)
 
-_Last sync: not yet synced_
+_Last sync: 2026-05-03T19:18:51.753Z · branch `main` · 0 commits ahead of main · working tree dirty_
 
 | Sensor | Reading |
 |--------|---------|
-| Last commit | not available |
+| Last commit | fa16813 — Refactor code structure for improved readability and maintainability · Glenhalton · 57 minutes ago |
 | Tests | not yet measured |
 | Coverage | not collected · M1 sensor adds `vitest --coverage` parsing |
-| Stale folders | not measured |
+| Stale folders | src/commands never created · src/utils never created · src/generators never created · tests/e2e never created · tests/unit never created · tests/integration never created |
 | Packages | not yet measured |
 <!-- NEXUS:VITAL_SIGNS:END -->

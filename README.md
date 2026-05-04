@@ -152,6 +152,51 @@ setMode("light");     // light | dark
 
 ---
 
+## Composite-First Architecture
+
+Chameleon now exposes reusable **composite sections** so you can mix and match blocks without committing to a full template.
+
+### Use full templates with typed style overrides
+
+```tsx
+import { LandingPageTemplate } from "@chameleon-ui-lib/react";
+
+<LandingPageTemplate
+  styleConfig={{
+    heroSection: { heading: "Launch faster" },
+    featureCards: { columns: 4 },
+  }}
+/>;
+```
+
+### Mix standalone composites across template domains
+
+```tsx
+import { HeroSection, StatsCard, SettingsList } from "@chameleon-ui-lib/react/composites";
+
+<div className="space-y-8">
+  <HeroSection heading="Workspace Overview" />
+  <StatsCard label="Active Teams" value={124} trend={9.1} />
+  <SettingsList heading="Workspace Preferences" />
+</div>;
+```
+
+### New subpath imports
+
+- `@chameleon-ui-lib/react/composites`
+- `@chameleon-ui-lib/react/templates`
+- `@chameleon-ui-lib/react/types`
+
+### Deep dive docs
+
+- Composite guide: [`COMPOSITES.md`](./COMPOSITES.md)
+- API reference: [`docs/COMPOSITES_API.md`](./docs/COMPOSITES_API.md)
+- Types reference: [`docs/TYPES.md`](./docs/TYPES.md)
+- Migration notes: [`docs/MIGRATION_v1.0.9.md`](./docs/MIGRATION_v1.0.9.md)
+- Workshop showcase page source: [`src/app/components/chameleon/composite-showcase.tsx`](./src/app/components/chameleon/composite-showcase.tsx)
+
+---
+
 ## CLI
 
 Scaffold components and templates directly into your project:

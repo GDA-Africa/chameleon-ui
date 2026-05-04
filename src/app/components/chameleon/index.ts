@@ -4,6 +4,9 @@ export * from "./animations";
 export * from "./atoms";
 export * from "./molecules";
 export * from "./composites";
+export * from "./composites/index";
+export * from "./template-styles";
+
 export * from "./auth-components";
 export * from "./auth-showcase";
 export * from "./templates";

@@ -75,14 +75,53 @@ import {
 import { useThemeClasses, useChameleon } from "./context";
 import { cn } from "./utils";
 import { AuthShowcase } from "./auth-showcase";
+import type {
+  UserProfileTemplateProps,
+  AdminDashboardTemplateProps,
+  EcommerceProductTemplateProps,
+  SettingsPanelTemplateProps,
+  AuthFlowTemplateProps,
+  DocumentationTemplateProps,
+} from "./template-styles";
 
 // ═══════════════════════════════════════════════════════════════════════════
 // 5. USER PROFILE TEMPLATE
 // ═══════════════════════════════════════════════════════════════════════════
 
-export const UserProfileTemplate: React.FC = () => {
+export const UserProfileTemplate: React.FC<UserProfileTemplateProps> = ({ styleConfig = {} }) => {
   const { textPrimary, textMuted, cardClass } = useThemeClasses();
   const [activeTab, setActiveTab] = useState("posts");
+
+  const profileConfig = styleConfig.profileSection ?? {};
+  const statsConfig = styleConfig.statsCards ?? [];
+  const user = profileConfig.user ?? {
+    name: "Jane Doe",
+    email: "jane@techcorp.com",
+    role: "Senior Product Designer @ TechCorp",
+    bio: "Passionate about building beautiful, accessible interfaces. Love mentoring and sharing knowledge with the community. 🎨✨",
+  };
+  const avatarFallback = user.name
+    .split(" ")
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0])
+    .join("")
+    .toUpperCase();
+
+  const profileStats = [
+    {
+      label: statsConfig[0]?.label ?? "Followers",
+      value: statsConfig[0]?.value ?? "1.2K",
+    },
+    {
+      label: statsConfig[1]?.label ?? "Following",
+      value: statsConfig[1]?.value ?? "432",
+    },
+    {
+      label: statsConfig[2]?.label ?? "Posts",
+      value: statsConfig[2]?.value ?? "89",
+    },
+  ];
 
   const posts = [
     { title: "Building Modern UIs", likes: 234, comments: 45, date: "2 days ago" },
@@ -96,25 +135,22 @@ export const UserProfileTemplate: React.FC = () => {
       <Card>
         <CardContent className="p-8">
           <div className="flex flex-col md:flex-row gap-8 items-start">
-            <Avatar size="xl" fallback="JD" className="w-24 h-24" />
+            <Avatar size="xl" fallback={avatarFallback || "JD"} className="w-24 h-24" />
 
             <div className="flex-1 space-y-4">
               <div>
                 <div className="flex items-center gap-3 mb-2">
-                  <h1 className={cn("text-3xl font-black", textPrimary)}>Jane Doe</h1>
+                  <h1 className={cn("text-3xl font-black", textPrimary)}>{user.name}</h1>
                   <Badge className="bg-emerald-500/10 text-emerald-600 border-emerald-500/30">
                     <Check className="w-3 h-3 mr-1" />
                     Verified
                   </Badge>
                 </div>
-                <p className={cn("text-lg", textMuted)}>Senior Product Designer @ TechCorp</p>
-                <p className={cn("text-sm", textMuted)}>San Francisco, CA</p>
+                <p className={cn("text-lg", textMuted)}>{user.role ?? "Senior Product Designer @ TechCorp"}</p>
+                <p className={cn("text-sm", textMuted)}>{user.email}</p>
               </div>
 
-              <p className={textPrimary}>
-                Passionate about building beautiful, accessible interfaces. Love mentoring and
-                sharing knowledge with the community. 🎨✨
-              </p>
+              <p className={textPrimary}>{user.bio}</p>
 
               <div className="flex flex-wrap gap-2">
                 {["React", "TypeScript", "Figma", "Design Systems"].map((skill) => (
@@ -123,22 +159,16 @@ export const UserProfileTemplate: React.FC = () => {
               </div>
 
               <div className="flex gap-6">
-                <div>
-                  <p className={cn("text-2xl font-black", textPrimary)}>1.2K</p>
-                  <p className={cn("text-xs", textMuted)}>Followers</p>
-                </div>
-                <div>
-                  <p className={cn("text-2xl font-black", textPrimary)}>432</p>
-                  <p className={cn("text-xs", textMuted)}>Following</p>
-                </div>
-                <div>
-                  <p className={cn("text-2xl font-black", textPrimary)}>89</p>
-                  <p className={cn("text-xs", textMuted)}>Posts</p>
-                </div>
+                {profileStats.map((stat) => (
+                  <div key={stat.label}>
+                    <p className={cn("text-2xl font-black", textPrimary)}>{stat.value}</p>
+                    <p className={cn("text-xs", textMuted)}>{stat.label}</p>
+                  </div>
+                ))}
               </div>
 
               <div className="flex gap-3">
-                <Button animated>
+                <Button animated disabled={profileConfig.editable === false}>
                   <Plus className="w-4 h-4 mr-2" />
                   Follow
                 </Button>
@@ -236,8 +266,45 @@ export const UserProfileTemplate: React.FC = () => {
 // 6. ADMIN DASHBOARD TEMPLATE
 // ═══════════════════════════════════════════════════════════════════════════
 
-export const AdminDashboardTemplate: React.FC = () => {
+export const AdminDashboardTemplate: React.FC<AdminDashboardTemplateProps> = ({ styleConfig = {} }) => {
   const { textPrimary, textMuted } = useThemeClasses();
+
+  const topBarConfig = styleConfig.topBar ?? {};
+  const statsConfig = styleConfig.statsCards ?? [];
+  const barChartConfig = styleConfig.barChart ?? {};
+  const lineChartConfig = styleConfig.lineChart ?? {};
+  const dataTableConfig = styleConfig.dataTable ?? {};
+
+  const dashboardStats = [
+    {
+      label: statsConfig[0]?.label ?? "Total Revenue",
+      value: statsConfig[0]?.value ?? "$45.2K",
+      trend: (statsConfig[0]?.trend ?? 12.5) >= 0 ? "up" : "down",
+      trendValue: `${(statsConfig[0]?.trend ?? 12.5) >= 0 ? "+" : ""}${statsConfig[0]?.trend ?? 12.5}%`,
+      icon: DollarSign,
+    },
+    {
+      label: statsConfig[1]?.label ?? "Active Users",
+      value: statsConfig[1]?.value ?? "2,345",
+      trend: (statsConfig[1]?.trend ?? 8.2) >= 0 ? "up" : "down",
+      trendValue: `${(statsConfig[1]?.trend ?? 8.2) >= 0 ? "+" : ""}${statsConfig[1]?.trend ?? 8.2}%`,
+      icon: Users,
+    },
+    {
+      label: statsConfig[2]?.label ?? "Conversion Rate",
+      value: statsConfig[2]?.value ?? "3.24%",
+      trend: (statsConfig[2]?.trend ?? -0.4) >= 0 ? "up" : "down",
+      trendValue: `${(statsConfig[2]?.trend ?? -0.4) >= 0 ? "+" : ""}${statsConfig[2]?.trend ?? -0.4}%`,
+      icon: Target,
+    },
+    {
+      label: statsConfig[3]?.label ?? "Avg. Order Value",
+      value: statsConfig[3]?.value ?? "$124",
+      trend: (statsConfig[3]?.trend ?? 5.1) >= 0 ? "up" : "down",
+      trendValue: `${(statsConfig[3]?.trend ?? 5.1) >= 0 ? "+" : ""}${statsConfig[3]?.trend ?? 5.1}%`,
+      icon: ShoppingCart,
+    },
+  ];
 
   const recentOrders = [
     { id: "#3452", customer: "John Smith", amount: "$432.00", status: "completed" },
@@ -250,8 +317,8 @@ export const AdminDashboardTemplate: React.FC = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className={cn("text-3xl sm:text-4xl font-black", textPrimary)}>Dashboard</h1>
-          <p className={textMuted}>Welcome back, Admin</p>
+          <h1 className={cn("text-3xl sm:text-4xl font-black", textPrimary)}>{topBarConfig.title ?? "Dashboard"}</h1>
+          <p className={textMuted}>{topBarConfig.subtitle ?? "Welcome back, Admin"}</p>
         </div>
         <div className="flex gap-3">
           <Button variant="outline">
@@ -267,38 +334,17 @@ export const AdminDashboardTemplate: React.FC = () => {
 
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <StatCard
-          label="Total Revenue"
-          value="$45.2K"
-          trend="up"
-          trendValue="+12.5%"
-          icon={DollarSign}
-          animated
-        />
-        <StatCard
-          label="Active Users"
-          value="2,345"
-          trend="up"
-          trendValue="+8.2%"
-          icon={Users}
-          animated
-        />
-        <StatCard
-          label="Conversion Rate"
-          value="3.24%"
-          trend="down"
-          trendValue="-0.4%"
-          icon={Target}
-          animated
-        />
-        <StatCard
-          label="Avg. Order Value"
-          value="$124"
-          trend="up"
-          trendValue="+5.1%"
-          icon={ShoppingCart}
-          animated
-        />
+        {dashboardStats.map((stat) => (
+          <StatCard
+            key={stat.label}
+            label={stat.label}
+            value={String(stat.value)}
+            trend={stat.trend as "up" | "down"}
+            trendValue={stat.trendValue}
+            icon={stat.icon}
+            animated
+          />
+        ))}
       </div>
 
       {/* Charts & Tables */}
@@ -306,7 +352,7 @@ export const AdminDashboardTemplate: React.FC = () => {
         <Card className="lg:col-span-2">
           <CardHeader>
             <div className="flex items-center justify-between">
-              <CardTitle>Revenue Overview</CardTitle>
+              <CardTitle>{barChartConfig.heading ?? "Revenue Overview"}</CardTitle>
               <Select
                 options={[
                   { value: "7d", label: "Last 7 days" },
@@ -326,7 +372,7 @@ export const AdminDashboardTemplate: React.FC = () => {
 
         <Card>
           <CardHeader>
-            <CardTitle>Top Products</CardTitle>
+            <CardTitle>{lineChartConfig.heading ?? "Top Products"}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             {[
@@ -351,7 +397,7 @@ export const AdminDashboardTemplate: React.FC = () => {
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
-            <CardTitle>Recent Orders</CardTitle>
+            <CardTitle>{dataTableConfig.heading ?? "Recent Orders"}</CardTitle>
             <Button variant="ghost" size="sm">
               View All
               <ChevronRight className="w-4 h-4 ml-1" />
@@ -407,10 +453,19 @@ export const AdminDashboardTemplate: React.FC = () => {
 // 7. E-COMMERCE PRODUCT TEMPLATE
 // ═══════════════════════════════════════════════════════════════════════════
 
-export const EcommerceProductTemplate: React.FC = () => {
+export const EcommerceProductTemplate: React.FC<EcommerceProductTemplateProps> = ({ styleConfig = {} }) => {
   const { textPrimary, textMuted, cardClass } = useThemeClasses();
+  const productGridConfig = styleConfig.productGrid ?? {};
+  const cartSummaryConfig = styleConfig.cartSummary ?? {};
+  const checkoutFormConfig = styleConfig.checkoutForm ?? {};
   const [quantity, setQuantity] = useState(1);
   const [selectedSize, setSelectedSize] = useState("M");
+
+  const unitPrice = 49.99;
+  const subtotal = cartSummaryConfig.subtotal ?? unitPrice * quantity;
+  const tax = cartSummaryConfig.tax ?? subtotal * 0.1;
+  const derivedTotal = cartSummaryConfig.total ?? subtotal + tax;
+  const checkoutTotal = checkoutFormConfig.total ?? derivedTotal;
 
   return (
     <div className="max-w-7xl mx-auto space-y-12 pb-20">
@@ -450,7 +505,7 @@ export const EcommerceProductTemplate: React.FC = () => {
               ))}
               <span className={cn("text-sm", textMuted)}>(128 reviews)</span>
             </div>
-            <h1 className={cn("text-3xl sm:text-4xl font-black mb-2", textPrimary)}>Premium Cotton T-Shirt</h1>
+            <h1 className={cn("text-3xl sm:text-4xl font-black mb-2", textPrimary)}>{productGridConfig.heading ?? "Premium Cotton T-Shirt"}</h1>
             <p className={cn("text-xl", textMuted)}>Comfortable, stylish, sustainable</p>
           </div>
 
@@ -520,7 +575,7 @@ export const EcommerceProductTemplate: React.FC = () => {
           <div className="flex gap-3 pt-4">
             <Button className="flex-1" size="lg" animated>
               <ShoppingCart className="w-5 h-5 mr-2" />
-              Add to Cart
+              Add to Cart • ${checkoutTotal.toFixed(2)}
             </Button>
             <Button variant="outline" size="lg">
               <Heart className="w-5 h-5" />
@@ -531,6 +586,24 @@ export const EcommerceProductTemplate: React.FC = () => {
             <Check className="w-4 h-4 mr-2" />
             In stock and ready to ship
           </Alert>
+
+          <Card>
+            <CardContent className="p-4 space-y-2 text-sm">
+              <div className="flex items-center justify-between">
+                <span className={textMuted}>Subtotal</span>
+                <span className={cn("font-bold", textPrimary)}>${subtotal.toFixed(2)}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className={textMuted}>Tax</span>
+                <span className={cn("font-bold", textPrimary)}>${tax.toFixed(2)}</span>
+              </div>
+              <Separator />
+              <div className="flex items-center justify-between">
+                <span className={cn("font-bold", textPrimary)}>Total</span>
+                <span className={cn("text-lg font-black", textPrimary)}>${derivedTotal.toFixed(2)}</span>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
 
@@ -572,15 +645,30 @@ export const EcommerceProductTemplate: React.FC = () => {
 // 8. SETTINGS PANEL TEMPLATE (Comprehensive)
 // ═══════════════════════════════════════════════════════════════════════════
 
-export const SettingsPanelTemplate: React.FC = () => {
+export const SettingsPanelTemplate: React.FC<SettingsPanelTemplateProps> = ({ styleConfig = {} }) => {
   const { textPrimary, textMuted } = useThemeClasses();
+  const profileConfig = styleConfig.profileSection ?? {};
+  const settingsConfig = styleConfig.settingsList ?? {};
+  const preferenceConfig = styleConfig.preferencePanel ?? {};
+  const dangerConfig = styleConfig.dangerZone ?? {};
   const { mode, setMode } = useChameleon();
+
+  const displayUser = profileConfig.user ?? { name: "John Doe", email: "john@example.com" };
+  const dangerActions = dangerConfig.actions ?? [
+    {
+      id: "delete-account",
+      label: "Delete Account",
+      description: "Permanently delete your account and all associated data.",
+      buttonLabel: "Delete account",
+      variant: "danger" as const,
+    },
+  ];
 
   return (
     <div className="max-w-4xl mx-auto space-y-8 pb-20">
       <div>
-        <h1 className={cn("text-3xl sm:text-4xl font-black mb-2", textPrimary)}>Settings</h1>
-        <p className={textMuted}>Manage your account settings and preferences</p>
+        <h1 className={cn("text-3xl sm:text-4xl font-black mb-2", textPrimary)}>{settingsConfig.heading ?? "Settings"}</h1>
+        <p className={textMuted}>{displayUser.email ? `Manage preferences for ${displayUser.email}` : "Manage your account settings and preferences"}</p>
       </div>
 
       <Tabs defaultValue="general">
@@ -611,22 +699,22 @@ export const SettingsPanelTemplate: React.FC = () => {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                   <div className="space-y-2">
                     <label className={cn("text-sm font-bold", textPrimary)}>First Name</label>
-                    <Input defaultValue="John" />
+                    <Input defaultValue={displayUser.name.split(" ")[0] ?? "John"} />
                   </div>
                   <div className="space-y-2">
                     <label className={cn("text-sm font-bold", textPrimary)}>Last Name</label>
-                    <Input defaultValue="Doe" />
+                    <Input defaultValue={displayUser.name.split(" ").slice(1).join(" ") || "Doe"} />
                   </div>
                 </div>
 
                 <div className="space-y-2">
                   <label className={cn("text-sm font-bold", textPrimary)}>Email</label>
-                  <Input type="email" defaultValue="john@example.com" />
+                  <Input type="email" defaultValue={displayUser.email} />
                 </div>
 
                 <div className="space-y-2">
                   <label className={cn("text-sm font-bold", textPrimary)}>Bio</label>
-                  <Textarea defaultValue="Product designer and developer" />
+                  <Textarea defaultValue={displayUser.bio ?? "Product designer and developer"} />
                 </div>
               </div>
 
@@ -636,7 +724,7 @@ export const SettingsPanelTemplate: React.FC = () => {
 
           <Card>
             <CardHeader>
-              <CardTitle>Appearance</CardTitle>
+              <CardTitle>{preferenceConfig.heading ?? "Appearance"}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
@@ -721,7 +809,7 @@ export const SettingsPanelTemplate: React.FC = () => {
         <TabsContent value="notifications" className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle>Email Notifications</CardTitle>
+              <CardTitle>{settingsConfig.heading ?? "Email Notifications"}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               {[
@@ -789,6 +877,25 @@ export const SettingsPanelTemplate: React.FC = () => {
             </CardContent>
           </Card>
         </TabsContent>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>{dangerConfig.heading ?? "Danger Zone"}</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {dangerActions.map((action) => (
+              <div key={action.id} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-4 rounded-xl border border-[var(--border)]">
+                <div>
+                  <p className={cn("font-bold", textPrimary)}>{action.label}</p>
+                  <p className={cn("text-sm", textMuted)}>{action.description}</p>
+                </div>
+                <Button variant={action.variant === "danger" ? "ghost" : "outline"} className={action.variant === "danger" ? "text-rose-500 hover:text-rose-600" : undefined}>
+                  {action.buttonLabel ?? "Confirm"}
+                </Button>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
       </Tabs>
     </div>
   );
@@ -798,20 +905,20 @@ export const SettingsPanelTemplate: React.FC = () => {
 // 9. AUTHENTICATION FLOW TEMPLATE (uses our comprehensive auth components)
 // ═══════════════════════════════════════════════════════════════════════════
 
-export const AuthFlowTemplate: React.FC = () => {
-  // This references the comprehensive auth components we built earlier
+export const AuthFlowTemplate: React.FC<AuthFlowTemplateProps> = ({ styleConfig = {} }) => {
+  const heading = styleConfig.heading ?? "Authentication";
+  const subheading = styleConfig.subheading ?? "Secure sign-in, sign-up, password recovery, and multi-factor flows.";
+  const logoLabel = styleConfig.logoLabel ?? "Chameleon Auth";
+
   return (
-    <AuthShowcase />
-    // <div className="min-h-[600px] flex items-center justify-center p-6">
-    //   <div className="max-w-md w-full space-y-4 text-center">
-    //     <h2 className="text-2xl font-bold">Authentication Template</h2>
-    //     <p className="text-sm text-[var(--muted-foreground)]">
-    //       See the <strong>Auth Showcase</strong> page for the complete authentication flow with all
-    //       components.
-    //     </p>
-    //     <Badge>Comprehensive auth components available separately</Badge>
-    //   </div>
-    // </div>
+    <div className="space-y-8 pb-20">
+      <section className="text-center space-y-3">
+        <Badge className="mx-auto">{logoLabel}</Badge>
+        <h1 className="text-3xl sm:text-4xl font-black tracking-tight">{heading}</h1>
+        <p className="text-sm sm:text-base text-[var(--muted-foreground)] max-w-2xl mx-auto">{subheading}</p>
+      </section>
+      <AuthShowcase />
+    </div>
   );
 };
 
@@ -819,10 +926,21 @@ export const AuthFlowTemplate: React.FC = () => {
 // 10. DOCUMENTATION TEMPLATE
 // ═══════════════════════════════════════════════════════════════════════════
 
-export const DocumentationTemplate: React.FC = () => {
+export const DocumentationTemplate: React.FC<DocumentationTemplateProps> = ({ styleConfig = {} }) => {
   const { textPrimary, textMuted, cardClass } = useThemeClasses();
 
-  const sections = [
+  const pageHeaderConfig = styleConfig.pageHeader ?? {};
+  const sideNavConfig = styleConfig.sideNav ?? {};
+  const heading = styleConfig.heading ?? pageHeaderConfig.title ?? "Documentation";
+  const subtitle = pageHeaderConfig.subtitle ?? "Learn how to get started with Chameleon UI";
+
+  const sections = sideNavConfig.items?.length
+    ? sideNavConfig.items.map((item, i) => ({
+        id: item.href ? item.href.replace("#", "") : `section-${i + 1}`,
+        title: item.label,
+        icon: [Zap, Download, Box, Layers, Code][i] ?? BookOpen,
+      }))
+    : [
     { id: "getting-started", title: "Getting Started", icon: Zap },
     { id: "installation", title: "Installation", icon: Download },
     { id: "components", title: "Components", icon: Box },
@@ -887,13 +1005,13 @@ export const DocumentationTemplate: React.FC = () => {
         {/* Getting Started */}
         <section id="getting-started" className="space-y-6">
           <div>
-            <h1 className={cn("text-3xl sm:text-5xl font-black mb-3", textPrimary)}>Documentation</h1>
-            <p className={cn("text-xl", textMuted)}>Learn how to get started with Chameleon UI</p>
+            <h1 className={cn("text-3xl sm:text-5xl font-black mb-3", textPrimary)}>{heading}</h1>
+            <p className={cn("text-xl", textMuted)}>{subtitle}</p>
           </div>
 
           <Alert variant="info" animated>
             <BookOpen className="w-4 h-4 mr-2" />
-            This documentation is for version 1.0.8
+            This documentation is for version 1.0.9
           </Alert>
 
           <div className={cn("prose prose-lg max-w-none", textPrimary)}>

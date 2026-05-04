@@ -1,393 +1,181 @@
-import React, { useState } from "react";
-import { motion, AnimatePresence } from "motion/react";
-import {
-  Copy,
-  Check,
-  ChevronDown,
-  ChevronRight,
-  Palette,
-  Layers,
-  Zap,
-  Type,
-  Droplets,
-  Hash,
-  Globe,
-  Wand2,
-  Paintbrush,
-  Eye,
-} from "lucide-react";
+import React, { useMemo, useState } from "react";
+import { Search, Code, Copy, Check, Wrench } from "lucide-react";
+import { Button, Input, Badge } from "./atoms";
+import { Alert } from "./molecules";
+import { useThemeClasses } from "./context";
 import { cn } from "./utils";
-import { useChameleon, useThemeClasses } from "./context";
 import { CopyPageForAIPanel } from "./ai-helpers";
 
-// ─── Code Block with Copy ────────────────────────────────────────────────────
+type DocsKind = "hook" | "provider" | "utility" | "constant" | "type";
+type KindFilter = "all" | DocsKind;
 
-function CodeBlock({ code, lang = "tsx" }: { code: string; lang?: string }) {
-  const [copied, setCopied] = useState(false);
-  const { mode } = useChameleon();
-  const isDark = mode === "dark";
-
-  return (
-    <div className={cn(
-      "relative rounded-xl overflow-hidden border text-sm font-mono",
-      isDark
-        ? "bg-[#0d1117] border-white/10 text-gray-300"
-        : "bg-[#f6f8fa] border-gray-200 text-gray-800",
-    )}>
-      <div className={cn(
-        "flex items-center justify-between px-4 py-2 border-b text-[10px] font-bold uppercase tracking-widest",
-        isDark ? "border-white/10 text-gray-500" : "border-gray-200 text-gray-400",
-      )}>
-        <span>{lang}</span>
-        <button
-          onClick={() => {
-            navigator.clipboard.writeText(code);
-            setCopied(true);
-            setTimeout(() => setCopied(false), 2000);
-          }}
-          className="flex items-center gap-1 hover:text-[var(--primary)] transition-colors"
-        >
-          {copied ? <Check className="w-3 h-3 text-emerald-500" /> : <Copy className="w-3 h-3" />}
-          {copied ? "Copied" : "Copy"}
-        </button>
-      </div>
-      <pre className="p-4 overflow-x-auto leading-relaxed">
-        <code>{code}</code>
-      </pre>
-    </div>
-  );
+interface ApiRow {
+  name: string;
+  type: string;
+  description: string;
+  required?: boolean;
+  default?: string;
 }
 
-// ─── Collapsible Section ─────────────────────────────────────────────────────
-
-function Section({
-  title,
-  icon: Icon,
-  badge,
-  children,
-  defaultOpen = false,
-}: {
-  title: string;
-  icon: React.ElementType;
-  badge?: string;
-  children: React.ReactNode;
-  defaultOpen?: boolean;
-}) {
-  const [open, setOpen] = useState(defaultOpen);
-  const { cardClass, textPrimary, textMuted } = useThemeClasses();
-
-  return (
-    <div className={cn(cardClass, "overflow-hidden")}>
-      <button
-        onClick={() => setOpen(!open)}
-        className="w-full flex items-center gap-3 p-5 text-left hover:bg-[var(--muted)]/30 transition-colors"
-      >
-        <div className="w-9 h-9 rounded-xl bg-[var(--primary)]/10 flex items-center justify-center shrink-0">
-          <Icon className="w-4.5 h-4.5 text-[var(--primary)]" />
-        </div>
-        <div className="flex-1 min-w-0">
-          <h3 className={cn("text-base font-black tracking-tight", textPrimary)}>{title}</h3>
-        </div>
-        {badge && (
-          <span className="text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full bg-[var(--primary)]/10 text-[var(--primary)] shrink-0">
-            {badge}
-          </span>
-        )}
-        <motion.div animate={{ rotate: open ? 90 : 0 }} transition={{ duration: 0.2 }}>
-          <ChevronRight className={cn("w-4 h-4 shrink-0", textMuted)} />
-        </motion.div>
-      </button>
-      <AnimatePresence initial={false}>
-        {open && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.3, ease: "easeInOut" }}
-          >
-            <div className="px-5 pb-5 space-y-4">{children}</div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
-  );
+interface DocsEntry {
+  id: string;
+  name: string;
+  kind: DocsKind;
+  description: string;
+  importPath: string;
+  apiRows: ApiRow[];
+  exampleMinimal: string;
+  exampleFull: string;
+  keywords: string[];
+  useCases: string[];
 }
 
-// ─── Props Table ─────────────────────────────────────────────────────────────
+const kindOrder: KindFilter[] = ["all", "hook", "provider", "utility", "constant", "type"];
+const kindLabel: Record<KindFilter, string> = {
+  all: "All",
+  hook: "Hooks",
+  provider: "Providers",
+  utility: "Utils",
+  constant: "Constants",
+  type: "Types",
+};
 
-function PropsTable({ rows }: { rows: { name: string; type: string; description: string; default?: string }[] }) {
-  const { mode } = useChameleon();
-  const { textPrimary, textMuted } = useThemeClasses();
-  const isDark = mode === "dark";
+const HOOKS_UTILS_DOCS_MARKDOWN = `# Chameleon UI — Hooks & Utils Directory
 
-  return (
-    <div className="overflow-x-auto rounded-xl border border-[var(--border)]">
-      <table className="w-full text-sm">
-        <thead>
-          <tr className={cn("border-b border-[var(--border)]", isDark ? "bg-white/5" : "bg-[var(--muted)]/50")}>
-            <th className={cn("text-left px-4 py-2.5 font-black text-xs uppercase tracking-widest", textMuted)}>Prop</th>
-            <th className={cn("text-left px-4 py-2.5 font-black text-xs uppercase tracking-widest", textMuted)}>Type</th>
-            <th className={cn("text-left px-4 py-2.5 font-black text-xs uppercase tracking-widest", textMuted)}>Default</th>
-            <th className={cn("text-left px-4 py-2.5 font-black text-xs uppercase tracking-widest", textMuted)}>Description</th>
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map((row, i) => (
-            <tr key={row.name} className={cn("border-b border-[var(--border)] last:border-0", i % 2 === 0 ? "" : isDark ? "bg-white/[0.02]" : "bg-[var(--muted)]/20")}>
-              <td className={cn("px-4 py-2.5 font-mono font-bold text-[var(--primary)]")}>{row.name}</td>
-              <td className={cn("px-4 py-2.5 font-mono text-xs", textMuted)}>{row.type}</td>
-              <td className={cn("px-4 py-2.5 font-mono text-xs", textMuted)}>{row.default || "—"}</td>
-              <td className={cn("px-4 py-2.5", textPrimary)}>{row.description}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  );
-}
+Search hooks and utilities, inspect full APIs, and copy context for AI.
 
-// ─── Return Values Table ─────────────────────────────────────────────────────
+## Hooks
+- useChameleon
+- useThemeClasses
+- useAnimation
 
-function ReturnsTable({ rows }: { rows: { name: string; type: string; description: string }[] }) {
-  const { mode } = useChameleon();
-  const { textPrimary, textMuted } = useThemeClasses();
-  const isDark = mode === "dark";
+## Provider
+- ChameleonProvider
 
-  return (
-    <div className="overflow-x-auto rounded-xl border border-[var(--border)]">
-      <table className="w-full text-sm">
-        <thead>
-          <tr className={cn("border-b border-[var(--border)]", isDark ? "bg-white/5" : "bg-[var(--muted)]/50")}>
-            <th className={cn("text-left px-4 py-2.5 font-black text-xs uppercase tracking-widest", textMuted)}>Property</th>
-            <th className={cn("text-left px-4 py-2.5 font-black text-xs uppercase tracking-widest", textMuted)}>Type</th>
-            <th className={cn("text-left px-4 py-2.5 font-black text-xs uppercase tracking-widest", textMuted)}>Description</th>
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map((row, i) => (
-            <tr key={row.name} className={cn("border-b border-[var(--border)] last:border-0", i % 2 === 0 ? "" : isDark ? "bg-white/[0.02]" : "bg-[var(--muted)]/20")}>
-              <td className="px-4 py-2.5 font-mono font-bold text-[var(--primary)]">{row.name}</td>
-              <td className={cn("px-4 py-2.5 font-mono text-xs", textMuted)}>{row.type}</td>
-              <td className={cn("px-4 py-2.5", textPrimary)}>{row.description}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  );
-}
+## Utilities
+- cn
+- hexToRgb
+- generateVariations
+- getContrastColor
 
-const HOOKS_UTILS_MARKDOWN = `# Chameleon UI — Hooks & Utils
+## Constants
+- animationPresets
+- translations
 
-## 🪝 Hooks
-- \`useChameleon()\`: Access current \`theme\`, \`mode\`, \`lang\`, \`primaryColor\`, \`radius\`, and setter properties.
-- \`useThemeClasses()\`: Returns CSS tailwind classes (\`textPrimary\`, \`textMuted\`, etc.) adapted to the active theme. Useful for deep UI customization.
-- \`useAnimation()\`: Returns physics-based animation presets (\`hover\`, \`tap\`, \`fadeUp\`, \`stagger\`, etc.) specifically designed for the active theme. Built to be used with \`motion/react\`.
+## Types
+- ChameleonTheme
+- ChameleonMode
+- ChameleonLang
+- ThemeAnimationPreset`;
 
-## 🛠️ Utils
-- \`cn(...classes)\`: Tailwind's clsx + tailwind-merge utility for safe conditional class rendering. The backbone of all Chameleon atom components.
-- \`CSS Variables\`: You can tap into \`var(--primary)\`, \`var(--border)\`, \`var(--card)\`, \`var(--muted)\`, etc. anywhere in your Tailwind classes.
+const entries: DocsEntry[] = [
+  {
+    id: "useChameleon",
+    name: "useChameleon",
+    kind: "hook",
+    description:
+      "Primary context hook for reading and updating active theme, mode, language, and intensity controls.",
+    importPath: "@chameleon-ui-lib/react",
+    apiRows: [
+      { name: "theme", type: "ChameleonTheme", description: "Current active theme" },
+      { name: "setTheme", type: "(theme: ChameleonTheme) => void", description: "Switch active theme" },
+      { name: "mode", type: "ChameleonMode", description: "Current mode" },
+      { name: "setMode", type: "(mode: ChameleonMode) => void", description: "Switch mode" },
+      { name: "lang", type: "ChameleonLang", description: "Current language" },
+      { name: "setLang", type: "(lang: ChameleonLang) => void", description: "Switch language" },
+      { name: "customBrandColor", type: "string | null", description: "Custom brand color" },
+      {
+        name: "setCustomBrandColor",
+        type: "(value: string | null) => void",
+        description: "Set or reset brand color",
+      },
+      { name: "glassyIntensity", type: "number", description: "Glassy intensity (0–100)" },
+      {
+        name: "setGlassyIntensity",
+        type: "(value: number) => void",
+        description: "Set glassy intensity",
+      },
+      { name: "liquidIntensity", type: "number", description: "Liquid intensity (0–100)" },
+      {
+        name: "setLiquidIntensity",
+        type: "(value: number) => void",
+        description: "Set liquid intensity",
+      },
+    ],
+    exampleMinimal: `import { useChameleon } from "@chameleon-ui-lib/react";
 
-## 🌍 i18n
-- \`translations\`: A dictionary of strings (EN, ES, FR) for common UI elements.
-- Usage: \`const { lang } = useChameleon(); const t = translations[lang]; return t.signIn;\`.
-`;
+const { theme, setTheme } = useChameleon();`,
+    exampleFull: `import { useChameleon } from "@chameleon-ui-lib/react";
 
-// ─── Main Page ───────────────────────────────────────────────────────────────
-
-export function HooksUtilsDocsPage() {
-  const { textPrimary, textMuted, cardClass } = useThemeClasses();
-  const { mode } = useChameleon();
-
-  return (
-    <div className="space-y-8 max-w-4xl">
-      {/* Hero */}
-      <div className="space-y-3">
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-2">
-            <span className="text-[10px] font-black uppercase tracking-widest text-[var(--primary)] bg-[var(--primary)]/10 px-2.5 py-1 rounded-full">
-              API Reference
-            </span>
-          </div>
-          <CopyPageForAIPanel markdown={HOOKS_UTILS_MARKDOWN} />
-        </div>
-        <h1 className={cn("text-3xl sm:text-4xl font-black tracking-tight", textPrimary)}>
-          Hooks & Utilities
-        </h1>
-        <p className={cn("text-base sm:text-lg leading-relaxed max-w-2xl", textMuted)}>
-          Every hook, utility function, and constant exported from{" "}
-          <code className="font-mono text-[var(--primary)] bg-[var(--primary)]/10 px-1.5 py-0.5 rounded-md text-sm">
-            @chameleon-ui-lib/react
-          </code>
-          . Use these to build theme-aware, adaptive interfaces.
-        </p>
-      </div>
-
-      {/* Quick Import */}
-      <CodeBlock
-        code={`import {
-  // Hooks
-  useChameleon,
-  useThemeClasses,
-  useAnimation,
-
-  // Provider
-  ChameleonProvider,
-
-  // Utilities
-  cn,
-  hexToRgb,
-  generateVariations,
-  getContrastColor,
-
-  // Constants
-  animationPresets,
-  translations,
-} from "@chameleon-ui-lib/react";`}
-      />
-
-      {/* ── HOOKS ─────────────────────────────────────────────────────────── */}
-
-      <h2 className={cn("text-xl font-black tracking-tight pt-4 flex items-center gap-2", textPrimary)}>
-        <Zap className="w-5 h-5 text-[var(--primary)]" />
-        Hooks
-      </h2>
-
-      {/* useChameleon */}
-      <Section title="useChameleon" icon={Palette} badge="Core" defaultOpen>
-        <p className={cn("leading-relaxed", textMuted)}>
-          The primary hook for accessing and controlling the Chameleon theme context. Must be used inside a{" "}
-          <code className="font-mono text-[var(--primary)]">ChameleonProvider</code>.
-        </p>
-
-        <CodeBlock
-          code={`import { useChameleon } from "@chameleon-ui-lib/react";
-
-function MyComponent() {
-  const {
-    theme,              // Current theme: "material" | "simple" | "minimalist" | "glassy" | "liquid"
-    setTheme,           // Switch themes programmatically
-    mode,               // "light" | "dark"
-    setMode,            // Toggle dark/light mode
-    lang,               // "en" | "es" | "fr"
-    setLang,            // Switch language
-    customBrandColor,   // Custom hex brand color or null
-    setCustomBrandColor,// Apply a brand color across all themes
-    glassyIntensity,    // 0-100 — blur intensity for glassy theme
-    setGlassyIntensity,
-    liquidIntensity,    // 0-100 — animation intensity for liquid theme
-    setLiquidIntensity,
-  } = useChameleon();
+function ThemeControls() {
+  const { theme, setTheme, mode, setMode, lang } = useChameleon();
 
   return (
     <div>
-      <p>Current theme: {theme}</p>
-      <button onClick={() => setMode(mode === "dark" ? "light" : "dark")}>
-        Toggle {mode === "dark" ? "Light" : "Dark"}
-      </button>
-      <button onClick={() => setTheme("glassy")}>
-        Switch to Glassy
-      </button>
+      <p>{theme} / {mode} / {lang}</p>
+      <button onClick={() => setTheme("glassy")}>Use glassy</button>
+      <button onClick={() => setMode(mode === "dark" ? "light" : "dark")}>Toggle mode</button>
     </div>
   );
-}`}
-        />
+}`,
+    keywords: ["theme", "mode", "language", "context"],
+    useCases: ["theme switchers", "mode toggles", "localized UI"],
+  },
+  {
+    id: "useThemeClasses",
+    name: "useThemeClasses",
+    kind: "hook",
+    description: "Returns ready-to-use theme-aware class strings for text, cards, buttons, and inputs.",
+    importPath: "@chameleon-ui-lib/react",
+    apiRows: [
+      { name: "cardClass", type: "string", description: "Card base classes" },
+      { name: "buttonPrimary", type: "string", description: "Primary button classes" },
+      { name: "inputClass", type: "string", description: "Input classes" },
+      { name: "textPrimary", type: "string", description: "Primary text classes" },
+      { name: "textMuted", type: "string", description: "Muted text classes" },
+      { name: "theme", type: "ChameleonTheme", description: "Current theme" },
+      { name: "mode", type: "ChameleonMode", description: "Current mode" },
+      { name: "isDark", type: "boolean", description: "Mode shortcut" },
+    ],
+    exampleMinimal: `import { useThemeClasses } from "@chameleon-ui-lib/react";
 
-        <h4 className={cn("text-sm font-black uppercase tracking-widest pt-2", textPrimary)}>Return Values</h4>
-        <ReturnsTable
-          rows={[
-            { name: "theme", type: "ChameleonTheme", description: "Active theme — \"material\" | \"simple\" | \"minimalist\" | \"glassy\" | \"liquid\"" },
-            { name: "setTheme", type: "(theme: ChameleonTheme) => void", description: "Change the active theme" },
-            { name: "mode", type: "ChameleonMode", description: "Color mode — \"light\" | \"dark\"" },
-            { name: "setMode", type: "(mode: ChameleonMode) => void", description: "Toggle between light and dark mode" },
-            { name: "lang", type: "ChameleonLang", description: "Active language — \"en\" | \"es\" | \"fr\"" },
-            { name: "setLang", type: "(lang: ChameleonLang) => void", description: "Switch the active language" },
-            { name: "customBrandColor", type: "string | null", description: "Custom hex brand color applied across all themes, or null for defaults" },
-            { name: "setCustomBrandColor", type: "(color: string | null) => void", description: "Apply a custom brand color (hex) or reset to null" },
-            { name: "glassyIntensity", type: "number", description: "Blur intensity for glassy theme (0–100)" },
-            { name: "setGlassyIntensity", type: "(n: number) => void", description: "Set glassy blur intensity" },
-            { name: "liquidIntensity", type: "number", description: "Animation intensity for liquid theme (0–100)" },
-            { name: "setLiquidIntensity", type: "(n: number) => void", description: "Set liquid animation intensity" },
-          ]}
-        />
-      </Section>
+const { cardClass, textPrimary } = useThemeClasses();`,
+    exampleFull: `import { useThemeClasses } from "@chameleon-ui-lib/react";
 
-      {/* useThemeClasses */}
-      <Section title="useThemeClasses" icon={Paintbrush} badge="Styling">
-        <p className={cn("leading-relaxed", textMuted)}>
-          Returns pre-computed CSS class strings for the current theme + mode combination. Every class guarantees
-          proper foreground/background contrast. Use these instead of hand-writing conditional theme styles.
-        </p>
-
-        <CodeBlock
-          code={`import { useThemeClasses } from "@chameleon-ui-lib/react";
-
-function MyCard() {
-  const {
-    cardClass,        // Card background, border, shadow, radius for current theme
-    buttonPrimary,    // Primary button styles
-    buttonSecondary,  // Secondary button styles
-    buttonOutline,    // Outlined button styles
-    buttonGhost,      // Ghost/transparent button styles
-    inputClass,       // Input field styles (border, bg, focus ring)
-    badgeClass,       // Badge/chip styles
-    surfaceClass,     // Muted surface (panels, sidebars)
-    textPrimary,      // Primary text color
-    textMuted,        // Muted/secondary text color
-    textOnCard,       // Text color guaranteed to contrast card background
-    textOnPrimary,    // Text color guaranteed to contrast primary color
-    theme,            // Current theme name (shortcut)
-    mode,             // Current mode (shortcut)
-    isDark,           // Boolean shortcut for mode === "dark"
-  } = useThemeClasses();
+function ThemeCard() {
+  const { cardClass, textPrimary, textMuted, buttonPrimary } = useThemeClasses();
 
   return (
     <div className={cardClass}>
       <h2 className={textPrimary}>Title</h2>
-      <p className={textMuted}>Description text</p>
-      <button className={buttonPrimary}>Save</button>
-      <button className={buttonOutline}>Cancel</button>
-      <input className={inputClass} placeholder="Type here..." />
-      <span className={badgeClass}>New</span>
+      <p className={textMuted}>Description</p>
+      <button className={buttonPrimary}>Action</button>
     </div>
   );
-}`}
-        />
+}`,
+    keywords: ["classes", "tokens", "styling"],
+    useCases: ["theme-safe styling", "rapid theming"],
+  },
+  {
+    id: "useAnimation",
+    name: "useAnimation",
+    kind: "hook",
+    description: "Returns the active theme animation preset for enter, hover, tap, and staged motion variants.",
+    importPath: "@chameleon-ui-lib/react",
+    apiRows: [
+      { name: "enter", type: "object", description: "Enter transition token" },
+      { name: "hover", type: "object", description: "Hover transition token" },
+      { name: "tap", type: "object", description: "Tap transition token" },
+      { name: "fadeUp", type: "object", description: "Fade-up preset" },
+      { name: "stagger", type: "object", description: "Staggered list preset" },
+    ],
+    exampleMinimal: `import { useAnimation } from "@chameleon-ui-lib/react";
 
-        <h4 className={cn("text-sm font-black uppercase tracking-widest pt-2", textPrimary)}>Return Values</h4>
-        <ReturnsTable
-          rows={[
-            { name: "cardClass", type: "string", description: "Card container with theme-specific bg, border, shadow, and radius" },
-            { name: "buttonPrimary", type: "string", description: "Primary CTA button — filled, with hover/active states" },
-            { name: "buttonSecondary", type: "string", description: "Secondary button — softer fill" },
-            { name: "buttonOutline", type: "string", description: "Outlined button — border only, transparent bg" },
-            { name: "buttonGhost", type: "string", description: "Ghost button — no bg, no border, hover reveals" },
-            { name: "inputClass", type: "string", description: "Text input — border style, focus ring, placeholder color" },
-            { name: "badgeClass", type: "string", description: "Badge/chip — small label with theme-specific shape and color" },
-            { name: "surfaceClass", type: "string", description: "Muted surface for panels, sidebars, code blocks" },
-            { name: "textPrimary", type: "string", description: "Primary foreground text color" },
-            { name: "textMuted", type: "string", description: "Muted/secondary text color" },
-            { name: "textOnCard", type: "string", description: "Text color with guaranteed contrast on card bg" },
-            { name: "textOnPrimary", type: "string", description: "Text color with guaranteed contrast on primary color" },
-            { name: "theme", type: "ChameleonTheme", description: "Current theme (convenience shortcut)" },
-            { name: "mode", type: "ChameleonMode", description: "Current mode (convenience shortcut)" },
-            { name: "isDark", type: "boolean", description: "true when mode === \"dark\"" },
-          ]}
-        />
-      </Section>
-
-      {/* useAnimation */}
-      <Section title="useAnimation" icon={Zap} badge="Motion">
-        <p className={cn("leading-relaxed", textMuted)}>
-          Returns the animation preset for the current theme. Each theme has physics-accurate, visually distinct
-          motion tokens — enter transitions, stagger configs, hover/tap effects, and more.
-        </p>
-
-        <CodeBlock
-          code={`import { useAnimation } from "@chameleon-ui-lib/react";
+const preset = useAnimation();`,
+    exampleFull: `import { useAnimation } from "@chameleon-ui-lib/react";
 import { motion } from "motion/react";
 
-function AnimatedCard({ children }) {
+function AnimatedPanel({ children }: { children: React.ReactNode }) {
   const preset = useAnimation();
 
   return (
@@ -396,303 +184,437 @@ function AnimatedCard({ children }) {
       animate={preset.fadeUp.animate}
       transition={preset.fadeUp.transition}
       whileHover={preset.hover}
-      whileTap={preset.tap}
     >
       {children}
     </motion.div>
   );
-}`}
-        />
+}`,
+    keywords: ["motion", "presets", "animation"],
+    useCases: ["theme-aware transitions", "motion consistency"],
+  },
+  {
+    id: "ChameleonProvider",
+    name: "ChameleonProvider",
+    kind: "provider",
+    description: "Root provider that initializes theme/mode/language context for all components.",
+    importPath: "@chameleon-ui-lib/react",
+    apiRows: [
+      { name: "children", type: "ReactNode", description: "Application subtree", required: true },
+      { name: "initialTheme", type: "ChameleonTheme", description: "Initial theme", default: '"material"' },
+      { name: "initialMode", type: "ChameleonMode", description: "Initial mode", default: '"light"' },
+      { name: "initialLang", type: "ChameleonLang", description: "Initial language", default: '"en"' },
+    ],
+    exampleMinimal: `import { ChameleonProvider } from "@chameleon-ui-lib/react";
 
-        <h4 className={cn("text-sm font-black uppercase tracking-widest pt-2", textPrimary)}>Return Value — ThemeAnimationPreset</h4>
-        <ReturnsTable
-          rows={[
-            { name: "name", type: "string", description: "Human-readable preset name (e.g. \"Material Motion\")" },
-            { name: "description", type: "string", description: "Short description of the motion style" },
-            { name: "enter", type: "{ initial, animate, exit, transition }", description: "Full page/element enter animation" },
-            { name: "stagger", type: "{ container: Variants, item: Variants }", description: "Staggered children animation — use with AnimatePresence" },
-            { name: "hover", type: "TargetAndTransition", description: "Hover effect — pass to whileHover" },
-            { name: "tap", type: "TargetAndTransition", description: "Tap/press effect — pass to whileTap" },
-            { name: "fadeUp", type: "{ initial, animate, transition }", description: "Fade in from below" },
-            { name: "scaleIn", type: "{ initial, animate, transition }", description: "Scale in from small" },
-            { name: "slideIn", type: "{ initial, animate, transition }", description: "Slide in from side" },
-            { name: "rotateIn", type: "{ initial, animate, transition }", description: "Rotate in" },
-            { name: "bounce", type: "{ animate, transition }", description: "Infinite bounce loop" },
-            { name: "pulse", type: "{ animate, transition }", description: "Infinite pulse loop" },
-            { name: "shake", type: "{ x, rotate?, transition }", description: "Attention-grabbing shake" },
-          ]}
-        />
-      </Section>
+<ChameleonProvider>
+  <App />
+</ChameleonProvider>;`,
+    exampleFull: `import { ChameleonProvider } from "@chameleon-ui-lib/react";
 
-      {/* ── PROVIDER ──────────────────────────────────────────────────────── */}
-
-      <h2 className={cn("text-xl font-black tracking-tight pt-4 flex items-center gap-2", textPrimary)}>
-        <Layers className="w-5 h-5 text-[var(--primary)]" />
-        Provider
-      </h2>
-
-      <Section title="ChameleonProvider" icon={Layers} badge="Required">
-        <p className={cn("leading-relaxed", textMuted)}>
-          Wrap your app root (or any subtree) with this provider. It supplies the theme context, injects CSS variables,
-          and renders ambient backgrounds for glassy/liquid themes.
-        </p>
-
-        <CodeBlock
-          code={`import { ChameleonProvider } from "@chameleon-ui-lib/react";
-
-function App() {
+function Root() {
   return (
-    <ChameleonProvider
-      initialTheme="material"  // optional, default: "material"
-      initialMode="light"      // optional, default: "light"
-      initialLang="en"         // optional, default: "en"
-    >
-      <YourApp />
+    <ChameleonProvider initialTheme="glassy" initialMode="dark" initialLang="fr">
+      <App />
     </ChameleonProvider>
   );
-}`}
-        />
+}`,
+    keywords: ["provider", "context", "root"],
+    useCases: ["app setup", "global theming"],
+  },
+  {
+    id: "cn",
+    name: "cn",
+    kind: "utility",
+    description: "Classname merger utility (clsx + tailwind-merge) for conditional Tailwind composition.",
+    importPath: "@chameleon-ui-lib/react",
+    apiRows: [
+      { name: "...inputs", type: "ClassValue[]", description: "Class inputs", required: true },
+      { name: "returns", type: "string", description: "Merged class string" },
+    ],
+    exampleMinimal: `import { cn } from "@chameleon-ui-lib/react";
 
-        <h4 className={cn("text-sm font-black uppercase tracking-widest pt-2", textPrimary)}>Props</h4>
-        <PropsTable
-          rows={[
-            { name: "children", type: "ReactNode", description: "Your application tree", default: "—" },
-            { name: "initialTheme", type: "ChameleonTheme", description: "Starting theme", default: '"material"' },
-            { name: "initialMode", type: "ChameleonMode", description: "Starting color mode", default: '"light"' },
-            { name: "initialLang", type: "ChameleonLang", description: "Starting language", default: '"en"' },
-          ]}
-        />
-      </Section>
+cn("px-4", isActive && "bg-violet-600");`,
+    exampleFull: `import { cn } from "@chameleon-ui-lib/react";
 
-      {/* ── UTILITIES ─────────────────────────────────────────────────────── */}
+const buttonClass = cn(
+  "px-4 py-2 rounded-md",
+  isPrimary ? "bg-violet-600 text-white" : "bg-slate-100 text-slate-900",
+  disabled && "opacity-50 cursor-not-allowed"
+);`,
+    keywords: ["classnames", "tailwind merge"],
+    useCases: ["conditional styles", "variant composition"],
+  },
+  {
+    id: "hexToRgb",
+    name: "hexToRgb",
+    kind: "utility",
+    description: "Converts a hex color string to RGB channels.",
+    importPath: "@chameleon-ui-lib/react",
+    apiRows: [
+      { name: "hex", type: "string", description: "Hex color string", required: true },
+      { name: "returns", type: "{ r: number; g: number; b: number } | null", description: "RGB or null" },
+    ],
+    exampleMinimal: `import { hexToRgb } from "@chameleon-ui-lib/react";
 
-      <h2 className={cn("text-xl font-black tracking-tight pt-4 flex items-center gap-2", textPrimary)}>
-        <Wand2 className="w-5 h-5 text-[var(--primary)]" />
-        Utility Functions
-      </h2>
+hexToRgb("#6200ee");`,
+    exampleFull: `import { hexToRgb } from "@chameleon-ui-lib/react";
 
-      {/* cn */}
-      <Section title="cn(...inputs)" icon={Type}>
-        <p className={cn("leading-relaxed", textMuted)}>
-          Merges class names using <code className="font-mono text-[var(--primary)]">clsx</code> +{" "}
-          <code className="font-mono text-[var(--primary)]">tailwind-merge</code>. Handles conditional classes,
-          arrays, and deduplicates conflicting Tailwind utilities.
-        </p>
+const rgb = hexToRgb("#ff5733");
+// { r: 255, g: 87, b: 51 }`,
+    keywords: ["color", "hex", "rgb"],
+    useCases: ["color conversions"],
+  },
+  {
+    id: "generateVariations",
+    name: "generateVariations",
+    kind: "utility",
+    description: "Creates lighter and darker variants from a base hex color.",
+    importPath: "@chameleon-ui-lib/react",
+    apiRows: [
+      { name: "baseColor", type: "string", description: "Base color", required: true },
+      { name: "returns", type: "{ light: string; dark: string }", description: "Derived variants" },
+    ],
+    exampleMinimal: `import { generateVariations } from "@chameleon-ui-lib/react";
 
-        <CodeBlock
-          code={`import { cn } from "@chameleon-ui-lib/react";
+generateVariations("#6200ee");`,
+    exampleFull: `import { generateVariations } from "@chameleon-ui-lib/react";
 
-// Basic merging
-cn("px-4 py-2", "bg-blue-500");
-// => "px-4 py-2 bg-blue-500"
+const { light, dark } = generateVariations("#6200ee");`,
+    keywords: ["palette", "brand color"],
+    useCases: ["custom theme generation"],
+  },
+  {
+    id: "getContrastColor",
+    name: "getContrastColor",
+    kind: "utility",
+    description: "Returns black or white for best text contrast against a background color.",
+    importPath: "@chameleon-ui-lib/react",
+    apiRows: [
+      { name: "hex", type: "string", description: "Background color", required: true },
+      { name: "returns", type: '"#000000" | "#ffffff"', description: "Best contrast text color" },
+    ],
+    exampleMinimal: `import { getContrastColor } from "@chameleon-ui-lib/react";
 
-// Conditional classes
-cn("base-class", isActive && "bg-primary", !isActive && "bg-muted");
+getContrastColor("#6200ee");`,
+    exampleFull: `import { getContrastColor } from "@chameleon-ui-lib/react";
 
-// Tailwind conflict resolution
-cn("px-4", "px-6");
-// => "px-6"  (tailwind-merge deduplicates)
+const textColor = getContrastColor("#03dac6");`,
+    keywords: ["a11y", "contrast"],
+    useCases: ["accessible color pairing"],
+  },
+  {
+    id: "animationPresets",
+    name: "animationPresets",
+    kind: "constant",
+    description: "Theme-keyed map of animation preset objects.",
+    importPath: "@chameleon-ui-lib/react",
+    apiRows: [
+      { name: "type", type: "Record<ChameleonTheme, ThemeAnimationPreset>", description: "Preset map" },
+      {
+        name: "keys",
+        type: '"material" | "simple" | "minimalist" | "glassy" | "liquid"',
+        description: "Supported themes",
+      },
+    ],
+    exampleMinimal: `import { animationPresets } from "@chameleon-ui-lib/react";
 
-// With arrays and objects (clsx syntax)
-cn(["flex", "items-center"], { "opacity-50": disabled });`}
-        />
+const enter = animationPresets.material.enter;`,
+    exampleFull: `import { animationPresets } from "@chameleon-ui-lib/react";
 
-        <PropsTable
-          rows={[
-            { name: "...inputs", type: "ClassValue[]", description: "Any number of class strings, arrays, objects, or falsy values" },
-          ]}
-        />
-        <p className={cn("text-xs font-bold", textMuted)}>Returns: <code className="font-mono">string</code> — merged class string</p>
-      </Section>
-
-      {/* hexToRgb */}
-      <Section title="hexToRgb(hex)" icon={Hash}>
-        <p className={cn("leading-relaxed", textMuted)}>
-          Converts a hex color string to an RGB object. Returns <code className="font-mono">null</code> if the input is invalid.
-        </p>
-
-        <CodeBlock
-          code={`import { hexToRgb } from "@chameleon-ui-lib/react";
-
-hexToRgb("#6200ee");
-// => { r: 98, g: 0, b: 238 }
-
-hexToRgb("ff5733");
-// => { r: 255, g: 87, b: 51 }
-
-hexToRgb("invalid");
-// => null`}
-        />
-
-        <PropsTable
-          rows={[
-            { name: "hex", type: "string", description: "Hex color string (with or without #)" },
-          ]}
-        />
-        <p className={cn("text-xs font-bold", textMuted)}>
-          Returns: <code className="font-mono">{"{ r: number, g: number, b: number } | null"}</code>
-        </p>
-      </Section>
-
-      {/* generateVariations */}
-      <Section title="generateVariations(baseColor)" icon={Droplets}>
-        <p className={cn("leading-relaxed", textMuted)}>
-          Takes a hex base color and generates lighter and darker variations. Useful for creating
-          theme-aware color pairs from a single brand color.
-        </p>
-
-        <CodeBlock
-          code={`import { generateVariations } from "@chameleon-ui-lib/react";
-
-generateVariations("#6200ee");
-// => { light: "#914cf4", dark: "#4400a6" }
-
-// Use case: custom brand theming
-const brand = "#ff5733";
-const { light, dark } = generateVariations(brand);
-// light = softer version for backgrounds
-// dark  = deeper version for dark mode`}
-        />
-
-        <PropsTable
-          rows={[
-            { name: "baseColor", type: "string", description: "Hex color string to derive variations from" },
-          ]}
-        />
-        <p className={cn("text-xs font-bold", textMuted)}>
-          Returns: <code className="font-mono">{"{ light: string, dark: string }"}</code>
-        </p>
-      </Section>
-
-      {/* getContrastColor */}
-      <Section title="getContrastColor(hex)" icon={Eye}>
-        <p className={cn("leading-relaxed", textMuted)}>
-          Returns <code className="font-mono">#000000</code> or <code className="font-mono">#ffffff</code> depending
-          on which has better contrast against the given background color. Uses WCAG luminance formula.
-        </p>
-
-        <CodeBlock
-          code={`import { getContrastColor } from "@chameleon-ui-lib/react";
-
-getContrastColor("#6200ee"); // => "#ffffff" (light text on dark purple)
-getContrastColor("#f0f0f0"); // => "#000000" (dark text on light gray)
-getContrastColor("#03dac6"); // => "#000000" (dark text on teal)
-
-// Use case: dynamic text on a user-chosen brand color
-<div style={{ backgroundColor: brandColor, color: getContrastColor(brandColor) }}>
-  Always readable text
-</div>`}
-        />
-
-        <PropsTable
-          rows={[
-            { name: "hex", type: "string", description: "Background hex color to compute contrast against" },
-          ]}
-        />
-        <p className={cn("text-xs font-bold", textMuted)}>
-          Returns: <code className="font-mono">"#000000" | "#ffffff"</code>
-        </p>
-      </Section>
-
-      {/* ── CONSTANTS ─────────────────────────────────────────────────────── */}
-
-      <h2 className={cn("text-xl font-black tracking-tight pt-4 flex items-center gap-2", textPrimary)}>
-        <Layers className="w-5 h-5 text-[var(--primary)]" />
-        Constants
-      </h2>
-
-      {/* animationPresets */}
-      <Section title="animationPresets" icon={Zap}>
-        <p className={cn("leading-relaxed", textMuted)}>
-          A <code className="font-mono text-[var(--primary)]">Record&lt;ChameleonTheme, ThemeAnimationPreset&gt;</code>{" "}
-          containing all motion presets for every theme. Access directly when you need presets without the hook
-          (e.g. outside a component, in a utility, or for a specific theme regardless of context).
-        </p>
-
-        <CodeBlock
-          code={`import { animationPresets } from "@chameleon-ui-lib/react";
-
-// Get material theme's enter animation
-const materialEnter = animationPresets.material.enter;
-
-// Use glassy theme hover regardless of current context
 const glassyHover = animationPresets.glassy.hover;
+const liquidStagger = animationPresets.liquid.stagger;`,
+    keywords: ["constants", "animation"],
+    useCases: ["preset reuse outside hooks"],
+  },
+  {
+    id: "translations",
+    name: "translations",
+    kind: "constant",
+    description: "Built-in EN/ES/FR translation dictionary for common UI labels.",
+    importPath: "@chameleon-ui-lib/react",
+    apiRows: [
+      {
+        name: "type",
+        type: "Record<ChameleonLang, Record<string, string>>",
+        description: "Language map",
+      },
+      { name: "languages", type: '"en" | "es" | "fr"', description: "Supported languages" },
+    ],
+    exampleMinimal: `import { translations, useChameleon } from "@chameleon-ui-lib/react";
 
-// Available keys per theme:
-// "material" | "simple" | "minimalist" | "glassy" | "liquid"
-//
-// Each contains: name, description, icon, enter, stagger,
-// hover, tap, fadeUp, scaleIn, slideIn, rotateIn, bounce, pulse, shake`}
-        />
-      </Section>
-
-      {/* translations */}
-      <Section title="translations" icon={Globe}>
-        <p className={cn("leading-relaxed", textMuted)}>
-          Built-in i18n translation strings for common UI labels. Supports <code className="font-mono">en</code>,{" "}
-          <code className="font-mono">es</code>, and <code className="font-mono">fr</code>.
-        </p>
-
-        <CodeBlock
-          code={`import { translations, useChameleon } from "@chameleon-ui-lib/react";
+const { lang } = useChameleon();
+const t = translations[lang];`,
+    exampleFull: `import { translations, useChameleon } from "@chameleon-ui-lib/react";
 
 function LoginButton() {
   const { lang } = useChameleon();
   const t = translations[lang];
-
   return <button>{t.signIn}</button>;
-  // en => "Sign In"
-  // es => "Iniciar sesión"
-  // fr => "Se connecter"
-}
+}`,
+    keywords: ["i18n", "language"],
+    useCases: ["localized labels"],
+  },
+  {
+    id: "exported-types",
+    name: "Exported Types",
+    kind: "type",
+    description: "Core public TypeScript contracts for themes, mode, language, and animation presets.",
+    importPath: "@chameleon-ui-lib/react",
+    apiRows: [
+      {
+        name: "ChameleonTheme",
+        type: '"material" | "simple" | "minimalist" | "glassy" | "liquid"',
+        description: "Theme union",
+      },
+      { name: "ChameleonMode", type: '"light" | "dark"', description: "Mode union" },
+      { name: "ChameleonLang", type: '"en" | "es" | "fr"', description: "Language union" },
+      { name: "ThemeAnimationPreset", type: "interface", description: "Animation token contract" },
+    ],
+    exampleMinimal: `import type { ChameleonTheme, ChameleonMode } from "@chameleon-ui-lib/react";`,
+    exampleFull: `import type { ChameleonTheme, ThemeAnimationPreset } from "@chameleon-ui-lib/react";
 
-// Available keys:
-// welcome, signIn, signOut, getStarted, settings, profile,
-// appearance, language, save, email, password, features,
-// pricing, dashboard, theme, mode, light, dark, loginDesc,
-// rememberMe, forgotPass, noAccount, signUp, general,
-// notifications, security, dangerZone, deleteAccount, confirmDelete`}
-        />
-      </Section>
+const theme: ChameleonTheme = "material";
 
-      {/* ── TYPES ─────────────────────────────────────────────────────────── */}
+function applyPreset(preset: ThemeAnimationPreset) {
+  return preset.fadeUp;
+}`,
+    keywords: ["typescript", "contracts"],
+    useCases: ["typed integrations"],
+  },
+];
 
-      <h2 className={cn("text-xl font-black tracking-tight pt-4 flex items-center gap-2", textPrimary)}>
-        <Type className="w-5 h-5 text-[var(--primary)]" />
-        Types
-      </h2>
+const buildEntryContext = (entry: DocsEntry): string => {
+  const apiMarkdown = entry.apiRows
+    .map((row) => {
+      const details = [
+        `type: ${row.type}`,
+        `required: ${row.required ? "yes" : "no"}`,
+        row.default ? `default: ${row.default}` : null,
+      ]
+        .filter(Boolean)
+        .join(" | ");
 
-      <Section title="Exported Types" icon={Type}>
-        <CodeBlock
-          lang="ts"
-          code={`// Theme variants
-type ChameleonTheme = "material" | "simple" | "minimalist" | "glassy" | "liquid";
+      return `- ${row.name} — ${details} — ${row.description}`;
+    })
+    .join("\n");
 
-// Color modes
-type ChameleonMode = "light" | "dark";
+  return `# ${entry.name}\n\n## API\n${apiMarkdown || "- None"}\n\n## Minimal\n${entry.exampleMinimal}\n\n## Full\n${entry.exampleFull}`;
+};
 
-// Supported languages
-type ChameleonLang = "en" | "es" | "fr";
+const CodeBlock = ({ code, title }: { code: string; title: string }) => {
+  const [copied, setCopied] = useState(false);
 
-// Animation preset shape (from useAnimation / animationPresets)
-interface ThemeAnimationPreset {
-  name: string;
-  description: string;
-  icon: React.ElementType;
-  enter:    { initial; animate; exit; transition };
-  stagger:  { container: Variants; item: Variants };
-  hover:    TargetAndTransition;
-  tap:      TargetAndTransition;
-  fadeUp:   { initial; animate; transition };
-  scaleIn:  { initial; animate; transition };
-  slideIn:  { initial; animate; transition };
-  rotateIn: { initial; animate; transition };
-  bounce:   { animate; transition };
-  pulse:    { animate; transition };
-  shake:    { x: number[]; rotate?: number[]; transition };
-}`}
-        />
-      </Section>
+  return (
+    <div className="rounded-xl border border-[var(--border)] bg-[var(--muted)]/30 overflow-hidden">
+      <div className="flex items-center justify-between px-3 py-2 border-b border-[var(--border)] bg-[var(--muted)]/50">
+        <p className="text-[10px] font-black uppercase tracking-widest text-[var(--muted-foreground)]">{title}</p>
+        <button
+          onClick={async () => {
+            await navigator.clipboard.writeText(code.trim());
+            setCopied(true);
+            setTimeout(() => setCopied(false), 1500);
+          }}
+          className="p-1.5 rounded-lg hover:bg-[var(--muted)] transition-colors"
+          aria-label="Copy code"
+        >
+          {copied ? (
+            <Check className="w-3.5 h-3.5 text-emerald-500" />
+          ) : (
+            <Copy className="w-3.5 h-3.5 text-[var(--muted-foreground)]" />
+          )}
+        </button>
+      </div>
+      <pre className="p-3 text-xs leading-relaxed overflow-x-auto">{code.trim()}</pre>
     </div>
   );
-}
+};
+
+export const HooksUtilsDocsPage: React.FC = () => {
+  const { textPrimary, textMuted } = useThemeClasses();
+  const [query, setQuery] = useState("");
+  const [kind, setKind] = useState<KindFilter>("all");
+  const [copiedContextId, setCopiedContextId] = useState<string | null>(null);
+
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+
+    return entries.filter((entry) => {
+      const kindMatch = kind === "all" || entry.kind === kind;
+      if (!kindMatch) return false;
+      if (!q) return true;
+
+      return [entry.id, entry.name, entry.description, ...entry.keywords, ...entry.useCases]
+        .join(" ")
+        .toLowerCase()
+        .includes(q);
+    });
+  }, [kind, query]);
+
+  const counts = useMemo(() => {
+    return entries.reduce<Record<DocsKind, number>>(
+      (acc, entry) => {
+        acc[entry.kind] += 1;
+        return acc;
+      },
+      { hook: 0, provider: 0, utility: 0, constant: 0, type: 0 },
+    );
+  }, []);
+
+  return (
+    <div className="pb-20 space-y-8">
+      <div>
+        <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-[var(--primary)]/10 border border-[var(--primary)]/20 flex items-center justify-center">
+              <Code className="w-5 h-5 text-[var(--primary)]" />
+            </div>
+            <Badge className="text-[10px] font-black uppercase tracking-widest">Hooks & Utils Directory</Badge>
+          </div>
+          <CopyPageForAIPanel markdown={HOOKS_UTILS_DOCS_MARKDOWN} />
+        </div>
+
+        <h1 className={cn("text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight mb-3", textPrimary)}>
+          Hooks & Utils Docs
+        </h1>
+        <p className={cn("text-base sm:text-lg max-w-3xl leading-relaxed", textMuted)}>
+          Search every exported hook, provider, utility, constant, and type. Expand an item for
+          import path, full API rows, and copy-ready usage examples.
+        </p>
+      </div>
+
+      <Alert variant="info" animated>
+        <div className="space-y-1">
+          <p className="font-bold text-sm">Consistent docs format</p>
+          <p className="text-sm">
+            This page follows the same reference structure as component and composite docs for fast
+            scanning and AI-ready context copy.
+          </p>
+        </div>
+      </Alert>
+
+      <div className="rounded-2xl border border-[var(--border)] bg-[var(--muted)]/20 p-4 sm:p-6 space-y-4">
+        <div className="relative max-w-xl">
+          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-[var(--muted-foreground)]" />
+          <Input
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder="Search by symbol, keyword, or use case..."
+            className="pl-10"
+          />
+        </div>
+
+        <div className="flex flex-wrap gap-2">
+          {kindOrder.map((option) => {
+            const isActive = kind === option;
+            const count = option === "all" ? entries.length : counts[option as DocsKind];
+
+            return (
+              <button
+                key={option}
+                onClick={() => setKind(option)}
+                className={cn(
+                  "px-3 py-2 rounded-xl text-xs font-bold border transition-all",
+                  isActive
+                    ? "bg-[var(--primary)] text-[var(--primary-foreground)] border-[var(--primary)]"
+                    : "bg-[var(--card)] text-[var(--muted-foreground)] border-[var(--border)] hover:text-[var(--foreground)]",
+                )}
+              >
+                {kindLabel[option]} ({count})
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      <div className="space-y-3">
+        {filtered.map((entry) => (
+          <details key={entry.id} className="group rounded-2xl border border-[var(--border)] bg-[var(--card)]">
+            <summary className="list-none cursor-pointer p-4 sm:p-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex items-start gap-3 min-w-0">
+                <div className="w-9 h-9 rounded-xl bg-[var(--primary)]/10 border border-[var(--primary)]/20 flex items-center justify-center text-[var(--primary)] shrink-0">
+                  <Wrench className="w-4 h-4" />
+                </div>
+                <div className="min-w-0">
+                  <p className={cn("text-base font-black", textPrimary)}>{entry.name}</p>
+                  <p className={cn("text-sm mt-0.5", textMuted)}>{entry.description}</p>
+                </div>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-2 self-end sm:self-auto">
+                <Badge className="text-[9px] uppercase tracking-widest">{entry.kind}</Badge>
+                <Badge className="text-[9px] uppercase tracking-widest">{entry.apiRows.length} api rows</Badge>
+              </div>
+            </summary>
+
+            <div className="px-4 sm:px-5 pb-5 border-t border-[var(--border)] space-y-4">
+              <div className="grid lg:grid-cols-[1fr_auto] gap-4 pt-4">
+                <div>
+                  <p className={cn("text-xs font-black uppercase tracking-widest mb-1.5", textMuted)}>Import</p>
+                  <code className="block text-xs rounded-lg border border-[var(--border)] bg-[var(--muted)]/40 px-3 py-2 overflow-x-auto">
+                    {`import { ${entry.name} } from "${entry.importPath}";`}
+                  </code>
+                </div>
+
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-9 gap-2 text-xs"
+                  onClick={async () => {
+                    await navigator.clipboard.writeText(buildEntryContext(entry));
+                    setCopiedContextId(entry.id);
+                    setTimeout(() => setCopiedContextId(null), 1800);
+                  }}
+                >
+                  {copiedContextId === entry.id ? (
+                    <>
+                      <Check className="w-3.5 h-3.5 text-emerald-500" />
+                      Context copied
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="w-3.5 h-3.5" />
+                      Copy context for AI
+                    </>
+                  )}
+                </Button>
+              </div>
+
+              <div className="grid lg:grid-cols-2 gap-4">
+                <CodeBlock title="Minimal usage" code={entry.exampleMinimal} />
+                <CodeBlock title="Full usage" code={entry.exampleFull} />
+              </div>
+
+              <div className="space-y-2">
+                <p className={cn("text-xs font-black uppercase tracking-widest", textMuted)}>Full API list</p>
+                <div className="overflow-x-auto rounded-xl border border-[var(--border)]">
+                  <table className="w-full text-xs">
+                    <thead className="bg-[var(--muted)]/40">
+                      <tr>
+                        <th className="text-left p-2.5 font-black uppercase tracking-wider">Name</th>
+                        <th className="text-left p-2.5 font-black uppercase tracking-wider">Type</th>
+                        <th className="text-left p-2.5 font-black uppercase tracking-wider">Required</th>
+                        <th className="text-left p-2.5 font-black uppercase tracking-wider">Default</th>
+                        <th className="text-left p-2.5 font-black uppercase tracking-wider">Description</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {entry.apiRows.map((row) => (
+                        <tr key={row.name} className="border-t border-[var(--border)] align-top">
+                          <td className="p-2.5 font-mono">{row.name}</td>
+                          <td className="p-2.5 font-mono">{row.type}</td>
+                          <td className="p-2.5">{row.required ? "Yes" : "No"}</td>
+                          <td className="p-2.5 font-mono">{row.default ?? "—"}</td>
+                          <td className="p-2.5">{row.description}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </details>
+        ))}
+      </div>
+    </div>
+  );
+};

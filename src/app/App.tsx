@@ -8,6 +8,7 @@ import {
   Droplets,
   Monitor,
   LayoutDashboard,
+  Puzzle,
   BookOpen,
   Zap,
   Settings,
@@ -44,6 +45,7 @@ import { ComponentDocsDirectoryPage } from "./components/chameleon/component-doc
 import { CLIDocsPage } from "./components/chameleon/cli-docs-page";
 import { HooksUtilsDocsPage } from "./components/chameleon/hooks-utils-docs";
 import { CHAMELEON_AI_WRITEUP } from "./components/chameleon/ai-docs-page";
+import { CompositeShowcase } from "./components/chameleon/composite-showcase";
 
 // ─── Page Components ──────────────────────────────────────────────────────────
 
@@ -51,6 +53,7 @@ const LandingPage = ({ onNavigate }: { onNavigate: (page: string) => void }) => 
   <EnhancedLandingPage onNavigate={onNavigate} />
 );
 const TemplatesPage = () => <TemplateShowcase />;
+const CompositesPage = () => <CompositeShowcase />;
 const DocsPage = () => <DocumentationPage />;
 
 // ─── Workshop Shell ────────────────────────────────────────────────────────────
@@ -63,7 +66,8 @@ type Page =
   | "docs"
   | "visualizer"
   | "animations"
-  | "templates";
+  | "templates"
+  | "composites";
 
 function Workshop() {
   const {
@@ -126,6 +130,7 @@ function Workshop() {
   const sidebarLinks: { id: Page; label: string; icon: any; group: string; badge?: string }[] = [
     { id: "landing",        label: "Home",            icon: Monitor,       group: "Overview" },
     { id: "component-docs", label: "Component Docs",  icon: Code,          group: "Components", badge: "35+" },
+  { id: "composites",     label: "Composites",      icon: Puzzle,        group: "Components", badge: "26" },
     { id: "hooks-utils",    label: "Hooks & Utils",   icon: Wrench,        group: "Components" },
     { id: "templates",      label: "Templates",       icon: LayoutDashboard, group: "Components", badge: "14" },
     { id: "cli-docs",       label: "CLI Reference",   icon: Terminal,      group: "Documentation" },
@@ -579,6 +584,7 @@ function Workshop() {
             >
               {activePage === "landing" && <LandingPage onNavigate={(p) => setActivePage(p as Page)} />}
               {activePage === "component-docs" && <ComponentDocsDirectoryPage />}
+              {activePage === "composites" && <CompositesPage />}
               {activePage === "hooks-utils" && <HooksUtilsDocsPage />}
               {activePage === "cli-docs" && <CLIDocsPage />}
               {activePage === "docs" && <DocsPage />}
@@ -611,6 +617,7 @@ function Workshop() {
             {[
               { title: "Product", items: [
                 { label: "Components", page: "component-docs" as Page },
+                { label: "Composites", page: "composites" as Page },
                 { label: "Templates", page: "templates" as Page },
                 { label: "CLI Tool", page: "cli-docs" as Page },
                 { label: "Getting Started", page: "docs" as Page },
