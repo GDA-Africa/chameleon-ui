@@ -5,7 +5,7 @@ import path from "path";
 import { spawn } from "child_process";
 import { fileURLToPath } from "url";
 
-const __filename = fileURLToPath(import.meta.url);
+const __filename = fs.realpathSync(fileURLToPath(import.meta.url));
 const __dirname = path.dirname(__filename);
 
 // ANSI Colors (Chameleon brand palette)
@@ -22,9 +22,12 @@ const c = {
   red:     "\x1b[38;2;248;113;113m",
 };
 
-const VERSION = "0.0.1";
 const LIB_ROOT   = path.resolve(__dirname, "..");
-const LIB_SRC    = path.join(LIB_ROOT, "src", "app", "components", "chameleon");
+const _pkgJson   = JSON.parse(fs.readFileSync(path.join(LIB_ROOT, "package.json"), "utf8"));
+const VERSION    = _pkgJson.version || "0.0.0";
+const LIB_SRC    = fs.existsSync(path.join(LIB_ROOT, "lib-src"))
+  ? path.join(LIB_ROOT, "lib-src")
+  : path.join(LIB_ROOT, "src", "app", "components", "chameleon");
 const CONFIG_FILE = path.join(process.cwd(), "chameleon.config.json");
 
 // Real Component Registry — sourced from atoms.tsx, molecules.tsx, composites.tsx
@@ -204,7 +207,11 @@ function printHelp() {
 
 const args = process.argv.slice(2);
 if (args.length === 0 || args[0] === "-h" || args[0] === "--help") { printHelp(); process.exit(0); }
-if (args[0] === "-v" || args[0] === "--version") { log(VERSION); process.exit(0); }
+if (args[0] === "-v" || args[0] === "--version") {
+  log(`${c.emerald}Chameleon CLI${c.reset}     v${VERSION}`);
+  log(`${c.indigo}Chameleon UI lib${c.reset}   v${VERSION}`);
+  process.exit(0);
+}
 
 const cmd   = args[0];
 const item  = args[1];

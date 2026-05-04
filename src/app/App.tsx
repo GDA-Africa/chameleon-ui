@@ -8,6 +8,7 @@ import {
   Droplets,
   Monitor,
   LayoutDashboard,
+  Puzzle,
   BookOpen,
   Zap,
   Settings,
@@ -22,6 +23,8 @@ import {
   X,
   ChevronDown,
   Wrench,
+  PanelLeftClose,
+  PanelLeftOpen,
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import {
@@ -38,10 +41,11 @@ import { AnimationPresets } from "./components/chameleon/animations";
 import { TemplateShowcase } from "./components/chameleon/template-showcase";
 import { DocumentationPage } from "./components/chameleon/documentation";
 import { EnhancedLandingPage } from "./components/chameleon/enhanced-landing";
-import { ComponentDocsPage } from "./components/chameleon/component-docs-page";
+import { ComponentDocsDirectoryPage } from "./components/chameleon/component-docs-directory-page";
 import { CLIDocsPage } from "./components/chameleon/cli-docs-page";
 import { HooksUtilsDocsPage } from "./components/chameleon/hooks-utils-docs";
 import { CHAMELEON_AI_WRITEUP } from "./components/chameleon/ai-docs-page";
+import { CompositeShowcase } from "./components/chameleon/composite-showcase";
 
 // ─── Page Components ──────────────────────────────────────────────────────────
 
@@ -49,6 +53,7 @@ const LandingPage = ({ onNavigate }: { onNavigate: (page: string) => void }) => 
   <EnhancedLandingPage onNavigate={onNavigate} />
 );
 const TemplatesPage = () => <TemplateShowcase />;
+const CompositesPage = () => <CompositeShowcase />;
 const DocsPage = () => <DocumentationPage />;
 
 // ─── Workshop Shell ────────────────────────────────────────────────────────────
@@ -61,7 +66,8 @@ type Page =
   | "docs"
   | "visualizer"
   | "animations"
-  | "templates";
+  | "templates"
+  | "composites";
 
 function Workshop() {
   const {
@@ -79,6 +85,7 @@ function Workshop() {
   const { textPrimary, textMuted, theme: currentTheme } = useThemeClasses();
   const [activePage, setActivePage] = useState<Page>("landing");
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [themeSwitcherOpen, setThemeSwitcherOpen] = useState(false);
   const [copiedBriefing, setCopiedBriefing] = useState(false);
   const themeSwitcherRef = useRef<HTMLDivElement>(null);
@@ -123,6 +130,7 @@ function Workshop() {
   const sidebarLinks: { id: Page; label: string; icon: any; group: string; badge?: string }[] = [
     { id: "landing",        label: "Home",            icon: Monitor,       group: "Overview" },
     { id: "component-docs", label: "Component Docs",  icon: Code,          group: "Components", badge: "35+" },
+  { id: "composites",     label: "Composites",      icon: Puzzle,        group: "Components", badge: "26" },
     { id: "hooks-utils",    label: "Hooks & Utils",   icon: Wrench,        group: "Components" },
     { id: "templates",      label: "Templates",       icon: LayoutDashboard, group: "Components", badge: "14" },
     { id: "cli-docs",       label: "CLI Reference",   icon: Terminal,      group: "Documentation" },
@@ -155,7 +163,7 @@ function Workshop() {
         : "bg-[var(--card)]/95";
 
   return (
-    <div className={cn("flex min-h-screen transition-all duration-700 ease-in-out", mainBg, textPrimary)}>
+    <div className={cn("flex min-h-dvh transition-all duration-700 ease-in-out", mainBg, textPrimary)}>
 
       {/* ── Mobile backdrop overlay ───────────────────────────────────────── */}
       <AnimatePresence>
@@ -183,9 +191,10 @@ function Workshop() {
         className={cn(
           // Layout
           "fixed top-0 left-0 z-50 flex flex-col",
-          "w-72 h-dvh",           // dvh = dynamic viewport height (fixes iOS Safari bottom bar)
+          "h-dvh w-72",
+          sidebarCollapsed ? "lg:w-20" : "lg:w-72",
           // Motion
-          "transition-transform duration-300 ease-in-out",
+          "transition-all duration-300 ease-in-out",
           sidebarOpen ? "translate-x-0" : "-translate-x-full",
           "lg:translate-x-0",    // always visible on desktop
           // Theme colour
@@ -193,18 +202,25 @@ function Workshop() {
         )}
       >
         {/* Logo row + close button (visible on mobile) */}
-        <div className="shrink-0 px-5 py-4 flex items-center gap-3 border-b border-[var(--border)]">
+        <div className={cn("shrink-0 px-4 py-4 flex items-center gap-3 border-b border-[var(--border)]", sidebarCollapsed && "lg:justify-center lg:px-2")}>
           <motion.div
-            className="w-9 h-9 shrink-0 rounded-2xl bg-[var(--primary)] flex items-center justify-center text-[var(--primary-foreground)] shadow-xl shadow-[var(--primary)]/20"
+            className="w-9 h-9 shrink-0 rounded-2xl overflow-hidden shadow-xl shadow-[var(--primary)]/20 bg-white"
             whileHover={{ rotate: 15, scale: 1.1 }}
             transition={{ type: "spring", stiffness: 400, damping: 15 }}
           >
-            <Palette className="w-4 h-4" />
+            <img src="/logo.png" alt="Chameleon UI" className="w-full h-full object-cover" />
           </motion.div>
-          <div className="flex-1 min-w-0">
+          <div className={cn("flex-1 min-w-0", sidebarCollapsed && "lg:hidden")}>
             <h1 className={cn("font-black text-sm tracking-tight leading-none truncate", textPrimary)}>Chameleon</h1>
             <p className={cn("text-[10px] font-bold tracking-widest uppercase mt-0.5", textMuted)}>Workshop Pro</p>
           </div>
+          <button
+            onClick={() => setSidebarCollapsed((prev) => !prev)}
+            aria-label={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+            className="hidden lg:flex p-1.5 rounded-lg hover:bg-[var(--muted)] transition-colors shrink-0"
+          >
+            {sidebarCollapsed ? <PanelLeftOpen className="w-4 h-4" /> : <PanelLeftClose className="w-4 h-4" />}
+          </button>
           <button
             onClick={() => setSidebarOpen(false)}
             aria-label="Close navigation"
@@ -215,16 +231,18 @@ function Workshop() {
         </div>
 
         {/* Scrollable nav body */}
-        <div className="flex-1 min-h-0 overflow-y-auto px-3 py-4 space-y-5">
+  <div className={cn("flex-1 min-h-0 overflow-y-auto px-3 py-4 space-y-5", sidebarCollapsed && "lg:px-2")}>
 
           {/* Navigation groups */}
           {(["Overview", "Components", "Documentation", "Theme Tools"] as const).map((group) => {
             const links = sidebarLinks.filter((l) => l.group === group);
             return (
               <div key={group}>
-                <p className={cn("text-[10px] font-black uppercase tracking-widest px-3 mb-1.5", textMuted)}>
-                  {group}
-                </p>
+                {!sidebarCollapsed && (
+                  <p className={cn("text-[10px] font-black uppercase tracking-widest px-3 mb-1.5", textMuted)}>
+                    {group}
+                  </p>
+                )}
                 <div className="space-y-0.5">
                   {links.map((link) => (
                     <motion.button
@@ -234,18 +252,19 @@ function Workshop() {
                       whileTap={{ scale: 0.98 }}
                       transition={{ type: "spring", stiffness: 400, damping: 20 }}
                       className={cn(
-                        "w-full flex items-center justify-between px-3 py-2.5 text-sm font-bold transition-colors",
+                        "w-full flex items-center py-2.5 text-sm font-bold transition-colors",
+                        sidebarCollapsed ? "lg:justify-center lg:px-2" : "justify-between px-3",
                         theme === "minimalist" ? "rounded-none" : "rounded-xl",
                         activePage === link.id
                           ? "bg-[var(--primary)] text-[var(--primary-foreground)] shadow-lg shadow-[var(--primary)]/20"
                           : cn("hover:bg-[var(--muted)]", textMuted, "hover:text-[var(--foreground)]"),
                       )}
                     >
-                      <div className="flex items-center gap-2.5">
+                      <div className={cn("flex items-center", sidebarCollapsed ? "gap-0" : "gap-2.5")}>
                         <link.icon className="w-4 h-4 shrink-0" />
-                        <span className="truncate">{link.label}</span>
+                        <span className={cn("truncate", sidebarCollapsed && "lg:hidden")}>{link.label}</span>
                       </div>
-                      {link.badge && (
+                      {link.badge && !sidebarCollapsed && (
                         <span className={cn(
                           "text-[9px] font-black px-1.5 py-0.5 rounded-full shrink-0",
                           activePage === link.id ? "bg-white/20 text-white" : "bg-[var(--primary)]/10 text-[var(--primary)]",
@@ -261,7 +280,7 @@ function Workshop() {
           })}
 
           {/* Theme picker */}
-          <div>
+          {!sidebarCollapsed && (<div>
             <div className="flex items-center justify-between px-3 mb-2">
               <p className={cn("text-[10px] font-black uppercase tracking-widest", textMuted)}>Theme</p>
               <span className="text-[9px] font-black bg-[var(--primary)]/10 text-[var(--primary)] px-1.5 py-0.5 rounded-full">5 Skins</span>
@@ -292,10 +311,10 @@ function Workshop() {
                 </motion.button>
               ))}
             </div>
-          </div>
+          </div>)}
 
           {/* Config panel */}
-          <div>
+          {!sidebarCollapsed && (<div>
             <p className={cn("text-[10px] font-black uppercase tracking-widest px-3 mb-3", textMuted)}>Config</p>
             <div className="space-y-4 px-3">
 
@@ -371,23 +390,24 @@ function Workshop() {
                 </div>
               )}
             </div>
-          </div>
+          </div>)}
         </div>
 
         {/* User card — pinned to bottom */}
-        <div className="shrink-0 p-4 border-t border-[var(--border)]">
+        <div className={cn("shrink-0 p-4 border-t border-[var(--border)]", sidebarCollapsed && "lg:p-2")}>
           <div className={cn(
             "flex items-center gap-3 p-3 rounded-2xl border border-[var(--border)]",
             theme === "glassy"
               ? mode === "dark" ? "bg-white/5" : "bg-white/50 border-purple-200/50"
               : "bg-[var(--muted)]/40",
+            sidebarCollapsed && "lg:justify-center",
           )}>
             <div className="w-9 h-9 shrink-0 rounded-xl bg-gradient-to-br from-[var(--primary)] to-violet-600 flex items-center justify-center text-white font-black text-xs shadow-xl">AC</div>
-            <div className="flex-1 min-w-0">
+            <div className={cn("flex-1 min-w-0", sidebarCollapsed && "lg:hidden")}>
               <p className={cn("text-xs font-black truncate", textPrimary)}>Alex Chameleon</p>
               <p className={cn("text-[10px] font-bold", textMuted)}>Enterprise</p>
             </div>
-            <Settings className={cn("w-3.5 h-3.5 shrink-0 cursor-pointer hover:text-[var(--primary)] transition-colors", textMuted)} />
+            {!sidebarCollapsed && <Settings className={cn("w-3.5 h-3.5 shrink-0 cursor-pointer hover:text-[var(--primary)] transition-colors", textMuted)} />}
           </div>
         </div>
       </aside>
@@ -397,7 +417,7 @@ function Workshop() {
         Mobile (<lg): full width (no offset)
         Desktop (lg+): offset by sidebar width (lg:ml-72)
       */}
-      <main className="flex-1 lg:ml-72 min-w-0 min-h-dvh flex flex-col">
+  <main className={cn("flex-1 min-w-0 flex flex-col transition-[margin] duration-300", sidebarCollapsed ? "lg:ml-20" : "lg:ml-72")}>
 
         {/* Header */}
         <header className={cn(
@@ -562,14 +582,15 @@ function Workshop() {
               exit={{ opacity: 0, y: -8 }}
               transition={{ type: "spring", stiffness: 280, damping: 24 }}
             >
-              {activePage === "landing"        && <LandingPage onNavigate={(p) => setActivePage(p as Page)} />}
-              {activePage === "component-docs" && <ComponentDocsPage />}
-              {activePage === "hooks-utils"    && <HooksUtilsDocsPage />}
-              {activePage === "cli-docs"        && <CLIDocsPage />}
-              {activePage === "docs"            && <DocsPage />}
-              {activePage === "visualizer"      && <ThemeVisualizer />}
-              {activePage === "animations"      && <AnimationPresets currentTheme={theme} />}
-              {activePage === "templates"       && <TemplatesPage />}
+              {activePage === "landing" && <LandingPage onNavigate={(p) => setActivePage(p as Page)} />}
+              {activePage === "component-docs" && <ComponentDocsDirectoryPage />}
+              {activePage === "composites" && <CompositesPage />}
+              {activePage === "hooks-utils" && <HooksUtilsDocsPage />}
+              {activePage === "cli-docs" && <CLIDocsPage />}
+              {activePage === "docs" && <DocsPage />}
+              {activePage === "visualizer" && <ThemeVisualizer />}
+              {activePage === "animations" && <AnimationPresets currentTheme={theme} />}
+              {activePage === "templates" && <TemplatesPage />}
             </motion.div>
           </AnimatePresence>
         </div>
@@ -584,10 +605,10 @@ function Workshop() {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-10">
             <div className="sm:col-span-2 space-y-4">
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-xl bg-[var(--primary)] flex items-center justify-center text-[var(--primary-foreground)]">
-                  <Palette className="w-4 h-4" />
+                <div className="w-8 h-8 rounded-xl overflow-hidden bg-white shrink-0">
+                  <img src="/logo.png" alt="Chameleon UI" className="w-full h-full object-cover" />
                 </div>
-                <span className={cn("font-black text-xl tracking-tighter", textPrimary)}>Chameleon</span>
+                <span className={cn("font-black text-xl tracking-tighter", textPrimary)}>Chameleon UI</span>
               </div>
               <p className={cn("max-w-xs leading-relaxed text-sm font-medium", textMuted)}>
                 The future of polymorphic user interfaces. Built for developers who refuse to compromise on design.
@@ -596,6 +617,7 @@ function Workshop() {
             {[
               { title: "Product", items: [
                 { label: "Components", page: "component-docs" as Page },
+                { label: "Composites", page: "composites" as Page },
                 { label: "Templates", page: "templates" as Page },
                 { label: "CLI Tool", page: "cli-docs" as Page },
                 { label: "Getting Started", page: "docs" as Page },

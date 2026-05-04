@@ -891,7 +891,7 @@ export const DocumentationTemplate: React.FC = () => {
 
           <Alert variant="info" animated>
             <BookOpen className="w-4 h-4 mr-2" />
-            This documentation is for version 1.0.0
+            This documentation is for version 1.0.9
           </Alert>
 
           <div className={cn("prose prose-lg max-w-none", textPrimary)}>

@@ -178,6 +178,8 @@ Optional: Brief supporting detail (1-2 sentences max).
 
 **2026-04-17** — Release steps: (1) bump `package.json` version, (2) add CHANGELOG entry, (3) `tsc --noEmit && vitest run && eslint .` — all must pass, (4) `git add -A && git commit -m "chore: release vX.Y.Z"`, (5) `git tag vX.Y.Z && git push origin main --tags` — the `v*` tag triggers `publish.yml` on GitHub Actions which runs `npm publish`. Update NEXUS `index.md` after.
 
+**2026-05-03 (extension)** — If a release includes new features/functionality, also update all user-facing surfaces in the same release commit: `README.md`, relevant docs in `docs/`, frontend UI release/version strings, and AI/crawler context (`AI_INTEGRATION_GUIDE.md`, `public/context.md`, `public/llms.txt`, `CHAMELEON_AI_SUMMARY.version`). This prevents version drift between npm metadata and product/docs messaging.
+
 ### [gotcha] Light mode buttons with hardcoded white/opacity classes
 
 **2026-04-17** — Buttons styled with `bg-white/5 text-white/60 border-white/10` are invisible in light mode. Use CSS custom properties (`var(--muted)`, `var(--muted-foreground)`, `var(--border)`, `var(--accent)`) instead — these adapt to the active theme and mode automatically.
@@ -185,3 +187,51 @@ Optional: Brief supporting detail (1-2 sentences max).
 ### [package] npm publish filtering can silently drop dist artifacts
 
 **2026-05-03** — Because `.gitignore` excludes `dist/`, npm publish/pack can omit build outputs unless `package.json` explicitly whitelists them via `files`. This caused consumer `TS2307` errors for `@chameleon-ui-lib/react` since `exports` pointed at missing `dist/index.*` files. Keep a `files` whitelist and verify every release with `npm pack --dry-run`.
+
+### [convention] Release versions must be synchronized across docs and app copy
+
+**2026-05-03** — In addition to bumping `package.json`, release versions are displayed in frontend copy (`enhanced-landing`, docs templates), AI manifest summary, and crawlable context files (`public/context.md`, `public/llms.txt`). Keep these in lockstep during every release to avoid mismatched guidance between npm metadata and app/docs surfaces.
+
+### [convention] Run isolated consumer smoke test before release
+
+**2026-05-03** — Added `npm run verify:consumer` (`scripts/verify-consumer.mjs`) to pack the library, install it in a clean temp app, and verify both TS imports and runtime exports (`ChameleonProvider`, `Button`). Run this before publishing any release to catch packaging/export regressions customers would see.
+
+### [convention] Keep stable page module names during docs IA refactors
+
+**2026-05-03** — When rebuilding large frontend docs pages, keep the old module path as a thin re-export bridge (for example, `component-docs-page.tsx` → `component-docs-directory-page.tsx`) so imports across the app and downstream tooling don't break during migration.
+
+### [package] vite-plugin-dts rollupTypes incompatible with TypeScript 6
+
+**2026-05-03** — `vite-plugin-dts` bundles api-extractor pinned to TypeScript 5.9.3. Enabling `rollupTypes: true` against project TypeScript 6.0.2 fails CI. Workaround applied in `b0d8c23`: leave `rollupTypes` disabled and let `vite-plugin-dts` emit per-file declarations that get rolled up via the package `exports` map. Re-evaluate when api-extractor catches up.
+
+### [gotcha] Global version-bump scripts can corrupt transitive lockfile entries
+
+**2026-05-03** — A simple `sed`-style bump that targets all `"version": "1.0.7"` strings in `pnpm-lock.yaml` will incorrectly rewrite unrelated transitive dependencies (`path-parse`, `available-typed-arrays`, `typed-array-length`) that happen to be at version 1.0.7. The CI fix in `b0d8c23` had to manually restore those. For future bumps, scope the find/replace to the package's own `version:` block at the top of the file, not the whole file.
+
+### [architecture] v1.0.9 composite-first plan — 31 atomic tasks across 4 phases
+
+**2026-05-03** — The v1.0.9 plan lives in `.nexus/plans/composite-fix-*.md` (blueprint, vision, architecture, implementation). Key locked-in decisions: (1) composites are *sections* composed of molecules — not atoms, not pages; (2) props flow Template → Composite → Molecule → Atom via a `styleConfig` object on templates; (3) all 40–50 composites land in a new top-level `src/composites/` tree with central `index.ts` and `types.ts`; (4) zero breaking changes — `styleConfig` is optional and defaults preserve current behavior; (5) subpath exports `/composites`, `/templates`, `/types` ship in package.json. Templates re-export their own composites so downstream code can import from either location.
+
+### [package] Subpath exports can map to root bundle in single-entry builds
+
+**2026-05-04** — With the current Vite library setup using a single entry (`src/app/components/chameleon/index.ts`), subpath exports (`/composites`, `/templates`, `/types`) can safely point to the same compiled `dist/index.*` files to preserve import ergonomics without changing the build graph. If true per-subpath tree shaking is needed later, introduce explicit multi-entry outputs first.
+
+### [bug-fix] Typed template `styleConfig` must be verified for runtime usage
+
+**2026-05-04** — Several templates had valid `styleConfig` typings but still used `void styleConfig` internally, so overrides were silently ignored at runtime. For composite-first work, always verify both type acceptance and actual template-level pass-through behavior.
+
+### [pattern] Auth forms should expose dual-mode state + slot styling APIs
+
+**2026-05-04** — For reusable auth flows, the safest contract is dual-mode state (`value`/`defaultValue`/`onChange`) plus slot-level styling maps (`classNames` and `styles`). This allows turnkey internal handling by default while still supporting full external orchestration and per-element visual customization without forks.
+
+### [convention] Keep composites docs separate from atom/molecule docs
+
+**2026-05-04** — The component directory should focus on primitives (atoms + molecules), while composites live on their own searchable page with full prop/reference detail. This prevents duplicate entries and makes “where to look” unambiguous for users and AI agents.
+
+### [gotcha] Block-commenting legacy JSX can fail on embedded `{/* ... */}`
+
+**2026-05-04** — During large docs-page refactors, wrapping old JSX in a single `/* ... */` block can break unexpectedly because JSX inline comments contain `*/`, which prematurely terminates the outer block comment. For heavily mixed legacy files, prefer one-shot full-file overwrite to avoid parser drift.
+
+### [package] v1.0.9 lock drift introduced unpublished transitive patch versions
+
+**2026-05-04** — A broad lock/version bump drift set several transitive packages to non-existent `1.0.9` releases (`@types/estree`, `exsolve`, `string.prototype.trimstart`), causing CI `ERR_PNPM_FETCH_404` failures. Fix by pinning these via `pnpm.overrides` to `1.0.8` and regenerating the lock with `corepack pnpm install --lockfile-only` before rerunning frozen install.

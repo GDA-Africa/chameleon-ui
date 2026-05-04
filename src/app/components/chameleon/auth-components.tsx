@@ -58,6 +58,149 @@ export interface AuthResponse {
   error?: string;
 }
 
+type SlotClassNames<T extends string> = Partial<Record<T, string>>;
+type SlotStyles<T extends string> = Partial<Record<T, React.CSSProperties>>;
+
+export interface LoginFormValues {
+  email: string;
+  password: string;
+  rememberMe: boolean;
+}
+
+type LoginFormSlots =
+  | "card"
+  | "emailInput"
+  | "passwordInput"
+  | "rememberCheckbox"
+  | "forgotPasswordButton"
+  | "submitButton"
+  | "signUpButton";
+
+export interface AuthLoginFormProps {
+  onSubmit?:
+    | ((values: LoginFormValues) => Promise<AuthResponse>)
+    | ((email: string, password: string) => Promise<AuthResponse>);
+  onForgotPassword?: () => void;
+  onSignUp?: () => void;
+  onSocialLogin?: (provider: string) => void;
+  showSocial?: boolean;
+  value?: Partial<LoginFormValues>;
+  defaultValue?: Partial<LoginFormValues>;
+  onChange?: (values: LoginFormValues) => void;
+  classNames?: SlotClassNames<LoginFormSlots>;
+  styles?: SlotStyles<LoginFormSlots>;
+}
+
+export interface SignUpFormValues {
+  name: string;
+  email: string;
+  password: string;
+  confirmPassword: string;
+  acceptTerms: boolean;
+}
+
+type SignUpFormSlots =
+  | "card"
+  | "nameInput"
+  | "emailInput"
+  | "passwordInput"
+  | "confirmPasswordInput"
+  | "termsCheckbox"
+  | "submitButton"
+  | "signInButton";
+
+export interface AuthSignUpFormProps {
+  onSubmit?:
+    | ((data: SignUpFormValues) => Promise<AuthResponse>)
+    | ((data: { name: string; email: string; password: string }) => Promise<AuthResponse>);
+  onSignIn?: () => void;
+  onSocialLogin?: (provider: string) => void;
+  showSocial?: boolean;
+  value?: Partial<SignUpFormValues>;
+  defaultValue?: Partial<SignUpFormValues>;
+  onChange?: (values: SignUpFormValues) => void;
+  classNames?: SlotClassNames<SignUpFormSlots>;
+  styles?: SlotStyles<SignUpFormSlots>;
+}
+
+export interface ForgotPasswordFormValues {
+  email: string;
+}
+
+type ForgotPasswordSlots = "card" | "emailInput" | "submitButton" | "backButton";
+
+export interface AuthForgotPasswordFormProps {
+  onSubmit?:
+    | ((values: ForgotPasswordFormValues) => Promise<AuthResponse>)
+    | ((email: string) => Promise<AuthResponse>);
+  onBack?: () => void;
+  value?: Partial<ForgotPasswordFormValues>;
+  defaultValue?: Partial<ForgotPasswordFormValues>;
+  onChange?: (values: ForgotPasswordFormValues) => void;
+  classNames?: SlotClassNames<ForgotPasswordSlots>;
+  styles?: SlotStyles<ForgotPasswordSlots>;
+}
+
+export interface ResetPasswordFormValues {
+  password: string;
+  confirmPassword: string;
+}
+
+type ResetPasswordSlots = "card" | "passwordInput" | "confirmPasswordInput" | "submitButton";
+
+export interface AuthResetPasswordFormProps {
+  token?: string;
+  onSubmit?:
+    | ((values: ResetPasswordFormValues & { token: string }) => Promise<AuthResponse>)
+    | ((password: string, token: string) => Promise<AuthResponse>);
+  onSuccess?: () => void;
+  value?: Partial<ResetPasswordFormValues>;
+  defaultValue?: Partial<ResetPasswordFormValues>;
+  onChange?: (values: ResetPasswordFormValues) => void;
+  classNames?: SlotClassNames<ResetPasswordSlots>;
+  styles?: SlotStyles<ResetPasswordSlots>;
+}
+
+export interface AuthEmailVerificationProps {
+  email?: string;
+  onResend?: () => Promise<AuthResponse>;
+  onVerified?: () => void;
+  classNames?: SlotClassNames<"card" | "resendButton" | "verifiedButton">;
+  styles?: SlotStyles<"card" | "resendButton" | "verifiedButton">;
+}
+
+export interface TwoFactorAuthValues {
+  code: string;
+}
+
+export interface AuthTwoFactorAuthProps {
+  onSubmit?:
+    | ((values: TwoFactorAuthValues & { method: "sms" | "email" | "app" }) => Promise<AuthResponse>)
+    | ((code: string) => Promise<AuthResponse>);
+  onResend?: () => Promise<AuthResponse>;
+  method?: "sms" | "email" | "app";
+  value?: Partial<TwoFactorAuthValues>;
+  defaultValue?: Partial<TwoFactorAuthValues>;
+  onChange?: (values: TwoFactorAuthValues) => void;
+  classNames?: SlotClassNames<"card" | "codeInput" | "resendButton">;
+  styles?: SlotStyles<"card" | "codeInput" | "resendButton">;
+}
+
+export interface MagicLinkFormValues {
+  email: string;
+}
+
+export interface AuthMagicLinkFormProps {
+  onSubmit?:
+    | ((values: MagicLinkFormValues) => Promise<AuthResponse>)
+    | ((email: string) => Promise<AuthResponse>);
+  value?: Partial<MagicLinkFormValues>;
+  defaultValue?: Partial<MagicLinkFormValues>;
+  onChange?: (values: MagicLinkFormValues) => void;
+  classNames?: SlotClassNames<"card" | "emailInput" | "submitButton">;
+  styles?: SlotStyles<"card" | "emailInput" | "submitButton">;
+}
+
 interface SocialProvider {
   id: string;
   name: string;
@@ -212,38 +355,73 @@ export const AuthDivider: React.FC = () => {
 // 1. LOGIN COMPONENT
 // ══════════════════════════════════════════════════════════════════════════
 
-export const LoginForm: React.FC<{
-  onSubmit?: (email: string, password: string) => Promise<AuthResponse>;
-  onForgotPassword?: () => void;
-  onSignUp?: () => void;
-  onSocialLogin?: (provider: string) => void;
-  showSocial?: boolean;
-}> = ({ onSubmit, onForgotPassword, onSignUp, onSocialLogin, showSocial = true }) => {
+export const LoginForm: React.FC<AuthLoginFormProps> = ({
+  onSubmit,
+  onForgotPassword,
+  onSignUp,
+  onSocialLogin,
+  showSocial = true,
+  value,
+  defaultValue,
+  onChange,
+  classNames,
+  styles,
+}) => {
   const { cardClass, textPrimary, textMuted, theme } = useThemeClasses();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [internalValues, setInternalValues] = useState<LoginFormValues>({
+    email: defaultValue?.email ?? "",
+    password: defaultValue?.password ?? "",
+    rememberMe: defaultValue?.rememberMe ?? false,
+  });
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [rememberMe, setRememberMe] = useState(false);
+
+  const values: LoginFormValues = {
+    email: value?.email ?? internalValues.email,
+    password: value?.password ?? internalValues.password,
+    rememberMe: value?.rememberMe ?? internalValues.rememberMe,
+  };
+
+  const setValues = (patch: Partial<LoginFormValues>) => {
+    const nextValues: LoginFormValues = {
+      ...values,
+      ...patch,
+    };
+
+    if (!value) {
+      setInternalValues(nextValues);
+    }
+
+    onChange?.(nextValues);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
 
-    if (!validateEmail(email)) {
+    if (!validateEmail(values.email)) {
       setError("Please enter a valid email address");
       return;
     }
 
-    if (!password) {
+    if (!values.password) {
       setError("Please enter your password");
       return;
     }
 
     setLoading(true);
     try {
-      const result = await onSubmit?.(email, password);
+      let result: AuthResponse | undefined;
+      if (onSubmit) {
+        result =
+          onSubmit.length >= 2
+            ? await (onSubmit as (email: string, password: string) => Promise<AuthResponse>)(
+                values.email,
+                values.password,
+              )
+            : await (onSubmit as (submitValues: LoginFormValues) => Promise<AuthResponse>)(values);
+      }
       if (!result?.success) {
         setError(result?.error || "Invalid credentials");
       }
@@ -255,7 +433,10 @@ export const LoginForm: React.FC<{
   };
 
   return (
-    <Card className="max-w-md mx-auto">
+    <Card
+      className={cn("max-w-md mx-auto", classNames?.card)}
+      style={styles?.card}
+    >
       <CardHeader>
         <div className="flex items-center gap-3 mb-2">
           <div
@@ -303,10 +484,11 @@ export const LoginForm: React.FC<{
               <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--muted-foreground)]" />
               <Input
                 type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                value={values.email}
+                onChange={(e) => setValues({ email: e.target.value })}
                 placeholder="you@example.com"
-                className="pl-10"
+                className={cn("pl-10", classNames?.emailInput)}
+                style={styles?.emailInput}
                 disabled={loading}
               />
             </div>
@@ -318,10 +500,11 @@ export const LoginForm: React.FC<{
               <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--muted-foreground)]" />
               <Input
                 type={showPassword ? "text" : "password"}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                value={values.password}
+                onChange={(e) => setValues({ password: e.target.value })}
                 placeholder="••••••••"
-                className="pl-10 pr-10"
+                className={cn("pl-10 pr-10", classNames?.passwordInput)}
+                style={styles?.passwordInput}
                 disabled={loading}
               />
               <button
@@ -338,9 +521,10 @@ export const LoginForm: React.FC<{
             <label className="flex items-center gap-2 cursor-pointer">
               <input
                 type="checkbox"
-                checked={rememberMe}
-                onChange={(e) => setRememberMe(e.target.checked)}
-                className="w-4 h-4 rounded accent-[var(--primary)]"
+                checked={values.rememberMe}
+                onChange={(e) => setValues({ rememberMe: e.target.checked })}
+                className={cn("w-4 h-4 rounded accent-[var(--primary)]", classNames?.rememberCheckbox)}
+                style={styles?.rememberCheckbox}
               />
               <span className={cn("text-sm font-medium", textPrimary)}>Remember me</span>
             </label>
@@ -348,13 +532,20 @@ export const LoginForm: React.FC<{
             <button
               type="button"
               onClick={onForgotPassword}
-              className={cn("text-sm font-bold text-[var(--primary)] hover:underline")}
+              className={cn("text-sm font-bold text-[var(--primary)] hover:underline", classNames?.forgotPasswordButton)}
+              style={styles?.forgotPasswordButton}
             >
               Forgot password?
             </button>
           </div>
 
-          <Button type="submit" className="w-full" disabled={loading} animated>
+          <Button
+            type="submit"
+            className={cn("w-full", classNames?.submitButton)}
+            style={styles?.submitButton}
+            disabled={loading}
+            animated
+          >
             {loading ? (
               <>
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
@@ -373,7 +564,8 @@ export const LoginForm: React.FC<{
           <span className={cn("text-sm", textMuted)}>Don't have an account? </span>
           <button
             onClick={onSignUp}
-            className="text-sm font-bold text-[var(--primary)] hover:underline"
+            className={cn("text-sm font-bold text-[var(--primary)] hover:underline", classNames?.signUpButton)}
+            style={styles?.signUpButton}
           >
             Sign up
           </button>
@@ -387,55 +579,91 @@ export const LoginForm: React.FC<{
 // 2. SIGN UP COMPONENT
 // ═══════════════════════════════════════════════════════════════════════════
 
-export const SignUpForm: React.FC<{
-  onSubmit?: (data: { name: string; email: string; password: string }) => Promise<AuthResponse>;
-  onSignIn?: () => void;
-  onSocialLogin?: (provider: string) => void;
-  showSocial?: boolean;
-}> = ({ onSubmit, onSignIn, onSocialLogin, showSocial = true }) => {
+export const SignUpForm: React.FC<AuthSignUpFormProps> = ({
+  onSubmit,
+  onSignIn,
+  onSocialLogin,
+  showSocial = true,
+  value,
+  defaultValue,
+  onChange,
+  classNames,
+  styles,
+}) => {
   const { textPrimary, textMuted, theme } = useThemeClasses();
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+  const [internalValues, setInternalValues] = useState<SignUpFormValues>({
+    name: defaultValue?.name ?? "",
+    email: defaultValue?.email ?? "",
+    password: defaultValue?.password ?? "",
+    confirmPassword: defaultValue?.confirmPassword ?? "",
+    acceptTerms: defaultValue?.acceptTerms ?? false,
+  });
   const [showPassword, setShowPassword] = useState(false);
-  const [acceptTerms, setAcceptTerms] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  const values: SignUpFormValues = {
+    name: value?.name ?? internalValues.name,
+    email: value?.email ?? internalValues.email,
+    password: value?.password ?? internalValues.password,
+    confirmPassword: value?.confirmPassword ?? internalValues.confirmPassword,
+    acceptTerms: value?.acceptTerms ?? internalValues.acceptTerms,
+  };
+
+  const setValues = (patch: Partial<SignUpFormValues>) => {
+    const nextValues: SignUpFormValues = {
+      ...values,
+      ...patch,
+    };
+
+    if (!value) {
+      setInternalValues(nextValues);
+    }
+
+    onChange?.(nextValues);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
 
-    if (!name.trim()) {
+    if (!values.name.trim()) {
       setError("Please enter your name");
       return;
     }
 
-    if (!validateEmail(email)) {
+    if (!validateEmail(values.email)) {
       setError("Please enter a valid email address");
       return;
     }
 
-    const passwordValidation = validatePassword(password);
+    const passwordValidation = validatePassword(values.password);
     if (!passwordValidation.isValid) {
       setError("Password does not meet requirements");
       return;
     }
 
-    if (password !== confirmPassword) {
+    if (values.password !== values.confirmPassword) {
       setError("Passwords do not match");
       return;
     }
 
-    if (!acceptTerms) {
+    if (!values.acceptTerms) {
       setError("Please accept the terms and conditions");
       return;
     }
 
     setLoading(true);
     try {
-      const result = await onSubmit?.({ name, email, password });
+      const result = onSubmit
+        ? await onSubmit({
+            name: values.name,
+            email: values.email,
+            password: values.password,
+            confirmPassword: values.confirmPassword,
+            acceptTerms: values.acceptTerms,
+          })
+        : undefined;
       if (!result?.success) {
         setError(result?.error || "Failed to create account");
       }
@@ -447,7 +675,10 @@ export const SignUpForm: React.FC<{
   };
 
   return (
-    <Card className="max-w-md mx-auto">
+    <Card
+      className={cn("max-w-md mx-auto", classNames?.card)}
+      style={styles?.card}
+    >
       <CardHeader>
         <div className="flex items-center gap-3 mb-2">
           <div
@@ -495,10 +726,11 @@ export const SignUpForm: React.FC<{
               <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--muted-foreground)]" />
               <Input
                 type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
+                value={values.name}
+                onChange={(e) => setValues({ name: e.target.value })}
                 placeholder="John Doe"
-                className="pl-10"
+                className={cn("pl-10", classNames?.nameInput)}
+                style={styles?.nameInput}
                 disabled={loading}
               />
             </div>
@@ -510,10 +742,11 @@ export const SignUpForm: React.FC<{
               <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--muted-foreground)]" />
               <Input
                 type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                value={values.email}
+                onChange={(e) => setValues({ email: e.target.value })}
                 placeholder="you@example.com"
-                className="pl-10"
+                className={cn("pl-10", classNames?.emailInput)}
+                style={styles?.emailInput}
                 disabled={loading}
               />
             </div>
@@ -525,10 +758,11 @@ export const SignUpForm: React.FC<{
               <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--muted-foreground)]" />
               <Input
                 type={showPassword ? "text" : "password"}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                value={values.password}
+                onChange={(e) => setValues({ password: e.target.value })}
                 placeholder="••••••••"
-                className="pl-10 pr-10"
+                className={cn("pl-10 pr-10", classNames?.passwordInput)}
+                style={styles?.passwordInput}
                 disabled={loading}
               />
               <button
@@ -539,7 +773,7 @@ export const SignUpForm: React.FC<{
                 {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
             </div>
-            <PasswordStrength password={password} />
+            <PasswordStrength password={values.password} />
           </div>
 
           <div className="space-y-2">
@@ -548,15 +782,16 @@ export const SignUpForm: React.FC<{
               <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--muted-foreground)]" />
               <Input
                 type={showPassword ? "text" : "password"}
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
+                value={values.confirmPassword}
+                onChange={(e) => setValues({ confirmPassword: e.target.value })}
                 placeholder="••••••••"
-                className="pl-10"
+                className={cn("pl-10", classNames?.confirmPasswordInput)}
+                style={styles?.confirmPasswordInput}
                 disabled={loading}
               />
-              {confirmPassword && (
+              {values.confirmPassword && (
                 <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                  {password === confirmPassword ? (
+                  {values.password === values.confirmPassword ? (
                     <Check className="w-4 h-4 text-emerald-500" />
                   ) : (
                     <X className="w-4 h-4 text-rose-500" />
@@ -569,9 +804,10 @@ export const SignUpForm: React.FC<{
           <label className="flex items-start gap-2 cursor-pointer">
             <input
               type="checkbox"
-              checked={acceptTerms}
-              onChange={(e) => setAcceptTerms(e.target.checked)}
-              className="w-4 h-4 mt-0.5 rounded accent-[var(--primary)]"
+              checked={values.acceptTerms}
+              onChange={(e) => setValues({ acceptTerms: e.target.checked })}
+              className={cn("w-4 h-4 mt-0.5 rounded accent-[var(--primary)]", classNames?.termsCheckbox)}
+              style={styles?.termsCheckbox}
             />
             <span className={cn("text-sm", textPrimary)}>
               I agree to the{" "}
@@ -585,7 +821,13 @@ export const SignUpForm: React.FC<{
             </span>
           </label>
 
-          <Button type="submit" className="w-full" disabled={loading} animated>
+          <Button
+            type="submit"
+            className={cn("w-full", classNames?.submitButton)}
+            style={styles?.submitButton}
+            disabled={loading}
+            animated
+          >
             {loading ? (
               <>
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
@@ -604,7 +846,8 @@ export const SignUpForm: React.FC<{
           <span className={cn("text-sm", textMuted)}>Already have an account? </span>
           <button
             onClick={onSignIn}
-            className="text-sm font-bold text-[var(--primary)] hover:underline"
+            className={cn("text-sm font-bold text-[var(--primary)] hover:underline", classNames?.signInButton)}
+            style={styles?.signInButton}
           >
             Sign in
           </button>
@@ -618,28 +861,51 @@ export const SignUpForm: React.FC<{
 // 3. FORGOT PASSWORD COMPONENT
 // ═══════════════════════════════════════════════════════════════════════════
 
-export const ForgotPasswordForm: React.FC<{
-  onSubmit?: (email: string) => Promise<AuthResponse>;
-  onBack?: () => void;
-}> = ({ onSubmit, onBack }) => {
+export const ForgotPasswordForm: React.FC<AuthForgotPasswordFormProps> = ({
+  onSubmit,
+  onBack,
+  value,
+  defaultValue,
+  onChange,
+  classNames,
+  styles,
+}) => {
   const { textPrimary, textMuted, theme } = useThemeClasses();
-  const [email, setEmail] = useState("");
+  const [internalValues, setInternalValues] = useState<ForgotPasswordFormValues>({
+    email: defaultValue?.email ?? "",
+  });
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
   const [error, setError] = useState("");
+
+  const values: ForgotPasswordFormValues = {
+    email: value?.email ?? internalValues.email,
+  };
+
+  const setValues = (patch: Partial<ForgotPasswordFormValues>) => {
+    const nextValues = { ...values, ...patch };
+    if (!value) setInternalValues(nextValues);
+    onChange?.(nextValues);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
 
-    if (!validateEmail(email)) {
+    if (!validateEmail(values.email)) {
       setError("Please enter a valid email address");
       return;
     }
 
     setLoading(true);
     try {
-      const result = await onSubmit?.(email);
+      const result = onSubmit
+        ? onSubmit.length >= 1
+          ? await (onSubmit as (email: string) => Promise<AuthResponse>)(values.email)
+          : await (onSubmit as (submitValues: ForgotPasswordFormValues) => Promise<AuthResponse>)(
+              values,
+            )
+        : undefined;
       if (result?.success) {
         setSent(true);
       } else {
@@ -653,7 +919,7 @@ export const ForgotPasswordForm: React.FC<{
   };
 
   return (
-    <Card className="max-w-md mx-auto">
+    <Card className={cn("max-w-md mx-auto", classNames?.card)} style={styles?.card}>
       <CardHeader>
         <div className="flex items-center gap-3 mb-2">
           <div
@@ -689,7 +955,7 @@ export const ForgotPasswordForm: React.FC<{
                   Email Sent Successfully
                 </div>
                 <p className="text-sm">
-                  We've sent password reset instructions to <strong>{email}</strong>
+                  We've sent password reset instructions to <strong>{values.email}</strong>
                 </p>
               </div>
             </Alert>
@@ -738,16 +1004,23 @@ export const ForgotPasswordForm: React.FC<{
                   <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--muted-foreground)]" />
                   <Input
                     type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    value={values.email}
+                    onChange={(e) => setValues({ email: e.target.value })}
                     placeholder="you@example.com"
-                    className="pl-10"
+                    className={cn("pl-10", classNames?.emailInput)}
+                    style={styles?.emailInput}
                     disabled={loading}
                   />
                 </div>
               </div>
 
-              <Button type="submit" className="w-full" disabled={loading} animated>
+              <Button
+                type="submit"
+                className={cn("w-full", classNames?.submitButton)}
+                style={styles?.submitButton}
+                disabled={loading}
+                animated
+              >
                 {loading ? (
                   <>
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
@@ -761,7 +1034,12 @@ export const ForgotPasswordForm: React.FC<{
                 )}
               </Button>
 
-              <Button onClick={onBack} variant="ghost" className="w-full">
+              <Button
+                onClick={onBack}
+                variant="ghost"
+                className={cn("w-full", classNames?.backButton)}
+                style={styles?.backButton}
+              >
                 Back to Sign In
               </Button>
             </form>
@@ -776,37 +1054,66 @@ export const ForgotPasswordForm: React.FC<{
 // 4. RESET PASSWORD COMPONENT
 // ═══════════════════════════════════════════════════════════════════════════
 
-export const ResetPasswordForm: React.FC<{
-  token?: string;
-  onSubmit?: (password: string, token: string) => Promise<AuthResponse>;
-  onSuccess?: () => void;
-}> = ({ token = "", onSubmit, onSuccess }) => {
+export const ResetPasswordForm: React.FC<AuthResetPasswordFormProps> = ({
+  token = "",
+  onSubmit,
+  onSuccess,
+  value,
+  defaultValue,
+  onChange,
+  classNames,
+  styles,
+}) => {
   const { textPrimary, textMuted, theme } = useThemeClasses();
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+  const [internalValues, setInternalValues] = useState<ResetPasswordFormValues>({
+    password: defaultValue?.password ?? "",
+    confirmPassword: defaultValue?.confirmPassword ?? "",
+  });
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState("");
 
+  const values: ResetPasswordFormValues = {
+    password: value?.password ?? internalValues.password,
+    confirmPassword: value?.confirmPassword ?? internalValues.confirmPassword,
+  };
+
+  const setValues = (patch: Partial<ResetPasswordFormValues>) => {
+    const nextValues = { ...values, ...patch };
+    if (!value) setInternalValues(nextValues);
+    onChange?.(nextValues);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
 
-    const passwordValidation = validatePassword(password);
+  const passwordValidation = validatePassword(values.password);
     if (!passwordValidation.isValid) {
       setError("Password does not meet requirements");
       return;
     }
 
-    if (password !== confirmPassword) {
+    if (values.password !== values.confirmPassword) {
       setError("Passwords do not match");
       return;
     }
 
     setLoading(true);
     try {
-      const result = await onSubmit?.(password, token);
+      const result = onSubmit
+        ? onSubmit.length >= 2
+          ? await (onSubmit as (password: string, submitToken: string) => Promise<AuthResponse>)(
+              values.password,
+              token,
+            )
+          : await (
+              onSubmit as (
+                submitValues: ResetPasswordFormValues & { token: string },
+              ) => Promise<AuthResponse>
+            )({ ...values, token })
+        : undefined;
       if (result?.success) {
         setSuccess(true);
         setTimeout(() => onSuccess?.(), 2000);
@@ -821,7 +1128,7 @@ export const ResetPasswordForm: React.FC<{
   };
 
   return (
-    <Card className="max-w-md mx-auto">
+  <Card className={cn("max-w-md mx-auto", classNames?.card)} style={styles?.card}>
       <CardHeader>
         <div className="flex items-center gap-3 mb-2">
           <div
@@ -876,10 +1183,11 @@ export const ResetPasswordForm: React.FC<{
                   <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--muted-foreground)]" />
                   <Input
                     type={showPassword ? "text" : "password"}
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+                    value={values.password}
+                    onChange={(e) => setValues({ password: e.target.value })}
                     placeholder="••••••••"
-                    className="pl-10 pr-10"
+                    className={cn("pl-10 pr-10", classNames?.passwordInput)}
+                    style={styles?.passwordInput}
                     disabled={loading}
                   />
                   <button
@@ -890,7 +1198,7 @@ export const ResetPasswordForm: React.FC<{
                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
                 </div>
-                <PasswordStrength password={password} />
+                <PasswordStrength password={values.password} />
               </div>
 
               <div className="space-y-2">
@@ -901,15 +1209,16 @@ export const ResetPasswordForm: React.FC<{
                   <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--muted-foreground)]" />
                   <Input
                     type={showPassword ? "text" : "password"}
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    value={values.confirmPassword}
+                    onChange={(e) => setValues({ confirmPassword: e.target.value })}
                     placeholder="••••••••"
-                    className="pl-10 pr-10"
+                    className={cn("pl-10 pr-10", classNames?.confirmPasswordInput)}
+                    style={styles?.confirmPasswordInput}
                     disabled={loading}
                   />
-                  {confirmPassword && (
+                  {values.confirmPassword && (
                     <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                      {password === confirmPassword ? (
+                      {values.password === values.confirmPassword ? (
                         <Check className="w-4 h-4 text-emerald-500" />
                       ) : (
                         <X className="w-4 h-4 text-rose-500" />
@@ -919,7 +1228,13 @@ export const ResetPasswordForm: React.FC<{
                 </div>
               </div>
 
-              <Button type="submit" className="w-full" disabled={loading} animated>
+              <Button
+                type="submit"
+                className={cn("w-full", classNames?.submitButton)}
+                style={styles?.submitButton}
+                disabled={loading}
+                animated
+              >
                 {loading ? (
                   <>
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
@@ -944,11 +1259,13 @@ export const ResetPasswordForm: React.FC<{
 // 5. EMAIL VERIFICATION COMPONENT
 // ═══════════════════════════════════════════════════════════════════════════
 
-export const EmailVerification: React.FC<{
-  email?: string;
-  onResend?: () => Promise<AuthResponse>;
-  onVerified?: () => void;
-}> = ({ email = "your@email.com", onResend, onVerified }) => {
+export const EmailVerification: React.FC<AuthEmailVerificationProps> = ({
+  email = "your@email.com",
+  onResend,
+  onVerified,
+  classNames,
+  styles,
+}) => {
   const { textPrimary, textMuted, theme } = useThemeClasses();
   const [resending, setResending] = useState(false);
   const [resent, setResent] = useState(false);
@@ -979,7 +1296,7 @@ export const EmailVerification: React.FC<{
   };
 
   return (
-    <Card className="max-w-md mx-auto">
+  <Card className={cn("max-w-md mx-auto", classNames?.card)} style={styles?.card}>
       <CardHeader>
         <div className="flex items-center gap-3 mb-2">
           <div
@@ -1057,7 +1374,8 @@ export const EmailVerification: React.FC<{
           <Button
             onClick={handleResend}
             variant="outline"
-            className="w-full"
+            className={cn("w-full", classNames?.resendButton)}
+            style={styles?.resendButton}
             disabled={resending || resent}
           >
             {resending ? (
@@ -1080,7 +1398,8 @@ export const EmailVerification: React.FC<{
 
           <button
             onClick={onVerified}
-            className={cn("text-sm font-bold text-[var(--primary)] hover:underline")}
+            className={cn("text-sm font-bold text-[var(--primary)] hover:underline", classNames?.verifiedButton)}
+            style={styles?.verifiedButton}
           >
             I've verified my email
           </button>
@@ -1094,23 +1413,43 @@ export const EmailVerification: React.FC<{
 // 6. TWO-FACTOR AUTHENTICATION (2FA)
 // ═══════════════════════════════════════════════════════════════════════════
 
-export const TwoFactorAuth: React.FC<{
-  onSubmit?: (code: string) => Promise<AuthResponse>;
-  onResend?: () => Promise<AuthResponse>;
-  method?: "sms" | "email" | "app";
-}> = ({ onSubmit, onResend, method = "app" }) => {
+export const TwoFactorAuth: React.FC<AuthTwoFactorAuthProps> = ({
+  onSubmit,
+  onResend,
+  method = "app",
+  value,
+  defaultValue,
+  onChange,
+  classNames,
+  styles,
+}) => {
   const { textPrimary, textMuted, theme } = useThemeClasses();
-  const [code, setCode] = useState(["", "", "", "", "", ""]);
+  const [internalValues, setInternalValues] = useState<TwoFactorAuthValues>({
+    code: defaultValue?.code ?? "",
+  });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const inputRefs = React.useRef<(HTMLInputElement | null)[]>([]);
 
+  const values: TwoFactorAuthValues = {
+    code: value?.code ?? internalValues.code,
+  };
+
+  const codeDigits = Array.from({ length: 6 }, (_, index) => values.code[index] ?? "");
+
+  const setValues = (patch: Partial<TwoFactorAuthValues>) => {
+    const nextValues = { ...values, ...patch };
+    if (!value) setInternalValues(nextValues);
+    onChange?.(nextValues);
+  };
+
   const handleChange = (index: number, value: string) => {
     if (!/^\d*$/.test(value)) return;
 
-    const newCode = [...code];
+  const newCode = [...codeDigits];
     newCode[index] = value;
-    setCode(newCode);
+  const fullCode = newCode.join("");
+  setValues({ code: fullCode });
 
     // Auto-focus next input
     if (value && index < 5) {
@@ -1118,13 +1457,13 @@ export const TwoFactorAuth: React.FC<{
     }
 
     // Auto-submit when complete
-    if (newCode.every((digit) => digit) && newCode.join("").length === 6) {
-      handleSubmit(newCode.join(""));
+    if (newCode.every((digit) => digit) && fullCode.length === 6) {
+      handleSubmit(fullCode);
     }
   };
 
   const handleKeyDown = (index: number, e: React.KeyboardEvent) => {
-    if (e.key === "Backspace" && !code[index] && index > 0) {
+    if (e.key === "Backspace" && !codeDigits[index] && index > 0) {
       inputRefs.current[index - 1]?.focus();
     }
   };
@@ -1134,10 +1473,18 @@ export const TwoFactorAuth: React.FC<{
     setLoading(true);
 
     try {
-      const result = await onSubmit?.(fullCode);
+      const result = onSubmit
+        ? onSubmit.length >= 1
+          ? await (onSubmit as (code: string) => Promise<AuthResponse>)(fullCode)
+          : await (
+              onSubmit as (
+                submitValues: TwoFactorAuthValues & { method: "sms" | "email" | "app" },
+              ) => Promise<AuthResponse>
+            )({ code: fullCode, method })
+        : undefined;
       if (!result?.success) {
         setError(result?.error || "Invalid code");
-        setCode(["", "", "", "", "", ""]);
+        setValues({ code: "" });
         inputRefs.current[0]?.focus();
       }
     } catch (err) {
@@ -1155,10 +1502,10 @@ export const TwoFactorAuth: React.FC<{
       label: "Authenticator App",
       desc: "Enter the code from your authenticator app",
     },
-  }[method];
+  }[method as "sms" | "email" | "app"];
 
   return (
-    <Card className="max-w-md mx-auto">
+  <Card className={cn("max-w-md mx-auto", classNames?.card)} style={styles?.card}>
       <CardHeader>
         <div className="flex items-center gap-3 mb-2">
           <div
@@ -1194,7 +1541,7 @@ export const TwoFactorAuth: React.FC<{
 
         <div className="space-y-4">
           <div className="flex gap-2 justify-center">
-            {code.map((digit, index) => (
+            {codeDigits.map((digit, index) => (
               <input
                 key={index}
                 ref={(el) => {
@@ -1221,7 +1568,9 @@ export const TwoFactorAuth: React.FC<{
                   digit && "border-[var(--primary)]",
                   theme === "glassy" ? "text-white" : "text-[var(--foreground)]",
                   "bg-[var(--card)]",
+                  classNames?.codeInput,
                 )}
+                style={styles?.codeInput}
               />
             ))}
           </div>
@@ -1237,7 +1586,8 @@ export const TwoFactorAuth: React.FC<{
         <div className="text-center">
           <button
             onClick={onResend}
-            className="text-sm font-bold text-[var(--primary)] hover:underline flex items-center gap-2 mx-auto"
+            className={cn("text-sm font-bold text-[var(--primary)] hover:underline flex items-center gap-2 mx-auto", classNames?.resendButton)}
+            style={styles?.resendButton}
           >
             <RefreshCw className="w-4 h-4" />
             Resend Code
@@ -1252,27 +1602,50 @@ export const TwoFactorAuth: React.FC<{
 // 7. MAGIC LINK LOGIN
 // ═══════════════════════════════════════════════════════════════════════════
 
-export const MagicLinkForm: React.FC<{
-  onSubmit?: (email: string) => Promise<AuthResponse>;
-}> = ({ onSubmit }) => {
+export const MagicLinkForm: React.FC<AuthMagicLinkFormProps> = ({
+  onSubmit,
+  value,
+  defaultValue,
+  onChange,
+  classNames,
+  styles,
+}) => {
   const { textPrimary, textMuted, theme } = useThemeClasses();
-  const [email, setEmail] = useState("");
+  const [internalValues, setInternalValues] = useState<MagicLinkFormValues>({
+    email: defaultValue?.email ?? "",
+  });
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
   const [error, setError] = useState("");
+
+  const values: MagicLinkFormValues = {
+    email: value?.email ?? internalValues.email,
+  };
+
+  const setValues = (patch: Partial<MagicLinkFormValues>) => {
+    const nextValues = { ...values, ...patch };
+    if (!value) setInternalValues(nextValues);
+    onChange?.(nextValues);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
 
-    if (!validateEmail(email)) {
+    if (!validateEmail(values.email)) {
       setError("Please enter a valid email address");
       return;
     }
 
     setLoading(true);
     try {
-      const result = await onSubmit?.(email);
+      const result = onSubmit
+        ? onSubmit.length >= 1
+          ? await (onSubmit as (email: string) => Promise<AuthResponse>)(values.email)
+          : await (onSubmit as (submitValues: MagicLinkFormValues) => Promise<AuthResponse>)(
+              values,
+            )
+        : undefined;
       if (result?.success) {
         setSent(true);
       } else {
@@ -1286,7 +1659,7 @@ export const MagicLinkForm: React.FC<{
   };
 
   return (
-    <Card className="max-w-md mx-auto">
+  <Card className={cn("max-w-md mx-auto", classNames?.card)} style={styles?.card}>
       <CardHeader>
         <div className="flex items-center gap-3 mb-2">
           <div
@@ -1322,7 +1695,7 @@ export const MagicLinkForm: React.FC<{
                   Magic Link Sent
                 </div>
                 <p className="text-sm">
-                  We've sent a sign-in link to <strong>{email}</strong>
+                  We've sent a sign-in link to <strong>{values.email}</strong>
                 </p>
               </div>
             </Alert>
@@ -1366,16 +1739,23 @@ export const MagicLinkForm: React.FC<{
                   <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--muted-foreground)]" />
                   <Input
                     type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    value={values.email}
+                    onChange={(e) => setValues({ email: e.target.value })}
                     placeholder="you@example.com"
-                    className="pl-10"
+                    className={cn("pl-10", classNames?.emailInput)}
+                    style={styles?.emailInput}
                     disabled={loading}
                   />
                 </div>
               </div>
 
-              <Button type="submit" className="w-full" disabled={loading} animated>
+              <Button
+                type="submit"
+                className={cn("w-full", classNames?.submitButton)}
+                style={styles?.submitButton}
+                disabled={loading}
+                animated
+              >
                 {loading ? (
                   <>
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
