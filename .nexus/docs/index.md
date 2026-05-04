@@ -393,6 +393,15 @@ last_updated: "2026-05-04"
 - ✅ Restored page stability after prior partial-edit corruption by performing a hard file overwrite with a single canonical implementation.
 - ✅ Quality gates green after migration: `npx tsc --noEmit`, `npm run test`, `npm run lint`, `npm run build`.
 
+### 2026-05-04 — CI install failure hotfix (`ERR_PNPM_FETCH_404`)
+- ✅ Diagnosed CI failure fetching unpublished tarball `@types/estree@1.0.9` (404 from npm registry).
+- ✅ Added targeted `pnpm.overrides` in `package.json` for corrupted transitive pins:
+	- `@types/estree` → `1.0.8`
+	- `exsolve` → `1.0.8`
+	- `string.prototype.trimstart` → `1.0.8`
+- ✅ Regenerated lockfile with `corepack pnpm install --lockfile-only` and validated frozen install with `corepack pnpm install --frozen-lockfile`.
+- ✅ Quality gates green post-fix: `corepack pnpm typecheck`, `corepack pnpm test`, `corepack pnpm lint`.
+
 ---
 
 ## 🚀 Release Ritual (Canonical)

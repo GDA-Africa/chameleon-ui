@@ -147,6 +147,9 @@
   },
   "pnpm": {
     "overrides": {
+      "@types/estree": "1.0.8",
+      "exsolve": "1.0.8",
+      "string.prototype.trimstart": "1.0.8",
       "vite": "6.3.5"
     }
   },

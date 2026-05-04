@@ -231,3 +231,7 @@ Optional: Brief supporting detail (1-2 sentences max).
 ### [gotcha] Block-commenting legacy JSX can fail on embedded `{/* ... */}`
 
 **2026-05-04** — During large docs-page refactors, wrapping old JSX in a single `/* ... */` block can break unexpectedly because JSX inline comments contain `*/`, which prematurely terminates the outer block comment. For heavily mixed legacy files, prefer one-shot full-file overwrite to avoid parser drift.
+
+### [package] v1.0.9 lock drift introduced unpublished transitive patch versions
+
+**2026-05-04** — A broad lock/version bump drift set several transitive packages to non-existent `1.0.9` releases (`@types/estree`, `exsolve`, `string.prototype.trimstart`), causing CI `ERR_PNPM_FETCH_404` failures. Fix by pinning these via `pnpm.overrides` to `1.0.8` and regenerating the lock with `corepack pnpm install --lockfile-only` before rerunning frozen install.
