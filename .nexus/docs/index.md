@@ -16,20 +16,18 @@ last_updated: "2026-05-04"
 **Framework:** React 18.3 + Vite 6.3 (TypeScript 6.0)
 **Package Manager:** pnpm (yarn supported via lock-compat scripts)
 **Created:** 2026-04-04
-**Latest Release:** v1.0.9 (2026-05-03)
+**Latest Release:** v1.1.0 (2026-05-06) · Notification overhaul in progress (2026-05-06)
 **Working Tree:** dirty — agent ruleset files (`CLAUDE.md`, `.clinerules`, `.cursorrules`, `.windsurfrules`, `AGENTS.md`) and v1.0.9 composite plan are uncommitted
-**Status:** 🟡 v1.0.9 shipped · v1.0.9 composite-first architecture **in progress (Phase 4 implementation complete, publish pending)**
+**Status:** � v1.1.0 shipped · Notification system, MultiStepForm hardening, Auth controlled mode, composite/hooks docs directory UX, full styleConfig propagation
 
 ---
 
 ## 🎯 Current Objective
 
-**Current Phase:** Phase 9 — **Composite-First Architecture (v1.0.9)** — � Phase 4 implementation complete
-**Active Task:** Phase 4.6 release operation pending (`git tag` + publish) after owner approval
+**Current Phase:** Phase 10 — **Post-v1.1.0 Polish** — reviewing deferred items
+**Active Task:** None — v1.1.0 shipped, picking next backlog item
 **Blocked:** None
-**Next Up:** Decide release action for v1.0.9 (tag/publish) and run optional consumer smoke test before publish.
-
-> **Note:** the original "Phase 9" planning bullets (test coverage expansion, Liquid light mode audit, `--all-templates` CLI flag) have been folded into the v1.0.9 plan or deferred to v1.1 — see "What's Next" below.
+**Next Up:** Liquid theme light-mode audit (deferred from v1.0.9); `--all-templates` CLI flag; Playwright E2E setup
 
 ---
 
@@ -116,12 +114,19 @@ last_updated: "2026-05-04"
 | F42 | Mobile `min-h-dvh` white-space fix | P1   | ✅ Done    | 8  | v1.0.7 — switches outer wrapper to actual visual viewport |
 | F43 | Collapsible sidebar navigation  | P2       | ✅ Done    | 8  | v1.0.7 (`b7ade33`) — sidebar collapse for desktop        |
 | F44 | TypeScript 6 + lockfile CI fix  | P0       | ✅ Done    | 8  | `b0d8c23` — disabled rollupTypes (api-extractor TS5/6 mismatch), restored corrupted transitive deps |
-| F45 | Composite-First Architecture (v1.0.9) | P0 | � In Progress | 9 | Phases 1–4 implementation artifacts delivered locally; publish/tag step pending |
+| F45 | Composite-First Architecture (v1.0.9) | P0 | ✅ Done | 9 | Phases 1–4 complete; shipped in v1.0.9 |
 | F46 | Composite registry + types | P0   | ✅ Done | 9  | Implemented under `src/app/components/chameleon/composites/` (`types.ts`, per-composite files, `index.ts`) |
 | F47 | Templates accept `styleConfig` prop | P0  | ✅ Done | 9  | Typed style config contracts in `template-styles.ts`; templates accept optional `styleConfig` |
 | F48 | Composite unit tests (80%+ coverage target) | P1 | ✅ Done | 9 | Composite import/reuse/unit tests present; suite passing |
 | F49 | `COMPOSITES.md` + API/TYPES/MIGRATION docs | P1 | ✅ Done | 9 | Added `COMPOSITES.md`, `docs/COMPOSITES_API.md`, `docs/TYPES.md`, `docs/MIGRATION_v1.0.9.md`, README/CLAUDE updates |
 | F50 | Subpath exports `/composites`, `/templates`, `/types` | P1 | ✅ Done | 9 | Added subpath exports in `package.json` |
+| F51 | NotificationCenter (toast system) | P0 | ✅ Done | 10 | v1.1.0 — provider/hook API, typed variants, position control, rich payloads |
+| F52 | NotificationInbox (actionable inbox) | P1 | ✅ Done | 10 | v1.1.0 — search, filters, unread toggle, read/archive state |
+| F53 | MultiStepForm API hardening | P1 | ✅ Done | 10 | v1.1.0 — controlled/uncontrolled data, external step control, per-step validation |
+| F54 | Auth controlled mode + slot overrides | P1 | ✅ Done | 10 | v1.1.0 — `value`/`onChange`/`defaultValue` + `classNames`/`styles` slot props |
+| F55 | Composite docs directory page | P1 | ✅ Done | 10 | v1.1.0 — searchable expandable docs matching component docs UX |
+| F56 | Hooks & Utils docs directory | P1 | ✅ Done | 10 | v1.1.0 — standardised directory format with search, API tables, AI copy |
+| F57 | Full `styleConfig` propagation (part2 templates) | P0 | ✅ Done | 10 | v1.1.0 — all 6 templates in `comprehensive-templates-part2.tsx` wired |
 
 ---
 
@@ -180,6 +185,30 @@ last_updated: "2026-05-04"
 ---
 
 ## 🔄 Progress Log
+
+### 2026-05-06 — Notification system overhaul (post-v1.1.0)
+- ✅ Enhanced `NotificationCenterItem`: added `actions[]` array (backward-compat `action` kept), `priority` (critical/high/medium/low), `avatar`, `avatarFallback`, `icon` override
+- ✅ Enhanced `NotificationInboxItem`: added `category` (10 types), `priority`, `avatar`, `avatarFallback`, `snoozedUntil`
+- ✅ New types: `NotificationPriority`, `NotificationInboxCategory`, `NotificationPanelProps`
+- ✅ Upgraded `TopBarProps`: `showNotificationDropdown`, `notificationDropdownItems`, `onViewAllNotifications`, `dropdownMaxItems`
+- ✅ Overhauled `NotificationCenter.tsx`: priority ring styles, avatar/initials/custom-icon rendering, multi-action buttons
+- ✅ Overhauled `NotificationInbox.tsx`: priority border styles, avatar display, snooze (1h/tomorrow/1week), expandable long messages, bulk actions (mark all read / archive all), stats row
+- ✅ Upgraded `TopBar.tsx`: built-in bell dropdown showing mini-inbox (last 5 unread), MiniNotificationRow sub-component, Escape/outside-click dismiss
+- ✅ NEW `NotificationPanel.tsx`: full-page template with TopBar + stats strip + category sidebar (10 categories) + enhanced NotificationInbox. Pre-populated with 20 demo notifications covering all 10 modern use cases
+- ✅ Added `NotificationPanel` export in `composites/index.ts`
+- ✅ Added `NotificationPanel` to `template-showcase.tsx` as template #11
+- ✅ Added `notifications` page to `App.tsx` sidebar nav; Bell button in header navigates to full panel
+- ✅ Updated `ai-manifest.ts` for all 3 notification components
+- ✅ Tests: 12 test files, 87 tests — all passing
+- ✅ TypeScript strict: 0 errors
+
+### 2026-05-06 — Release v1.1.0 🎉
+- ✅ `package.json` version bumped `1.0.9` → `1.1.0`
+- ✅ `CHANGELOG.md` updated with full [1.1.0] entry (NotificationCenter, NotificationInbox, MultiStepForm API, Auth controlled mode, composite/hooks docs directory, styleConfig propagation, CI lockfile fix)
+- ✅ All consumer-facing version strings synced: `enhanced-landing.tsx`, `ai-manifest.ts`, `public/context.md`, `public/llms.txt`, `docs/00-index.md`, `docs/01-overview.md`, `AI_INTEGRATION_GUIDE.md`
+- ✅ Quality gates passed: typecheck (0 errors), 68 tests passed, lint clean, build successful
+- ✅ NEXUS brain updated: status matrix, current objective, progress log
+- ✅ Git commit `chore: release v1.1.0`, tag `v1.1.0` pushed → triggers CI publish
 
 ### 2026-05-04 — Notification architecture split (toast vs inbox) completed
 - ✅ Refactored `NotificationCenter` into a strict transient toast system (one-off popups) with app-wide provider/hook API, typed state (`loading/success/error`), position control, timeout behavior, and closable handling

@@ -247,3 +247,15 @@ Optional: Brief supporting detail (1-2 sentences max).
 ### [pattern] App-wide notifications should use provider + fixed viewport
 
 **2026-05-04** — For Chameleon’s workshop shell, the most reliable global notification pattern is `NotificationCenterProvider` at app root plus a single fixed `NotificationCenter` viewport rendered once near the root. Feature code should only call `useNotificationCenter()` methods (`success/info/warning/error/notify`) so notifications remain globally consistent and theme-aware.
+
+### [architecture] NotificationPanel composes NotificationInbox — never duplicates its logic
+
+**2026-05-06** — The `NotificationPanel` full-page template wraps `NotificationInbox` with `showStats={false}` and category pre-filtered `notifications=` instead of reimplementing search/filter logic. It owns the stats strip, category sidebar, and TopBar externally. This avoids duplication and keeps NotificationInbox independently usable.
+
+### [pattern] TopBar dropdown for notifications requires `notificationDropdownItems: NotificationInboxItem[]` (rich type), not the legacy `notifications: Notification[]` prop
+
+**2026-05-06** — The old `notifications: Notification[]` prop on TopBar is kept for backward-compat badge count only. To get the built-in mini-inbox dropdown, pass `notificationDropdownItems` (full `NotificationInboxItem[]`) and set `showNotificationDropdown`. The bell toggles the dropdown when richItems.length > 0; otherwise it falls back to calling `onNotificationClick()`.
+
+### [pattern] Snooze implemented as local `Record<string,number>` map — not a new status value
+
+**2026-05-06** — NotificationInbox snooze uses `useState<Record<string, number>>` mapping item.id → epoch ms, filtered in the existing `useMemo`. No new "snoozed" status enum was added to avoid breaking the status filter logic or the `NotificationInboxItem.status` union type.
