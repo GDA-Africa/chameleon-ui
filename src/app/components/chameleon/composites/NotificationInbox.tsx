@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from "react";
-import { Search, Bell, BellOff, CheckCheck, Archive, CheckCircle2, AlertTriangle, Info, XCircle } from "lucide-react";
+import { Search, Bell, BellOff, CheckCheck, Archive, CheckCircle2, AlertTriangle, Info, XCircle, Clock } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { cn } from "../utils";
 import { useThemeClasses } from "../context";
@@ -9,6 +9,7 @@ import type {
   NotificationInboxItem,
   NotificationInboxProps,
   NotificationInboxType,
+  NotificationPriority,
 } from "./types";
 
 type FilterOption = "all" | "unread" | "read" | "archived" | NotificationInboxType;
@@ -26,6 +27,19 @@ const typeAccent: Record<NotificationInboxType, string> = {
   error: "text-rose-500",
   info: "text-sky-500",
 };
+
+const priorityArticleClass: Record<NotificationPriority, string> = {
+  critical: "border-l-4 border-l-rose-500 ring-1 ring-rose-500/20",
+  high: "border-l-4 border-l-amber-500",
+  medium: "border-l-2 border-l-sky-400",
+  low: "opacity-75",
+};
+
+const snoozeOptions = [
+  { label: "1 hour", ms: 3_600_000 },
+  { label: "Tomorrow", ms: 86_400_000 },
+  { label: "1 week", ms: 604_800_000 },
+];
 
 const defaultItems: NotificationInboxItem[] = [
   {
@@ -46,6 +60,7 @@ const defaultItems: NotificationInboxItem[] = [
     type: "warning",
     status: "read",
     source: "Security",
+    priority: "high",
     tags: ["security"],
     createdAt: Date.now() - 1000 * 60 * 46,
     actions: [
@@ -56,10 +71,11 @@ const defaultItems: NotificationInboxItem[] = [
   {
     id: "deploy-1",
     title: "Deploy failed",
-    message: "Production deployment failed during migrations.",
+    message: "Production deployment failed during migrations. Check the logs for detailed error output and rollback instructions.",
     type: "error",
     status: "unread",
     source: "CI/CD",
+    priority: "critical",
     tags: ["ops", "deployment"],
     createdAt: Date.now() - 1000 * 60 * 2,
     actions: [{ id: "logs", label: "Open logs", intent: "danger" }],
@@ -71,11 +87,14 @@ export const NotificationInbox: React.FC<NotificationInboxProps> = ({
   defaultNotifications = defaultItems,
   onNotificationsChange,
   onAction,
+  onMarkAllRead,
+  onArchiveAll,
   title = "Notification Inbox",
   subtitle = "Search, filter, and handle actionable notifications in one place.",
   searchable = true,
   filterable = true,
   showUnreadOnlyToggle = true,
+  showStats = false,
   maxItems = 200,
   emptyStateTitle = "No notifications found",
   emptyStateDescription = "Try clearing filters or search terms.",
@@ -89,6 +108,9 @@ export const NotificationInbox: React.FC<NotificationInboxProps> = ({
   const [query, setQuery] = useState("");
   const [activeFilter, setActiveFilter] = useState<FilterOption>("all");
   const [unreadOnly, setUnreadOnly] = useState(false);
+  const [snoozedMap, setSnoozedMap] = useState<Record<string, number>>({});
+  const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
+  const [snoozeMenuId, setSnoozeMenuId] = useState<string | null>(null);
 
   const items = notifications ?? internalItems;
 
@@ -103,10 +125,23 @@ export const NotificationInbox: React.FC<NotificationInboxProps> = ({
     setItems(items.map((item) => (item.id === id ? { ...item, status } : item)));
   };
 
+  const handleMarkAllRead = () => {
+    setItems(items.map((i) => ({ ...i, status: "read" as const })));
+    onMarkAllRead?.();
+  };
+
+  const handleArchiveAll = () => {
+    setItems(items.map((i) => ({ ...i, status: "archived" as const })));
+    onArchiveAll?.();
+  };
+
   const filteredItems = useMemo(() => {
+    const now = Date.now();
     const normalizedQuery = query.trim().toLowerCase();
 
     return items.filter((item) => {
+      const snoozeUntil = snoozedMap[item.id];
+      if (snoozeUntil !== undefined && now < snoozeUntil) return false;
       if (unreadOnly && item.status !== "unread") return false;
 
       if (activeFilter !== "all") {
@@ -123,15 +158,17 @@ export const NotificationInbox: React.FC<NotificationInboxProps> = ({
         item.title,
         item.message,
         item.source,
+        item.category,
         ...(item.tags ?? []),
       ]
         .join(" ")
         .toLowerCase()
         .includes(normalizedQuery);
     });
-  }, [activeFilter, items, query, unreadOnly]);
+  }, [activeFilter, items, query, unreadOnly, snoozedMap]);
 
   const unreadCount = items.filter((item) => item.status === "unread").length;
+  const archivedCount = items.filter((item) => item.status === "archived").length;
 
   const filterOptions: FilterOption[] = ["all", "unread", "read", "archived", "success", "warning", "error", "info"];
 
@@ -154,9 +191,50 @@ export const NotificationInbox: React.FC<NotificationInboxProps> = ({
     return "border-[var(--border)] text-[var(--muted-foreground)] hover:text-[var(--foreground)]";
   };
 
+  const toggleExpand = (id: string) => {
+    setExpandedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  };
+
+  // Avatar / icon render
+  const renderItemIcon = (item: NotificationInboxItem) => {
+    const type = item.type ?? "info";
+    const Icon = typeIcon[type];
+    if (item.avatar) {
+      return (
+        <img
+          src={item.avatar}
+          alt={item.avatarFallback ?? item.title}
+          className="h-9 w-9 shrink-0 rounded-xl object-cover"
+        />
+      );
+    }
+    if (item.avatarFallback) {
+      return (
+        <div className={cn("flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-[var(--border)] font-black text-[11px]", typeAccent[type], "bg-[var(--muted)]/40")}>
+          {item.avatarFallback}
+        </div>
+      );
+    }
+    return (
+      <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-[var(--border)] bg-[var(--muted)]/35">
+        <Icon className={cn("h-4 w-4", typeAccent[type])} />
+      </div>
+    );
+  };
+
+  const MESSAGE_TRUNCATE = 120;
+
   return (
     <div className={cn("space-y-4", className, classNames.root)} style={styles.root}>
-      <div className={cn(cardClass, "p-4 sm:p-5 border border-[var(--border)]") }>
+      <div className={cn(cardClass, "border border-[var(--border)] p-4 sm:p-5")}>
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
             <h3 className={cn("text-lg sm:text-xl font-black tracking-tight", textPrimary)}>{title}</h3>
@@ -165,10 +243,18 @@ export const NotificationInbox: React.FC<NotificationInboxProps> = ({
           <Badge className="text-[10px] font-black uppercase tracking-widest">{items.length} total</Badge>
         </div>
 
+        {showStats && (
+          <div className={cn("mt-3 flex flex-wrap gap-4 text-[11px] font-bold border-t border-[var(--border)] pt-3", classNames.stats)} style={styles.stats}>
+            <span className={textMuted}>{items.length} total</span>
+            <span className="text-[var(--primary)]">{unreadCount} unread</span>
+            <span className={textMuted}>{archivedCount} archived</span>
+          </div>
+        )}
+
         <div className={cn("mt-4 space-y-3", classNames.toolbar)} style={styles.toolbar}>
           {searchable ? (
             <div className="relative">
-              <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-[var(--muted-foreground)]" />
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--muted-foreground)]" />
               <Input
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
@@ -187,7 +273,7 @@ export const NotificationInbox: React.FC<NotificationInboxProps> = ({
                     type="button"
                     onClick={() => setActiveFilter(option)}
                     className={cn(
-                      "px-2.5 py-1 rounded-full text-[11px] font-black uppercase tracking-wide border transition-colors",
+                      "rounded-full border px-2.5 py-1 text-[11px] font-black uppercase tracking-wide transition-colors",
                       activeFilter === option
                         ? "bg-[var(--primary)]/10 border-[var(--primary)]/30 text-[var(--primary)]"
                         : "border-[var(--border)] text-[var(--muted-foreground)] hover:text-[var(--foreground)]",
@@ -203,7 +289,7 @@ export const NotificationInbox: React.FC<NotificationInboxProps> = ({
                 type="button"
                 onClick={() => setUnreadOnly((prev) => !prev)}
                 className={cn(
-                  "ml-auto px-2.5 py-1 rounded-full text-[11px] font-black uppercase tracking-wide border transition-colors",
+                  "ml-auto rounded-full border px-2.5 py-1 text-[11px] font-black uppercase tracking-wide transition-colors",
                   unreadOnly
                     ? "bg-[var(--primary)]/10 border-[var(--primary)]/30 text-[var(--primary)]"
                     : "border-[var(--border)] text-[var(--muted-foreground)] hover:text-[var(--foreground)]",
@@ -214,14 +300,37 @@ export const NotificationInbox: React.FC<NotificationInboxProps> = ({
             ) : null}
           </div>
         </div>
+
+        {/* Bulk actions */}
+        {items.length > 0 && (onMarkAllRead ?? onArchiveAll) ? (
+          <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-[var(--border)] pt-3">
+            {onMarkAllRead ? (
+              <Button size="sm" variant="ghost" className="h-7 px-2 text-xs" onClick={handleMarkAllRead}>
+                <CheckCheck className="mr-1 h-3.5 w-3.5" /> Mark all read
+              </Button>
+            ) : null}
+            {onArchiveAll ? (
+              <Button size="sm" variant="ghost" className="h-7 px-2 text-xs" onClick={handleArchiveAll}>
+                <Archive className="mr-1 h-3.5 w-3.5" /> Archive all
+              </Button>
+            ) : null}
+            <span className={cn("ml-auto text-[11px] font-bold", textMuted)}>
+              {unreadCount} unread · {items.length} total
+            </span>
+          </div>
+        ) : null}
       </div>
 
       <div className={cn("space-y-2", classNames.list)} style={styles.list}>
         <AnimatePresence>
           {filteredItems.map((item, index) => {
             const type = item.type ?? "info";
-            const Icon = typeIcon[type];
             const status = item.status ?? "unread";
+            const isExpanded = expandedIds.has(item.id);
+            const isLong = item.message.length > MESSAGE_TRUNCATE;
+            const displayMessage = isExpanded || !isLong
+              ? item.message
+              : `${item.message.slice(0, MESSAGE_TRUNCATE)}…`;
 
             return (
               <motion.article
@@ -234,14 +343,13 @@ export const NotificationInbox: React.FC<NotificationInboxProps> = ({
                   cardClass,
                   "border border-[var(--border)] p-3.5 sm:p-4",
                   status === "unread" && "ring-1 ring-[var(--primary)]/20",
+                  item.priority ? priorityArticleClass[item.priority] : null,
                   classNames.item,
                 )}
                 style={styles.item}
               >
                 <div className="flex items-start gap-3">
-                  <div className="mt-0.5 w-9 h-9 rounded-xl border border-[var(--border)] bg-[var(--muted)]/35 flex items-center justify-center shrink-0">
-                    <Icon className={cn("w-4 h-4", typeAccent[type])} />
-                  </div>
+                  {renderItemIcon(item)}
 
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2">
@@ -251,19 +359,33 @@ export const NotificationInbox: React.FC<NotificationInboxProps> = ({
                       {status === "unread" ? (
                         <Badge className="text-[9px] font-black uppercase tracking-widest">new</Badge>
                       ) : null}
+                      {item.priority === "critical" ? (
+                        <span className="rounded-full bg-rose-500/10 px-1.5 py-0.5 text-[9px] font-black uppercase tracking-widest text-rose-500">
+                          critical
+                        </span>
+                      ) : null}
                       <span className={cn("text-[11px] font-bold", textMuted)}>{formatTime(item.createdAt)}</span>
                     </div>
 
-                    <p className={cn("text-sm mt-1 leading-relaxed", textMuted, classNames.itemMessage)} style={styles.itemMessage}>
-                      {item.message}
+                    <p className={cn("mt-1 text-sm leading-relaxed", textMuted, classNames.itemMessage)} style={styles.itemMessage}>
+                      {displayMessage}
                     </p>
+                    {isLong ? (
+                      <button
+                        type="button"
+                        className="mt-0.5 text-[11px] font-bold text-[var(--primary)] hover:underline"
+                        onClick={() => toggleExpand(item.id)}
+                      >
+                        {isExpanded ? "Show less" : "Show more"}
+                      </button>
+                    ) : null}
 
                     <div className="mt-2 flex flex-wrap items-center gap-2">
                       {item.source ? (
                         <span className={cn("text-[11px] font-bold uppercase tracking-wide", textMuted)}>{item.source}</span>
                       ) : null}
                       {item.tags?.map((tag) => (
-                        <span key={tag} className="text-[10px] px-1.5 py-0.5 rounded bg-[var(--muted)] text-[var(--muted-foreground)]">
+                        <span key={tag} className="rounded bg-[var(--muted)] px-1.5 py-0.5 text-[10px] text-[var(--muted-foreground)]">
                           #{tag}
                         </span>
                       ))}
@@ -276,7 +398,7 @@ export const NotificationInbox: React.FC<NotificationInboxProps> = ({
                           type="button"
                           onClick={() => onAction?.(item, action)}
                           className={cn(
-                            "px-2.5 py-1 rounded-lg border text-xs font-bold transition-colors",
+                            "rounded-lg border px-2.5 py-1 text-xs font-bold transition-colors",
                             getActionClass(action.intent),
                             classNames.actionButton,
                           )}
@@ -288,15 +410,55 @@ export const NotificationInbox: React.FC<NotificationInboxProps> = ({
 
                       {status !== "read" ? (
                         <Button size="sm" variant="ghost" className="h-7 px-2 text-xs" onClick={() => setStatus(item.id, "read")}>
-                          <CheckCheck className="w-3.5 h-3.5 mr-1" /> Mark read
+                          <CheckCheck className="mr-1 h-3.5 w-3.5" /> Mark read
                         </Button>
                       ) : null}
 
                       {status !== "archived" ? (
                         <Button size="sm" variant="ghost" className="h-7 px-2 text-xs" onClick={() => setStatus(item.id, "archived")}>
-                          <Archive className="w-3.5 h-3.5 mr-1" /> Archive
+                          <Archive className="mr-1 h-3.5 w-3.5" /> Archive
                         </Button>
                       ) : null}
+
+                      {/* Snooze */}
+                      <div className="relative">
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="h-7 px-2 text-xs"
+                          onClick={() => setSnoozeMenuId(snoozeMenuId === item.id ? null : item.id)}
+                        >
+                          <Clock className="mr-1 h-3.5 w-3.5" /> Snooze
+                        </Button>
+                        <AnimatePresence>
+                          {snoozeMenuId === item.id ? (
+                            <motion.div
+                              initial={{ opacity: 0, y: -4, scale: 0.96 }}
+                              animate={{ opacity: 1, y: 0, scale: 1 }}
+                              exit={{ opacity: 0, y: -4, scale: 0.96 }}
+                              transition={{ duration: 0.12 }}
+                              className={cn(
+                                cardClass,
+                                "absolute bottom-full left-0 z-20 mb-1 min-w-[140px] overflow-hidden rounded-xl border border-[var(--border)] shadow-xl",
+                              )}
+                            >
+                              {snoozeOptions.map((opt) => (
+                                <button
+                                  key={opt.label}
+                                  type="button"
+                                  className={cn("w-full px-3 py-2 text-left text-xs font-bold hover:bg-[var(--muted)] transition-colors", textPrimary)}
+                                  onClick={() => {
+                                    setSnoozedMap((prev) => ({ ...prev, [item.id]: Date.now() + opt.ms }));
+                                    setSnoozeMenuId(null);
+                                  }}
+                                >
+                                  {opt.label}
+                                </button>
+                              ))}
+                            </motion.div>
+                          ) : null}
+                        </AnimatePresence>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -308,12 +470,12 @@ export const NotificationInbox: React.FC<NotificationInboxProps> = ({
         {filteredItems.length === 0 ? (
           <div className={cn(cardClass, "border border-dashed border-[var(--border)] p-8 text-center", classNames.item)} style={styles.item}>
             {unreadCount === 0 ? (
-              <BellOff className="w-8 h-8 mx-auto mb-3 text-[var(--muted-foreground)]" />
+              <BellOff className="mx-auto mb-3 h-8 w-8 text-[var(--muted-foreground)]" />
             ) : (
-              <Bell className="w-8 h-8 mx-auto mb-3 text-[var(--muted-foreground)]" />
+              <Bell className="mx-auto mb-3 h-8 w-8 text-[var(--muted-foreground)]" />
             )}
             <p className={cn("font-black", textPrimary)}>{emptyStateTitle}</p>
-            <p className={cn("text-sm mt-1", textMuted)}>{emptyStateDescription}</p>
+            <p className={cn("mt-1 text-sm", textMuted)}>{emptyStateDescription}</p>
           </div>
         ) : null}
       </div>

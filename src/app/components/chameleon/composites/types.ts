@@ -240,6 +240,10 @@ export interface TopBarProps extends CompositeBaseProps {
   backgroundColor?: string;
   actions?: ReactNode;
   userMenu?: ReactNode;
+  showNotificationDropdown?: boolean;
+  notificationDropdownItems?: NotificationInboxItem[];
+  onViewAllNotifications?: () => void;
+  dropdownMaxItems?: number;
 }
 
 export interface DataTableCompositeProps<T = Record<string, unknown>> extends CompositeBaseProps {
@@ -465,6 +469,20 @@ export interface ToastCompositeProps extends CompositeBaseProps {
   title?: string;
 }
 
+export type NotificationPriority = "critical" | "high" | "medium" | "low";
+
+export type NotificationInboxCategory =
+  | "messages"
+  | "security"
+  | "billing"
+  | "devops"
+  | "collaboration"
+  | "ecommerce"
+  | "social"
+  | "reminders"
+  | "updates"
+  | "support";
+
 export type NotificationCenterType = "success" | "error" | "info" | "warning";
 
 export type NotificationCenterPosition =
@@ -488,7 +506,13 @@ export interface NotificationCenterItem {
   state?: "idle" | "loading" | "success" | "error";
   duration?: number;
   createdAt?: number;
+  /** @deprecated Prefer actions[] for multi-action support */
   action?: NotificationCenterAction;
+  actions?: NotificationCenterAction[];
+  priority?: NotificationPriority;
+  avatar?: string;
+  avatarFallback?: string;
+  icon?: ElementType;
   persistent?: boolean;
   closable?: boolean;
 }
@@ -541,8 +565,13 @@ export interface NotificationInboxItem {
   status?: "unread" | "read" | "archived";
   createdAt?: number;
   source?: string;
+  category?: NotificationInboxCategory;
   tags?: string[];
   actions?: NotificationInboxAction[];
+  priority?: NotificationPriority;
+  avatar?: string;
+  avatarFallback?: string;
+  snoozedUntil?: number;
 }
 
 export interface NotificationInboxClassNames {
@@ -554,6 +583,8 @@ export interface NotificationInboxClassNames {
   itemTitle?: string;
   itemMessage?: string;
   actionButton?: string;
+  stats?: string;
+  categoryBar?: string;
 }
 
 export interface NotificationInboxProps extends CompositeBaseProps {
@@ -561,14 +592,31 @@ export interface NotificationInboxProps extends CompositeBaseProps {
   defaultNotifications?: NotificationInboxItem[];
   onNotificationsChange?: (notifications: NotificationInboxItem[]) => void;
   onAction?: (notification: NotificationInboxItem, action: NotificationInboxAction) => void;
+  onMarkAllRead?: () => void;
+  onArchiveAll?: () => void;
   title?: string;
   subtitle?: string;
   searchable?: boolean;
   filterable?: boolean;
   showUnreadOnlyToggle?: boolean;
+  showStats?: boolean;
+  showCategoryFilter?: boolean;
   maxItems?: number;
   emptyStateTitle?: string;
   emptyStateDescription?: string;
   classNames?: NotificationInboxClassNames;
   styles?: Partial<Record<keyof NotificationInboxClassNames, CSSProperties>>;
+}
+
+export interface NotificationPanelProps extends CompositeBaseProps {
+  notifications?: NotificationInboxItem[];
+  defaultNotifications?: NotificationInboxItem[];
+  onNotificationsChange?: (notifications: NotificationInboxItem[]) => void;
+  onAction?: (notification: NotificationInboxItem, action: NotificationInboxAction) => void;
+  onMarkAllRead?: () => void;
+  onArchiveAll?: () => void;
+  title?: string;
+  showTopBar?: boolean;
+  topBarTitle?: string;
+  topBarSubtitle?: string;
 }

@@ -52,6 +52,7 @@ import {
   NotificationCenterProvider,
   useNotificationCenter,
 } from "./components/chameleon/composites/NotificationCenter";
+import { NotificationPanel } from "./components/chameleon/composites/NotificationPanel";
 
 // ─── Page Components ──────────────────────────────────────────────────────────
 
@@ -73,7 +74,8 @@ type Page =
   | "visualizer"
   | "animations"
   | "templates"
-  | "composites";
+  | "composites"
+  | "notifications";
 
 function Workshop() {
   const {
@@ -138,6 +140,7 @@ function Workshop() {
     { id: "landing",        label: "Home",            icon: Monitor,       group: "Overview" },
     { id: "component-docs", label: "Component Docs",  icon: Code,          group: "Components", badge: "35+" },
   { id: "composites",     label: "Composites",      icon: Puzzle,        group: "Components", badge: "37" },
+    { id: "notifications",   label: "Notifications",   icon: Bell,          group: "Components", badge: "8" },
     { id: "hooks-utils",    label: "Hooks & Utils",   icon: Wrench,        group: "Components" },
     { id: "templates",      label: "Templates",       icon: LayoutDashboard, group: "Components", badge: "14" },
     { id: "cli-docs",       label: "CLI Reference",   icon: Terminal,      group: "Documentation" },
@@ -578,19 +581,17 @@ function Workshop() {
               </div>
             </div>
 
-            <Button
-              size="icon"
-              variant="ghost"
-              className="rounded-full w-9 h-9"
-              onClick={() =>
-                info("This is an app-wide notification from the global center.", {
-                  title: "Notification Center",
-                  duration: 3200,
-                })
-              }
+            <button
+              type="button"
+              aria-label="Open Notification Panel"
+              className="relative rounded-full w-9 h-9 flex items-center justify-center hover:bg-[var(--muted)] transition-colors"
+              onClick={() => setActivePage("notifications")}
             >
               <Bell className="w-4 h-4" />
-            </Button>
+              <span className="absolute top-1 right-1 flex h-4 w-4 items-center justify-center rounded-full bg-[var(--primary)] text-[9px] font-bold text-[var(--primary-foreground)]">
+                8
+              </span>
+            </button>
 
             <Button
               size="icon"
@@ -623,6 +624,7 @@ function Workshop() {
               {activePage === "visualizer" && <ThemeVisualizer />}
               {activePage === "animations" && <AnimationPresets currentTheme={theme} />}
               {activePage === "templates" && <TemplatesPage />}
+              {activePage === "notifications" && <NotificationPanel />}
             </motion.div>
           </AnimatePresence>
         </div>

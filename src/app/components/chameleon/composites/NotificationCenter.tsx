@@ -9,6 +9,7 @@ import type {
   NotificationCenterProps,
   NotificationCenterProviderProps,
   NotificationCenterType,
+  NotificationPriority,
 } from "./types";
 
 type NotificationCenterContextValue = {
@@ -66,6 +67,11 @@ export const NotificationCenterProvider: React.FC<NotificationCenterProviderProp
         type: input.type ?? "info",
         duration: input.duration,
         action: input.action,
+        actions: input.actions,
+        priority: input.priority,
+        avatar: input.avatar,
+        avatarFallback: input.avatarFallback,
+        icon: input.icon,
         persistent: input.persistent ?? false,
         state: input.state ?? "idle",
         closable: input.closable ?? true,
@@ -151,6 +157,13 @@ const typeConfig: Record<NotificationCenterType, { icon: React.ElementType; acce
   },
 };
 
+const priorityCardClass: Record<NotificationPriority, string> = {
+  critical: "ring-2 ring-rose-500/60 border-rose-500/40",
+  high: "border-l-4 border-l-amber-500",
+  medium: "border-l-2 border-l-sky-400",
+  low: "opacity-80",
+};
+
 const positionClassMap: Record<NonNullable<NotificationCenterProps["position"]>, string> = {
   "top-left": "top-4 left-4 items-start",
   "top-center": "top-4 left-1/2 -translate-x-1/2 items-center",
@@ -191,8 +204,40 @@ const NotificationCard: React.FC<{
   }, [duration, isHovering, item.id, onDismiss, pauseOnHover]);
 
   const config = typeConfig[item.type ?? "info"];
-  const Icon = item.state === "loading" ? Loader2 : config.icon;
   const elapsed = Math.max(0, Date.now() - createdAtRef.current);
+
+  // Avatar / icon resolution: URL img → initials → custom icon → type icon
+  const renderIconSlot = () => {
+    if (item.avatar) {
+      return (
+        <img
+          src={item.avatar}
+          alt={item.avatarFallback ?? ""}
+          className="h-9 w-9 rounded-xl object-cover"
+        />
+      );
+    }
+    if (item.avatarFallback) {
+      return (
+        <div className={cn("mt-0.5 flex h-9 w-9 items-center justify-center rounded-xl border font-black text-[11px]", config.bg, config.border, config.accent)}>
+          {item.avatarFallback}
+        </div>
+      );
+    }
+    const CustomIcon = item.icon;
+    const IconComponent = item.state === "loading" ? Loader2 : (CustomIcon ?? config.icon);
+    return (
+      <div className={cn("mt-0.5 rounded-xl border p-2", config.bg, config.border)}>
+        <IconComponent className={cn("h-4 w-4", config.accent, item.state === "loading" && "animate-spin")} />
+      </div>
+    );
+  };
+
+  // Merge single action (backward compat) + actions array
+  const allActions = [
+    ...(item.action ? [item.action] : []),
+    ...(item.actions ?? []),
+  ];
 
   return (
     <motion.div
@@ -205,6 +250,7 @@ const NotificationCard: React.FC<{
         cardClass,
         "relative w-full max-w-md overflow-hidden border",
         config.border,
+        item.priority ? priorityCardClass[item.priority] : null,
         classNames.card,
         compact ? "p-3" : "p-4",
       )}
@@ -214,11 +260,10 @@ const NotificationCard: React.FC<{
       role="status"
       aria-live="polite"
       data-state={item.state ?? "idle"}
+      data-priority={item.priority}
     >
       <div className="flex items-start gap-3">
-        <div className={cn("mt-0.5 rounded-xl border p-2", config.bg, config.border)}>
-          <Icon className={cn("h-4 w-4", config.accent, item.state === "loading" && "animate-spin")} />
-        </div>
+        {renderIconSlot()}
 
         <div className="min-w-0 flex-1">
           {item.title ? (
@@ -236,19 +281,24 @@ const NotificationCard: React.FC<{
             </p>
           ) : null}
 
-          {item.action ? (
-            <button
-              type="button"
-              className="mt-2 text-xs font-bold text-[var(--primary)] hover:underline"
-              onClick={() => {
-                item.action?.onClick();
-                if (!item.persistent) {
-                  onDismiss(item.id);
-                }
-              }}
-            >
-              {item.action.label}
-            </button>
+          {allActions.length > 0 ? (
+            <div className="mt-2 flex flex-wrap gap-1.5">
+              {allActions.map((act, idx) => (
+                <button
+                  key={idx}
+                  type="button"
+                  className="text-xs font-bold text-[var(--primary)] hover:underline"
+                  onClick={() => {
+                    act.onClick();
+                    if (!item.persistent) {
+                      onDismiss(item.id);
+                    }
+                  }}
+                >
+                  {act.label}
+                </button>
+              ))}
+            </div>
           ) : null}
         </div>
 
