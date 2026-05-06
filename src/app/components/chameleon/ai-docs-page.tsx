@@ -85,7 +85,7 @@ export default function App() {
 ## Component Categories & Count
 - **Atoms (8):** Button, Input, Badge, Progress, Spinner, Avatar, Toggle, Tooltip, DatePicker
 - **Molecules (10):** Card, Tabs, Dialog, Alert, StatCard, Select, Breadcrumb, Separator, Textarea, SearchBar
-- **Composites (10):** DataTable, KanbanBoard, MultiStepForm, NotificationFeed, CalendarWidget, FileUploader, MediaGallery, Timeline, ThemeChart, PricingCard
+- **Composites (11):** DataTable, KanbanBoard, MultiStepForm, NotificationFeed, NotificationCenter, CalendarWidget, FileUploader, MediaGallery, Timeline, ThemeChart, PricingCard
 - **Auth (7):** LoginForm, SignupForm, TwoFactorAuth, MagicLinkForm, ForgotPasswordForm, ResetPasswordForm, UserProfile
 - **Templates (14):** Dashboard, Landing, Settings, Analytics, Inbox, E-commerce, Profile, Calendar, Auth, Blog, Pricing, Team, Reports, Onboarding
 

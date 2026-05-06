@@ -194,6 +194,152 @@ export const COMPOSITES_MANIFEST = {
     ],
   },
 
+  ThemeChart: {
+    name: "ThemeChart",
+    category: "dashboard",
+    description: "Theme-aware chart wrapper supporting line/bar/area/pie/donut/radar/scatter visualizations.",
+    props: {
+      type: { type: "'line' | 'bar' | 'area' | 'pie' | 'donut' | 'radar' | 'scatter'", required: true },
+      data: { type: "ChartDataPoint[]", required: true, description: "Array of chart rows, each with a `name` and one or more numeric series keys" },
+      series: { type: "{ key: string; label: string }[]", required: false, default: "[{ key: 'value', label: 'Value' }]" },
+      title: { type: "string", required: false },
+      height: { type: "number", required: false, default: "280" },
+      animated: { type: "boolean", required: false, default: "true" },
+      showGrid: { type: "boolean", required: false, default: "true" },
+      showLegend: { type: "boolean", required: false, default: "false" },
+    },
+    examples: [
+      { theme: "all", code: '<ThemeChart type="line" data={[{ name: "Jan", value: 30 }, { name: "Feb", value: 52 }]} />' },
+      { theme: "all", code: '<ThemeChart type="bar" title="Revenue" data={monthlyData} series={[{ key: "revenue", label: "Revenue" }, { key: "cost", label: "Cost" }]} showLegend />' },
+    ],
+  },
+
+  CommandPalette: {
+    name: "CommandPalette",
+    category: "shared",
+    description: "Searchable keyboard-first command menu with grouped actions and shortcuts.",
+    props: {
+      items: { type: "{ id: string; label: string; description?: string; icon?: ElementType; group?: string; action?: () => void; shortcut?: string }[]", required: true },
+      open: { type: "boolean", required: true },
+      onClose: { type: "() => void", required: true },
+      placeholder: { type: "string", required: false, default: "'Type a command or search...'" },
+    },
+    examples: [
+      { theme: "all", code: '<CommandPalette items={commands} open={open} onClose={() => setOpen(false)} />' },
+    ],
+  },
+
+  KanbanBoard: {
+    name: "KanbanBoard",
+    category: "dashboard",
+    description: "Drag-and-drop board with customizable columns and cards for workflow management.",
+    props: {
+      initialColumns: { type: "{ id: string; title: string; color?: string; cards: { id: string; title: string; description?: string; tags?: string[]; priority?: 'low' | 'medium' | 'high'; assignee?: string }[] }[]", required: false },
+      animated: { type: "boolean", required: false, default: "true" },
+    },
+    examples: [
+      { theme: "all", code: '<KanbanBoard />' },
+      { theme: "all", code: '<KanbanBoard initialColumns={projectColumns} animated={false} />' },
+    ],
+  },
+
+  Timeline: {
+    name: "Timeline",
+    category: "shared",
+    description: "Vertical timeline component for events/milestones with status and optional icons.",
+    props: {
+      events: { type: "{ id: string; title: string; description?: string; date: string; icon?: ElementType; status?: 'completed' | 'current' | 'pending'; color?: string }[]", required: true },
+      animated: { type: "boolean", required: false, default: "true" },
+    },
+    examples: [
+      { theme: "all", code: '<Timeline events={[{ id: "1", title: "Kickoff", date: "2026-05-04", status: "completed" }]} />' },
+    ],
+  },
+
+  FileUploader: {
+    name: "FileUploader",
+    category: "shared",
+    description: "Drag-and-drop uploader with progress simulation, type filtering, and size constraints.",
+    props: {
+      onUpload: { type: "(files: File[]) => void", required: false },
+      accept: { type: "string", required: false, default: "'*'" },
+      multiple: { type: "boolean", required: false, default: "true" },
+      maxSizeMB: { type: "number", required: false, default: "10" },
+      animated: { type: "boolean", required: false, default: "true" },
+    },
+    examples: [
+      { theme: "all", code: '<FileUploader accept=".pdf,.png,.jpg" maxSizeMB={25} onUpload={(files) => console.log(files)} />' },
+    ],
+  },
+
+  NotificationFeed: {
+    name: "NotificationFeed",
+    category: "shared",
+    description: "Notification inbox with unread state, mark-all-read, and per-item dismiss actions.",
+    props: {
+      notifications: { type: "{ id: string; title: string; description?: string; time: string; read: boolean; type: 'info' | 'success' | 'warning' | 'error' | 'message'; avatar?: string; avatarFallback?: string; action?: { label: string; onClick: () => void } }[]", required: false },
+      animated: { type: "boolean", required: false, default: "true" },
+    },
+    examples: [
+      { theme: "all", code: '<NotificationFeed />' },
+      { theme: "all", code: '<NotificationFeed notifications={teamNotifications} animated={false} />' },
+    ],
+  },
+
+  MultiStepForm: {
+    name: "MultiStepForm",
+    category: "shared",
+    description: "Wizard-style multi-step form with optional validation, controlled state, and customizable navigation labels.",
+    props: {
+      steps: { type: "{ id: string; title: string; description?: string; fields: ReactNode | ((context: MultiStepFormRenderContext) => ReactNode); validate?: (data: Record<string, unknown>) => boolean | string }[]", required: true },
+      value: { type: "Record<string, unknown>", required: false, description: "Controlled form data object" },
+      initialData: { type: "Record<string, unknown>", required: false, default: "{}", description: "Initial internal data when uncontrolled" },
+      onChange: { type: "(data: Record<string, unknown>) => void", required: false, description: "Called whenever form data changes" },
+      currentStep: { type: "number", required: false, description: "Controlled active step index" },
+      initialStep: { type: "number", required: false, default: "0" },
+      onStepChange: { type: "(stepIndex: number) => void", required: false },
+      allowStepNavigation: { type: "boolean", required: false, default: "true", description: "Allows clicking progress dots to jump steps" },
+      backLabel: { type: "string", required: false, default: "'Back'" },
+      nextLabel: { type: "string", required: false, default: "'Next'" },
+      completeLabel: { type: "string", required: false, default: "'Complete'" },
+      completeDisabled: { type: "boolean", required: false, default: "false" },
+      onBack: { type: "(stepIndex: number, data: Record<string, unknown>) => void", required: false },
+      onComplete: { type: "(data: Record<string, unknown>) => void", required: false },
+      animated: { type: "boolean", required: false, default: "true" },
+    },
+    examples: [
+      { theme: "all", code: '<MultiStepForm steps={steps} onComplete={(data) => save(data)} />' },
+      { theme: "all", code: '<MultiStepForm steps={steps} value={formData} onChange={setFormData} currentStep={activeStep} onStepChange={setActiveStep} allowStepNavigation={false} />' },
+    ],
+  },
+
+  CalendarWidget: {
+    name: "CalendarWidget",
+    category: "shared",
+    description: "Mini calendar with month navigation, date selection, and per-day event indicators.",
+    props: {
+      events: { type: "{ date: string; title: string; color?: string }[]", required: false },
+      animated: { type: "boolean", required: false, default: "true" },
+    },
+    examples: [
+      { theme: "all", code: '<CalendarWidget events={[{ date: "2026-05-04", title: "Product Review", color: "#7c3aed" }]} />' },
+    ],
+  },
+
+  MediaGallery: {
+    name: "MediaGallery",
+    category: "shared",
+    description: "Filterable media grid with lightbox preview and keyboard navigation.",
+    props: {
+      items: { type: "{ id: string; src: string; alt: string; width?: number; height?: number; tags?: string[] }[]", required: true },
+      animated: { type: "boolean", required: false, default: "true" },
+    },
+    examples: [
+      { theme: "all", code: '<MediaGallery items={galleryItems} />' },
+      { theme: "all", code: '<MediaGallery items={galleryItems} animated={false} />' },
+    ],
+  },
+
   // ── Settings ─────────────────────────────────────────────────────────────────
 
   ProfileSection: {
@@ -429,6 +575,51 @@ export const COMPOSITES_MANIFEST = {
     examples: [
       { theme: "all", code: '<ToastComposite type="success" title="Saved!" message="Your changes have been saved." />' },
       { theme: "all", code: '<ToastComposite type="error" message="Something went wrong." duration={0} onClose={clearError} />' },
+    ],
+  },
+
+  NotificationCenter: {
+    name: "NotificationCenter",
+    category: "shared",
+    description: "App-wide transient toast viewport powered by a provider + hook API with position, timeout, closable controls, and loading/success/error states.",
+    props: {
+      position: { type: "'top-left' | 'top-center' | 'top-right' | 'bottom-left' | 'bottom-center' | 'bottom-right'", required: false, default: '"top-right"' },
+      showCloseButton: { type: "boolean", required: false, default: "true" },
+      showProgress: { type: "boolean", required: false, default: "true" },
+      compact: { type: "boolean", required: false, default: "false" },
+      gap: { type: "number", required: false, default: "8", description: "Vertical spacing between visible toast cards" },
+      classNames: { type: "NotificationCenterClassNames", required: false, description: "Style slots for viewport/card/title/message/close/progress" },
+      styles: { type: "Partial<Record<keyof NotificationCenterClassNames, CSSProperties>>", required: false, description: "Inline style overrides by slot" },
+    },
+    examples: [
+      { theme: "all", code: '<NotificationCenterProvider><App /><NotificationCenter position="top-right" /></NotificationCenterProvider>' },
+      { theme: "all", code: 'const { loading, update } = useNotificationCenter();\nconst id = loading("Syncing profile...", { title: "Profile", closable: false });\nupdate(id, { state: "success", type: "success", message: "Profile synced", persistent: false, duration: 2400 });' },
+    ],
+  },
+
+  NotificationInbox: {
+    name: "NotificationInbox",
+    category: "shared",
+    description: "Actionable notification module with search, status/type filtering, unread toggle, and per-item actions (read/archive/CTA).",
+    props: {
+      notifications: { type: "NotificationInboxItem[]", required: false, description: "Controlled notifications list" },
+      defaultNotifications: { type: "NotificationInboxItem[]", required: false, description: "Initial internal list for uncontrolled mode" },
+      onNotificationsChange: { type: "(notifications: NotificationInboxItem[]) => void", required: false, description: "Fires when list mutations occur (read/archive)" },
+      onAction: { type: "(notification: NotificationInboxItem, action: NotificationInboxAction) => void", required: false, description: "Triggered when item action buttons are clicked" },
+      title: { type: "string", required: false, default: '"Notifications"' },
+      subtitle: { type: "string", required: false, default: '"Stay on top of activity with quick filters and actions."' },
+      searchable: { type: "boolean", required: false, default: "true" },
+      filterable: { type: "boolean", required: false, default: "true" },
+      showUnreadOnlyToggle: { type: "boolean", required: false, default: "true" },
+      maxItems: { type: "number", required: false, default: "100" },
+      emptyStateTitle: { type: "string", required: false, default: '"All caught up"' },
+      emptyStateDescription: { type: "string", required: false, default: '"No notifications match your current filters."' },
+      classNames: { type: "NotificationInboxClassNames", required: false },
+      styles: { type: "Partial<Record<keyof NotificationInboxClassNames, CSSProperties>>", required: false },
+    },
+    examples: [
+      { theme: "all", code: '<NotificationInbox defaultNotifications={inboxItems} />' },
+      { theme: "all", code: '<NotificationInbox notifications={items} onNotificationsChange={setItems} onAction={(item, action) => runAction(item, action)} />' },
     ],
   },
 } as const;

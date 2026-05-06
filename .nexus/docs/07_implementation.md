@@ -4,7 +4,7 @@ id: "07_implementation"
 title: "Implementation Plan"
 status: populated
 confidence: high
-last_updated: "2026-05-03"
+last_updated: "2026-05-04"
 ---
 
 # Implementation Plan
@@ -115,6 +115,8 @@ last_updated: "2026-05-03"
 | Keep auth flow visible in templates | `src/app/components/chameleon/template-showcase.tsx` | ✅ Done | Authentication Flow template remains in tabs and searchable directory |
 | Templates housing/code panels upgrade | `src/app/components/chameleon/template-showcase.tsx` | ✅ Done | Searchable expandable directory, color token override, copy-ready code snippets |
 | Full component docs directory experience | `src/app/components/chameleon/component-docs-directory-page.tsx` | ✅ Done | Search + filter + per-component dropdown with props/usages/previews + AI context copy |
+| Composite docs parity + multi-step form props hardening | `src/app/components/chameleon/composites.tsx`, `src/app/components/chameleon/composites/ai-manifest.ts`, `src/app/App.tsx`, `src/app/components/chameleon/__tests__/composites/multi-step-form.test.tsx` | ✅ Done | Added missing legacy composites to docs, expanded MultiStepForm API for real-world usage, and covered with tests |
+| Notification system split (toast + inbox) | `src/app/components/chameleon/composites/NotificationCenter.tsx`, `src/app/components/chameleon/composites/NotificationInbox.tsx`, `src/app/components/chameleon/composites/types.ts`, `src/app/components/chameleon/composites/index.ts`, `src/app/components/chameleon/composites/ai-manifest.ts`, `src/app/components/chameleon/__tests__/composites/notification-center.test.tsx`, `src/app/components/chameleon/__tests__/composites/notification-inbox.test.tsx` | ✅ Done | Separated transient app-wide toast behavior from actionable inbox list UX; synced docs/exports/tests and validated with full quality gates |
 | Backward compatibility export bridge | `src/app/components/chameleon/component-docs-page.tsx` | ✅ Done | Legacy import path now re-exports new docs directory page |
 | Validate gates | project scripts | ✅ Done | `npm run typecheck`, `npm run test`, `npm run lint` all pass |
 

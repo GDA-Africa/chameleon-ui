@@ -464,3 +464,111 @@ export interface ToastCompositeProps extends CompositeBaseProps {
   onClose?: () => void;
   title?: string;
 }
+
+export type NotificationCenterType = "success" | "error" | "info" | "warning";
+
+export type NotificationCenterPosition =
+  | "top-left"
+  | "top-center"
+  | "top-right"
+  | "bottom-left"
+  | "bottom-center"
+  | "bottom-right";
+
+export interface NotificationCenterAction {
+  label: string;
+  onClick: () => void;
+}
+
+export interface NotificationCenterItem {
+  id: string;
+  title?: string;
+  message: string;
+  type?: NotificationCenterType;
+  state?: "idle" | "loading" | "success" | "error";
+  duration?: number;
+  createdAt?: number;
+  action?: NotificationCenterAction;
+  persistent?: boolean;
+  closable?: boolean;
+}
+
+export interface NotificationCenterCreateInput
+  extends Omit<NotificationCenterItem, "id" | "createdAt"> {
+  id?: string;
+}
+
+export interface NotificationCenterProviderProps extends CompositeBaseProps {
+  children: ReactNode;
+  defaultDuration?: number;
+  maxVisible?: number;
+  pauseOnHover?: boolean;
+  newestOnTop?: boolean;
+}
+
+export interface NotificationCenterClassNames {
+  viewport?: string;
+  card?: string;
+  title?: string;
+  message?: string;
+  closeButton?: string;
+  progress?: string;
+}
+
+export interface NotificationCenterProps extends CompositeBaseProps {
+  position?: NotificationCenterPosition;
+  showCloseButton?: boolean;
+  showProgress?: boolean;
+  compact?: boolean;
+  gap?: number;
+  classNames?: NotificationCenterClassNames;
+  styles?: Partial<Record<keyof NotificationCenterClassNames, CSSProperties>>;
+}
+
+export type NotificationInboxType = NotificationCenterType;
+
+export interface NotificationInboxAction {
+  id: string;
+  label: string;
+  intent?: "primary" | "neutral" | "danger";
+}
+
+export interface NotificationInboxItem {
+  id: string;
+  title: string;
+  message: string;
+  type?: NotificationInboxType;
+  status?: "unread" | "read" | "archived";
+  createdAt?: number;
+  source?: string;
+  tags?: string[];
+  actions?: NotificationInboxAction[];
+}
+
+export interface NotificationInboxClassNames {
+  root?: string;
+  toolbar?: string;
+  searchInput?: string;
+  list?: string;
+  item?: string;
+  itemTitle?: string;
+  itemMessage?: string;
+  actionButton?: string;
+}
+
+export interface NotificationInboxProps extends CompositeBaseProps {
+  notifications?: NotificationInboxItem[];
+  defaultNotifications?: NotificationInboxItem[];
+  onNotificationsChange?: (notifications: NotificationInboxItem[]) => void;
+  onAction?: (notification: NotificationInboxItem, action: NotificationInboxAction) => void;
+  title?: string;
+  subtitle?: string;
+  searchable?: boolean;
+  filterable?: boolean;
+  showUnreadOnlyToggle?: boolean;
+  maxItems?: number;
+  emptyStateTitle?: string;
+  emptyStateDescription?: string;
+  classNames?: NotificationInboxClassNames;
+  styles?: Partial<Record<keyof NotificationInboxClassNames, CSSProperties>>;
+}

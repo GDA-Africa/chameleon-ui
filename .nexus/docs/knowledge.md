@@ -218,6 +218,10 @@ Optional: Brief supporting detail (1-2 sentences max).
 
 ### [bug-fix] Typed template `styleConfig` must be verified for runtime usage
 
+### [gotcha] AnimatePresence exit requires async test assertions
+
+**2026-05-04** — Components using `AnimatePresence` can keep removed items in the DOM briefly during exit animations, so immediate `queryByText(...).not.toBeInTheDocument()` checks may fail. Prefer `waitFor` around disappearance assertions in RTL tests for filtered/dismissed composite items.
+
 **2026-05-04** — Several templates had valid `styleConfig` typings but still used `void styleConfig` internally, so overrides were silently ignored at runtime. For composite-first work, always verify both type acceptance and actual template-level pass-through behavior.
 
 ### [pattern] Auth forms should expose dual-mode state + slot styling APIs
@@ -235,3 +239,11 @@ Optional: Brief supporting detail (1-2 sentences max).
 ### [package] v1.0.9 lock drift introduced unpublished transitive patch versions
 
 **2026-05-04** — A broad lock/version bump drift set several transitive packages to non-existent `1.0.9` releases (`@types/estree`, `exsolve`, `string.prototype.trimstart`), causing CI `ERR_PNPM_FETCH_404` failures. Fix by pinning these via `pnpm.overrides` to `1.0.8` and regenerating the lock with `corepack pnpm install --lockfile-only` before rerunning frozen install.
+
+### [bug-fix] Composite docs can drift when manifests ignore legacy exported composites
+
+**2026-05-04** — `CompositeShowcase` is powered by `composites/ai-manifest.ts`, so legacy composites exported from `composites.tsx` (for example `MultiStepForm`, `ThemeChart`, and `CalendarWidget`) vanish from frontend docs unless they are explicitly mirrored in that manifest. Keep docs parity by syncing manifest entries with all public composite exports and adding a regression test for key visibility.
+
+### [pattern] App-wide notifications should use provider + fixed viewport
+
+**2026-05-04** — For Chameleon’s workshop shell, the most reliable global notification pattern is `NotificationCenterProvider` at app root plus a single fixed `NotificationCenter` viewport rendered once near the root. Feature code should only call `useNotificationCenter()` methods (`success/info/warning/error/notify`) so notifications remain globally consistent and theme-aware.

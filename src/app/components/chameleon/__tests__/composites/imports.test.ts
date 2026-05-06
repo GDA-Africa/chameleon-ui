@@ -47,6 +47,10 @@ describe("Composite Central Registry Imports", () => {
     expect(mod.ErrorBoundaryComposite).toBeDefined();
     expect(mod.ModalComposite).toBeDefined();
     expect(mod.ToastComposite).toBeDefined();
+    expect(mod.NotificationInbox).toBeDefined();
+    expect(mod.NotificationCenterProvider).toBeDefined();
+    expect(mod.NotificationCenter).toBeDefined();
+    expect(mod.useNotificationCenter).toBeDefined();
   });
 });
 

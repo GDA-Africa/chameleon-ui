@@ -3,7 +3,7 @@ import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { describe, it, expect, vi } from "vitest";
 import "@testing-library/jest-dom/vitest";
 import { ChameleonProvider } from "../context";
-import { LoginForm, SignUpForm } from "../auth-components";
+import { LoginForm, SignUpForm, type LoginFormValues } from "../auth-components";
 
 const Wrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => (
   <ChameleonProvider>{children}</ChameleonProvider>
@@ -29,6 +29,30 @@ describe("Auth Components", () => {
         email: "user@example.com",
         password: "Secret123!",
         rememberMe: true,
+      });
+    });
+  });
+
+  it("submits object payload when login handler has optional metadata arg", async () => {
+    const onSubmit = vi.fn(
+      async (_values: LoginFormValues, _meta?: unknown) => ({ success: true, message: "ok" }),
+    );
+
+    render(<LoginForm onSubmit={onSubmit} />, { wrapper: Wrapper });
+
+    fireEvent.change(screen.getByPlaceholderText("you@example.com"), {
+      target: { value: "meta@example.com" },
+    });
+    fireEvent.change(screen.getByPlaceholderText("••••••••"), {
+      target: { value: "MetaSecret123!" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: /sign in/i }));
+
+    await waitFor(() => {
+      expect(onSubmit).toHaveBeenCalledWith({
+        email: "meta@example.com",
+        password: "MetaSecret123!",
+        rememberMe: false,
       });
     });
   });

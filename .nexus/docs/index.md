@@ -181,6 +181,42 @@ last_updated: "2026-05-04"
 
 ## 🔄 Progress Log
 
+### 2026-05-04 — Notification architecture split (toast vs inbox) completed
+- ✅ Refactored `NotificationCenter` into a strict transient toast system (one-off popups) with app-wide provider/hook API, typed state (`loading/success/error`), position control, timeout behavior, and closable handling
+- ✅ Added a separate actionable `NotificationInbox` module in `src/app/components/chameleon/composites/NotificationInbox.tsx` with search, status/type filters, unread-only toggle, item actions, and read/archive state management
+- ✅ Synced frontend discoverability/docs:
+	- Added `NotificationInbox` export in `src/app/components/chameleon/composites/index.ts`
+	- Updated composite manifest entries in `src/app/components/chameleon/composites/ai-manifest.ts` to document the two distinct notification paradigms
+	- Updated App sidebar composite count in `src/app/App.tsx` (`36` → `37`)
+- ✅ Added/updated test coverage:
+	- New `src/app/components/chameleon/__tests__/composites/notification-inbox.test.tsx`
+	- Updated export coverage in `src/app/components/chameleon/__tests__/composites/imports.test.ts`
+- ✅ Validation gates passed: `npm run typecheck`, `npm run test`, `npm run lint`
+
+### 2026-05-04 — App-wide NotificationCenter composite shipped
+- ✅ Added `NotificationCenter` system in `src/app/components/chameleon/composites/NotificationCenter.tsx` with:
+	- Provider + hook API (`NotificationCenterProvider`, `useNotificationCenter`)
+	- Global viewport component (`NotificationCenter`) with position control and typed variants (`success`, `info`, `warning`, `error`)
+	- Rich notification payload support (`title`, `message`, `duration`, `persistent`, `action`, `read`)
+	- Bulk controls (`mark all read`, `clear all`) and dismiss controls
+- ✅ Added typed contracts to `src/app/components/chameleon/composites/types.ts` for all NotificationCenter entities/props
+- ✅ Wired app-wide display in `src/app/App.tsx` by mounting `NotificationCenterProvider` and `NotificationCenter`, and integrated real triggers from Workshop actions (AI briefing copy success/failure + demo bell)
+- ✅ Updated frontend docs surfaces:
+	- Composite docs manifest entry in `src/app/components/chameleon/composites/ai-manifest.ts`
+	- AI docs summary in `src/app/components/chameleon/ai-docs-page.tsx`
+	- Sidebar composite badge count in `src/app/App.tsx` (`35` → `36`)
+- ✅ Added tests:
+	- `src/app/components/chameleon/__tests__/composites/notification-center.test.tsx`
+	- Extended export coverage in `src/app/components/chameleon/__tests__/composites/imports.test.ts`
+- ✅ Validation gates passed: `npm run typecheck`, `npm run test`, `npm run lint`
+
+### 2026-05-04 — Composite docs parity + MultiStepForm API hardening
+- ✅ Upgraded `MultiStepForm` API in `composites.tsx` with controlled/uncontrolled data support (`value`, `initialData`, `onChange`), step control (`currentStep`, `initialStep`, `onStepChange`), optional per-step validation, custom nav labels, and empty-step fallback handling
+- ✅ Added 9 missing legacy composites to `src/app/components/chameleon/composites/ai-manifest.ts` (`ThemeChart`, `CommandPalette`, `KanbanBoard`, `Timeline`, `FileUploader`, `NotificationFeed`, `MultiStepForm`, `CalendarWidget`, `MediaGallery`) so they appear in frontend composite docs
+- ✅ Updated sidebar composites badge in `src/app/App.tsx` from `26` → `35` to match documented inventory
+- ✅ Added regression tests in `src/app/components/chameleon/__tests__/composites/multi-step-form.test.tsx` for new MultiStepForm behavior and docs visibility
+- ✅ Validation gates passed: `npm run typecheck`, `npm run test`, `npm run lint`
+
 ### 2026-04-04 — Project Created
 - ✅ Scaffolded with NEXUS CLI (React + Vite, cloud-first)
 - ✅ Generated project structure, configs, landing page, CI/CD

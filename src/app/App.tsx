@@ -25,6 +25,7 @@ import {
   Wrench,
   PanelLeftClose,
   PanelLeftOpen,
+  Bell,
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import {
@@ -46,6 +47,11 @@ import { CLIDocsPage } from "./components/chameleon/cli-docs-page";
 import { HooksUtilsDocsPage } from "./components/chameleon/hooks-utils-docs";
 import { CHAMELEON_AI_WRITEUP } from "./components/chameleon/ai-docs-page";
 import { CompositeShowcase } from "./components/chameleon/composite-showcase";
+import {
+  NotificationCenter,
+  NotificationCenterProvider,
+  useNotificationCenter,
+} from "./components/chameleon/composites/NotificationCenter";
 
 // ─── Page Components ──────────────────────────────────────────────────────────
 
@@ -88,6 +94,7 @@ function Workshop() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [themeSwitcherOpen, setThemeSwitcherOpen] = useState(false);
   const [copiedBriefing, setCopiedBriefing] = useState(false);
+  const { success, info, error } = useNotificationCenter();
   const themeSwitcherRef = useRef<HTMLDivElement>(null);
   const t = translations[lang];
 
@@ -130,7 +137,7 @@ function Workshop() {
   const sidebarLinks: { id: Page; label: string; icon: any; group: string; badge?: string }[] = [
     { id: "landing",        label: "Home",            icon: Monitor,       group: "Overview" },
     { id: "component-docs", label: "Component Docs",  icon: Code,          group: "Components", badge: "35+" },
-  { id: "composites",     label: "Composites",      icon: Puzzle,        group: "Components", badge: "26" },
+  { id: "composites",     label: "Composites",      icon: Puzzle,        group: "Components", badge: "37" },
     { id: "hooks-utils",    label: "Hooks & Utils",   icon: Wrench,        group: "Components" },
     { id: "templates",      label: "Templates",       icon: LayoutDashboard, group: "Components", badge: "14" },
     { id: "cli-docs",       label: "CLI Reference",   icon: Terminal,      group: "Documentation" },
@@ -527,10 +534,21 @@ function Workshop() {
             {/* Copy AI Briefing — with tooltip */}
             <div className="relative group hidden sm:block">
               <button
-                onClick={() => {
-                  navigator.clipboard.writeText(CHAMELEON_AI_WRITEUP);
-                  setCopiedBriefing(true);
-                  setTimeout(() => setCopiedBriefing(false), 2500);
+                onClick={async () => {
+                  try {
+                    await navigator.clipboard.writeText(CHAMELEON_AI_WRITEUP);
+                    setCopiedBriefing(true);
+                    success("AI briefing copied to clipboard", {
+                      title: "Briefing ready",
+                      duration: 2800,
+                    });
+                    setTimeout(() => setCopiedBriefing(false), 2500);
+                  } catch {
+                    error("Could not copy AI briefing. Please try again.", {
+                      title: "Copy failed",
+                      duration: 4200,
+                    });
+                  }
                 }}
                 aria-label="Copy AI briefing"
                 className={cn(
@@ -559,6 +577,20 @@ function Workshop() {
                 </p>
               </div>
             </div>
+
+            <Button
+              size="icon"
+              variant="ghost"
+              className="rounded-full w-9 h-9"
+              onClick={() =>
+                info("This is an app-wide notification from the global center.", {
+                  title: "Notification Center",
+                  duration: 3200,
+                })
+              }
+            >
+              <Bell className="w-4 h-4" />
+            </Button>
 
             <Button
               size="icon"
@@ -668,7 +700,10 @@ function Workshop() {
 export default function App() {
   return (
     <ChameleonProvider>
-      <Workshop />
+      <NotificationCenterProvider>
+        <Workshop />
+        <NotificationCenter position="top-right" />
+      </NotificationCenterProvider>
     </ChameleonProvider>
   );
 }
