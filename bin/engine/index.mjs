@@ -13,3 +13,5 @@ export { createContext, makeResult, addError, readConfig, writeConfig, readProje
 export { listCatalog, getInfo, listThemes, searchCatalog } from "./catalog.mjs";
 export { addComponents, selectBulk, removeComponent, scaffoldTemplate, setTheme, updateComponents, initProject } from "./scaffold.mjs";
 export { doctor, diffComponents } from "./health.mjs";
+export { validateSpec, scaffoldSpec, listRecipes, getRecipe, searchRecipes } from "./spec.mjs";
+export { RECIPES } from "./recipes.mjs";

@@ -15,6 +15,7 @@ import {
   createContext, listCatalog, getInfo, listThemes, readConfig,
   addComponents, selectBulk, removeComponent, scaffoldTemplate, setTheme, updateComponents, initProject,
   doctor, diffComponents,
+  validateSpec, scaffoldSpec, listRecipes, getRecipe,
 } from "./engine/index.mjs";
 
 const __filename = fs.realpathSync(fileURLToPath(import.meta.url));
@@ -78,14 +79,17 @@ function printHelp() {
   log(`  ${c.bold}${c.white}THEMING & TEMPLATES${c.reset}`);
   log(`    ${c.emerald}theme${c.reset} ${c.indigo}<name>${c.reset}           Set the active theme`);
   log(`    ${c.emerald}themes${c.reset}                  List all available Chameleon themes`);
-  log(`    ${c.emerald}template${c.reset} ${c.indigo}<name>${c.reset}        Scaffold a full-page template\n`);
+  log(`    ${c.emerald}template${c.reset} ${c.indigo}<name>${c.reset}        Scaffold a full-page template`);
+  log(`    ${c.emerald}recipes${c.reset}                 List composition recipes (stored ChameleonSpecs)`);
+  log(`    ${c.emerald}compose${c.reset} ${c.indigo}<spec|recipe>${c.reset}   Scaffold a page from a spec file or recipe name\n`);
   log(`  ${c.bold}${c.white}UTILS & DIAGNOSTICS${c.reset}`);
   log(`    ${c.emerald}info${c.reset} ${c.indigo}<component>${c.reset}       Show details, props, and deps for a component`);
   log(`    ${c.emerald}doctor${c.reset}                  Check project health and dependencies`);
   log(`    ${c.emerald}diff${c.reset}                    Compare local components to latest library source`);
   log(`    ${c.emerald}update${c.reset}                  Re-sync outdated scaffolded components`);
   log(`    ${c.emerald}config${c.reset}                  Show or manage chameleon.config.json`);
-  log(`    ${c.emerald}dev${c.reset}                     Launch the local component playground\n`);
+  log(`    ${c.emerald}dev${c.reset}                     Launch the local component playground`);
+  log(`    ${c.emerald}mcp${c.reset}                     Start the MCP server for AI agents (stdio)\n`);
   log(`  ${c.bold}${c.white}OPTIONS${c.reset}`);
   log(`    ${c.emerald}-h, --help${c.reset}              Show this help message`);
   log(`    ${c.emerald}-v, --version${c.reset}           Show the version number`);
@@ -340,6 +344,61 @@ if (cmd === "init") {
   if (result.data.updated.length === 0) { log(`\n${c.emerald}Everything is already up to date.${c.reset}\n`); }
   else { log(`\n${c.emerald}Update complete!${c.reset} ${c.gray}${result.data.updated.length} component(s) updated.${c.reset}\n`); }
 
+// ── recipes ───────────────────────────────────────────────────────────────────
+} else if (cmd === "recipes") {
+  const recipes = listRecipes();
+  if (JSON_MODE) emitJsonRaw({ ok: true, command: cmd, version: VERSION, data: { recipes }, warnings: [], errors: [] });
+  log(`\n${c.emerald}➜${c.reset} ${c.bold}${c.white}Chameleon Composition Recipes${c.reset} ${c.dim}(stored ChameleonSpecs)${c.reset}\n`);
+  for (const rcp of recipes) log(`  ${c.emerald}${rcp.name.padEnd(20)}${c.reset}${c.dim}${rcp.description}${c.reset}`);
+  log("");
+  info(`Use ${c.emerald}chameleon compose <recipe>${c.gray} to scaffold, or ${c.emerald}chameleon compose <recipe> --json${c.gray} for the spec.`);
+  log("");
+
+// ── compose ───────────────────────────────────────────────────────────────────
+} else if (cmd === "compose") {
+  if (!item) {
+    if (JSON_MODE) jsonDie("MISSING_ARGUMENT", "Missing spec. Usage: chameleon compose <spec-file.json | recipe-name> [--json]");
+    log(`\n${c.red}✖ Missing spec${c.reset}\n  ${c.gray}Usage: ${c.emerald}chameleon compose ${c.indigo}<spec-file.json | recipe-name>${c.reset}\n`);
+    log(`  ${c.gray}Recipes: ${listRecipes().map(r => r.name).join(", ")}${c.reset}\n`);
+    process.exit(1);
+  }
+  let spec;
+  const recipe = getRecipe(item);
+  if (recipe) {
+    spec = recipe.spec;
+  } else if (fs.existsSync(path.resolve(process.cwd(), item))) {
+    try { spec = JSON.parse(fs.readFileSync(path.resolve(process.cwd(), item), "utf8")); }
+    catch {
+      if (JSON_MODE) jsonDie("INVALID_SPEC", `Could not parse JSON from '${item}'.`);
+      log(`\n${c.red}✖ Could not parse JSON from '${item}'${c.reset}\n`); process.exit(1);
+    }
+  } else {
+    if (JSON_MODE) jsonDie("UNKNOWN_RECIPE", `'${item}' is neither a recipe nor a spec file.`, { recipes: listRecipes().map(r => r.name) });
+    log(`\n${c.red}✖ '${item}' is neither a recipe nor a spec file${c.reset}`);
+    info(`Recipes: ${listRecipes().map(r => r.name).join(", ")}`); log(""); process.exit(1);
+  }
+  if (flags.has("--validate-only")) {
+    const v = validateSpec(spec);
+    if (JSON_MODE) emitJsonRaw({ ok: v.valid, command: cmd, version: VERSION, data: v, warnings: [], errors: v.valid ? [] : [{ code: "INVALID_SPEC", message: `Spec failed validation with ${v.errors.length} error(s).`, validationErrors: v.errors }] });
+    log(`\n${c.emerald}➜${c.reset} ${c.indigo}Validating spec...${c.reset}\n`);
+    if (v.valid) { ok("Spec is valid"); log(""); process.exit(0); }
+    for (const e of v.errors) fail(`${e.path}: ${e.message}${e.suggestion ? ` (did you mean: ${e.suggestion}?)` : ""}`);
+    log(""); process.exit(1);
+  }
+  const result = scaffoldSpec(ctx, spec);
+  if (JSON_MODE) finishJson(result);
+  log(`\n${c.emerald}➜${c.reset} ${c.indigo}Composing ${c.white}${spec?.name ?? item}${c.indigo} from spec...${c.reset}\n`);
+  if (!result.ok) {
+    if (!renderCommonError(result)) {
+      const err = result.errors[0];
+      fail(err.message);
+      for (const e of err.validationErrors || []) fail(`${e.path}: ${e.message}${e.suggestion ? ` (did you mean: ${e.suggestion}?)` : ""}`);
+    }
+    log(""); process.exit(1);
+  }
+  renderEvents(result.events);
+  log(`\n${c.emerald}Success!${c.reset} ${c.gray}${result.nextSteps[0] || ""}${c.reset}\n`);
+
 // ── config ────────────────────────────────────────────────────────────────────
 } else if (cmd === "config") {
   const cfg = readConfig(ctx);
@@ -354,6 +413,11 @@ if (cmd === "init") {
   log("");
   info(`Edit ${c.emerald}chameleon.config.json${c.gray} directly, or use ${c.emerald}chameleon theme <name>${c.gray} to change the theme.`);
   log("");
+
+// ── mcp ───────────────────────────────────────────────────────────────────────
+} else if (cmd === "mcp") {
+  // Start the MCP server (F60). stdout must stay clean for JSON-RPC.
+  await import("./mcp-server.mjs");
 
 // ── dev ───────────────────────────────────────────────────────────────────────
 } else if (cmd === "dev") {

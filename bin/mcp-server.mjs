@@ -1,0 +1,187 @@
+#!/usr/bin/env node
+
+/**
+ * Chameleon MCP Server (F60) — Model Context Protocol server over the
+ * Chameleon Engine (bin/engine/). Zero runtime dependencies: a minimal
+ * JSON-RPC 2.0 / stdio implementation of the MCP surface agents need
+ * (initialize, tools/list, tools/call, ping).
+ *
+ * Launch:  chameleon mcp        (or: node bin/mcp-server.mjs)
+ * Register with Claude Code:
+ *   claude mcp add chameleon -- npx -y -p @chameleon-ui-lib/react chameleon mcp
+ *
+ * CRITICAL: stdout carries JSON-RPC only. Engine functions never print —
+ * anything else must go to stderr. (See knowledge.md, F59 pattern.)
+ */
+
+import fs from "node:fs";
+import path from "node:path";
+import process from "node:process";
+import readline from "node:readline";
+import { fileURLToPath } from "node:url";
+import {
+  createContext, listCatalog, getInfo, listThemes, searchCatalog,
+  addComponents, scaffoldTemplate, setTheme, initProject,
+  doctor, validateSpec, scaffoldSpec, listRecipes, getRecipe, searchRecipes,
+} from "./engine/index.mjs";
+
+const __dirname = path.dirname(fs.realpathSync(fileURLToPath(import.meta.url)));
+const LIB_ROOT  = path.resolve(__dirname, "..");
+const VERSION   = JSON.parse(fs.readFileSync(path.join(LIB_ROOT, "package.json"), "utf8")).version || "0.0.0";
+const PROTOCOL  = "2025-06-18";
+
+const ctx = () => createContext({ cwd: process.cwd(), libRoot: LIB_ROOT });
+
+// ── tool definitions ─────────────────────────────────────────────────────────
+const str = (description) => ({ type: "string", description });
+
+const TOOLS = [
+  {
+    name: "search_components",
+    description: "Search the Chameleon UI catalog (components, templates, recipes) by keywords, e.g. 'login form' or 'kpi dashboard'. Returns ranked matches. Use this first to resolve a UI request to a scaffoldable item.",
+    inputSchema: { type: "object", properties: { query: str("Keywords describing the UI you need") }, required: ["query"] },
+    handler: ({ query }) => {
+      const items = searchCatalog(query).slice(0, 10);
+      const recipes = searchRecipes(query).slice(0, 5);
+      return { matches: items, recipes, hint: recipes.length ? "A recipe is a stored page spec — scaffold it with compose_from_blocks(get_recipe(...).spec) or the compose tool." : undefined };
+    },
+  },
+  {
+    name: "list_catalog",
+    description: "List the full Chameleon UI catalog: 29 components (atoms/molecules/composites), 14 page templates, 5 themes.",
+    inputSchema: { type: "object", properties: {} },
+    handler: () => listCatalog(),
+  },
+  {
+    name: "get_component_info",
+    description: "Get details for one component or template: category, description, variants, dependencies, export name.",
+    inputSchema: { type: "object", properties: { name: str("Component or template name, e.g. 'button' or 'auth-flow'") }, required: ["name"] },
+    handler: ({ name }) => {
+      const data = getInfo(name);
+      if (!data) throw { code: "UNKNOWN_ITEM", message: `Unknown item: '${name}'. Use list_catalog or search_components.` };
+      return data;
+    },
+  },
+  {
+    name: "scaffold_component",
+    description: "Scaffold a component into the current project (requires chameleon.config.json — run init_project first if missing). Writes <dir>/<name>.tsx and refreshes the barrel index.",
+    inputSchema: { type: "object", properties: { name: str("Component name from the catalog") }, required: ["name"] },
+    handler: ({ name }) => run(addComponents(ctx(), [name])),
+  },
+  {
+    name: "scaffold_template",
+    description: "Scaffold a full-page template into the project's pages directory.",
+    inputSchema: { type: "object", properties: { name: str("Template name, e.g. 'auth-flow'") }, required: ["name"] },
+    handler: ({ name }) => run(scaffoldTemplate(ctx(), name)),
+  },
+  {
+    name: "list_recipes",
+    description: "List composition recipes — stored, validated ChameleonSpec page patterns (login-form, analytics-overview, team-members, ...).",
+    inputSchema: { type: "object", properties: {} },
+    handler: () => ({ recipes: listRecipes() }),
+  },
+  {
+    name: "get_recipe",
+    description: "Get a recipe's full ChameleonSpec. Pass the spec to compose_from_blocks (optionally after editing props) to scaffold it.",
+    inputSchema: { type: "object", properties: { name: str("Recipe name from list_recipes") }, required: ["name"] },
+    handler: ({ name }) => {
+      const rcp = getRecipe(name);
+      if (!rcp) throw { code: "UNKNOWN_RECIPE", message: `Unknown recipe: '${name}'.`, recipes: listRecipes().map((x) => x.name) };
+      return rcp;
+    },
+  },
+  {
+    name: "validate_spec",
+    description: "Validate a ChameleonSpec v1 without writing files. Returns pathed errors with suggestions — fix and re-validate before composing.",
+    inputSchema: { type: "object", properties: { spec: { type: "object", description: "ChameleonSpec v1 object" } }, required: ["spec"] },
+    handler: ({ spec }) => validateSpec(spec),
+  },
+  {
+    name: "compose_from_blocks",
+    description: "Scaffold a page from a ChameleonSpec v1: { version:1, name:'kebab-name', template:'...' OR blocks:[{component, props}], theme?, mode? }. Validates first; on success writes components + a composed page file.",
+    inputSchema: { type: "object", properties: { spec: { type: "object", description: "ChameleonSpec v1 object" } }, required: ["spec"] },
+    handler: ({ spec }) => run(scaffoldSpec(ctx(), spec)),
+  },
+  {
+    name: "init_project",
+    description: "Initialize Chameleon UI in the current project: writes chameleon.config.json, creates the components dir, wires Tailwind v4 into vite config.",
+    inputSchema: { type: "object", properties: {} },
+    handler: () => run(initProject(ctx(), { version: VERSION })),
+  },
+  {
+    name: "set_theme",
+    description: "Set the active theme in chameleon.config.json (material | simple | minimalist | glassy | liquid).",
+    inputSchema: { type: "object", properties: { theme: str("Theme name") }, required: ["theme"] },
+    handler: ({ theme }) => run(setTheme(ctx(), theme)),
+  },
+  {
+    name: "list_themes",
+    description: "List the 5 Chameleon design languages with descriptions.",
+    inputSchema: { type: "object", properties: {} },
+    handler: () => ({ themes: listThemes() }),
+  },
+  {
+    name: "validate_project",
+    description: "Run health checks on the current project (config, deps, Tailwind wiring, CSS imports, generated-code lint risks). Run this after scaffolding to self-verify.",
+    inputSchema: { type: "object", properties: {} },
+    handler: () => doctor(ctx()).data,
+  },
+];
+
+/** Convert an engine Result into a tool payload; throw on failure. */
+function run(result) {
+  if (!result.ok) throw { code: result.errors[0]?.code || "ERROR", message: result.errors[0]?.message || "Operation failed", errors: result.errors };
+  return {
+    ...result.data,
+    filesWritten: result.filesWritten,
+    ...(result.filesDeleted.length ? { filesDeleted: result.filesDeleted } : {}),
+    ...(result.nextSteps.length ? { nextSteps: result.nextSteps } : {}),
+    ...(result.events.some((e) => e.level === "warn") ? { warnings: result.events.filter((e) => e.level === "warn").map((e) => e.message) } : {}),
+  };
+}
+
+// ── JSON-RPC over stdio ──────────────────────────────────────────────────────
+const send = (msg) => process.stdout.write(JSON.stringify(msg) + "\n");
+const reply = (id, result) => send({ jsonrpc: "2.0", id, result });
+const replyErr = (id, code, message, data) => send({ jsonrpc: "2.0", id, error: { code, message, ...(data ? { data } : {}) } });
+
+function handle(msg) {
+  const { id, method, params } = msg;
+  if (method === "initialize") {
+    return reply(id, {
+      protocolVersion: (params && params.protocolVersion) || PROTOCOL,
+      capabilities: { tools: {} },
+      serverInfo: { name: "chameleon-ui", version: VERSION },
+      instructions: "Chameleon UI — multi-theme React component library as callable tools. Typical flow: search_components → scaffold_component/scaffold_template, or get_recipe → compose_from_blocks. Run init_project once per project, validate_project after scaffolding.",
+    });
+  }
+  if (method === "notifications/initialized" || method === "notifications/cancelled") return; // notifications: no response
+  if (method === "ping") return reply(id, {});
+  if (method === "tools/list") {
+    return reply(id, { tools: TOOLS.map(({ name, description, inputSchema }) => ({ name, description, inputSchema })) });
+  }
+  if (method === "tools/call") {
+    const tool = TOOLS.find((t) => t.name === params?.name);
+    if (!tool) return replyErr(id, -32602, `Unknown tool: ${params?.name}`);
+    try {
+      const out = tool.handler(params.arguments || {});
+      return reply(id, { content: [{ type: "text", text: JSON.stringify(out, null, 2) }], structuredContent: out, isError: false });
+    } catch (e) {
+      const payload = e && e.code ? e : { code: "INTERNAL", message: String(e?.message || e) };
+      return reply(id, { content: [{ type: "text", text: JSON.stringify(payload, null, 2) }], structuredContent: payload, isError: true });
+    }
+  }
+  if (id !== undefined) replyErr(id, -32601, `Method not found: ${method}`);
+}
+
+const rl = readline.createInterface({ input: process.stdin, terminal: false });
+rl.on("line", (line) => {
+  const trimmed = line.trim();
+  if (!trimmed) return;
+  let msg;
+  try { msg = JSON.parse(trimmed); } catch { return replyErr(null, -32700, "Parse error"); }
+  try { handle(msg); } catch (e) { if (msg.id !== undefined) replyErr(msg.id, -32603, String(e?.message || e)); }
+});
+rl.on("close", () => process.exit(0));
+
+process.stderr.write(`chameleon-ui MCP server v${VERSION} ready (stdio)\n`);

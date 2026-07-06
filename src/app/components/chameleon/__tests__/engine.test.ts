@@ -11,6 +11,7 @@ import {
   createContext, listCatalog, getInfo, listThemes, searchCatalog,
   addComponents, selectBulk, removeComponent, scaffoldTemplate, setTheme, updateComponents, initProject,
   doctor, diffComponents, readConfig,
+  validateSpec, scaffoldSpec, listRecipes, getRecipe, searchRecipes, RECIPES,
   // eslint-disable-next-line import/no-relative-packages
 } from "../../../../../bin/engine/index.mjs";
 
@@ -166,6 +167,70 @@ describe("health", () => {
     const r = diffComponents(ctx);
     expect(r.data.outOfSync).toBe(1);
     expect(r.data.components.find((x: { name: string }) => x.name === "badge")?.status).toBe("out-of-sync");
+  });
+});
+
+describe("ChameleonSpec v1 (F61)", () => {
+  it("validates a good template spec and a good blocks spec", () => {
+    expect(validateSpec({ version: 1, name: "login", template: "auth" }).valid).toBe(true);
+    expect(validateSpec({ version: 1, name: "kpis", blocks: [{ component: "stat-card", props: { label: "A", value: "1" } }] }).valid).toBe(true);
+  });
+
+  it("rejects structural problems with pathed, suggestive errors", () => {
+    const v = validateSpec({ version: 1, name: "bad", blocks: [{ component: "buttn" }], theme: "neon" });
+    expect(v.valid).toBe(false);
+    const compErr = v.errors.find((e: { path: string }) => e.path === "$.blocks[0].component");
+    expect(compErr?.suggestion).toBe("button");
+    expect(v.errors.some((e: { path: string }) => e.path === "$.theme")).toBe(true);
+    expect(validateSpec({ version: 1, name: "x" }).valid).toBe(false); // neither template nor blocks
+    expect(validateSpec({ version: 1, name: "x", template: "auth", blocks: [] }).valid).toBe(false); // both
+    expect(validateSpec({ version: 2, name: "x", template: "auth" }).valid).toBe(false);
+    expect(validateSpec({ version: 1, name: "Not Kebab", template: "auth" }).valid).toBe(false);
+  });
+
+  it("validates variants against the registry", () => {
+    const v = validateSpec({ version: 1, name: "x", blocks: [{ component: "stat-card", props: { variant: "huge" } }] });
+    expect(v.errors[0].path).toBe("$.blocks[0].props.variant");
+  });
+
+  it("scaffolds a blocks spec: components + barrel + composed page", () => {
+    initProj();
+    const r = scaffoldSpec(ctx, getRecipe("team-members")!.spec);
+    expect(r.ok).toBe(true);
+    expect(r.data.export).toBe("TeamMembersPage");
+    const page = fs.readFileSync(path.join(cwd, "src/pages/team-members.tsx"), "utf8");
+    expect(page).toContain('import { StatCard, DataTable } from "../components/ui"');
+    expect(page).toContain("<StatCard label=");
+    expect(fs.existsSync(path.join(cwd, "src/components/ui/data-table.tsx"))).toBe(true);
+  });
+
+  it("scaffolds a template spec under the spec name", () => {
+    initProj();
+    const r = scaffoldSpec(ctx, { version: 1, name: "signin", template: "auth" });
+    expect(r.ok).toBe(true);
+    expect(fs.existsSync(path.join(cwd, "src/pages/signin.tsx"))).toBe(true);
+  });
+
+  it("refuses invalid specs with INVALID_SPEC and detailed errors", () => {
+    initProj();
+    const r = scaffoldSpec(ctx, { version: 1, name: "bad", blocks: [{ component: "nope" }] });
+    expect(r.ok).toBe(false);
+    expect(r.errors[0].code).toBe("INVALID_SPEC");
+    expect(r.errors[0].validationErrors.length).toBeGreaterThan(0);
+  });
+
+  it("every stored recipe spec validates", () => {
+    for (const rcp of RECIPES) {
+      const v = validateSpec(rcp.spec);
+      expect(v.errors).toEqual([]);
+      expect(v.valid).toBe(true);
+    }
+    expect(listRecipes().length).toBeGreaterThanOrEqual(10);
+  });
+
+  it("recipe search finds patterns by keyword", () => {
+    expect(searchRecipes("sign in")[0].name).toBe("login-form");
+    expect(searchRecipes("kpi metrics")[0].name).toBe("analytics-overview");
   });
 });
 
