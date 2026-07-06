@@ -1,0 +1,59 @@
+# Phase 11 — Agents Can Call Chameleon (v1.2.0)
+
+**Features:** F58, F59, F60, F61, F64 · **Roadmap:** `NEXUS_ROADMAP_v2.0.md`
+**Detail reference:** `NEXUS_PLAN_v1.2.0.md` (F58–F60 unchanged; F61 revised here; F64 added)
+
+## Build order
+
+### F58 — `--json` output mode (start here)
+Read commands (`list`, `info`, `themes`, `config`, `doctor`, `diff`) print a stable JSON
+envelope: `{ ok, command, version, data, warnings[] }` — no ANSI, no spinners, exit codes
+preserved. Write commands (`add`, `remove`, `template`, `update`, `theme`, `init`) return
+`{ ok, command, version, filesWritten[], warnings[], nextSteps[] }`. Envelope documented in
+`docs/CLI_JSON.md`. Independently useful for scripting; required by F60.
+
+### F59 — Shared engine (`lib-src/engine/`)
+Extract from `bin/chameleon.js`: `catalog.ts` (manifest queries: search/info/list),
+`scaffold.ts` (add/remove/update/template FS ops), `health.ts` (doctor/diff). CLI commands
+become thin wrappers; behavior unchanged. Mirrored into the published tarball like other
+`lib-src/` sources.
+
+### F61 — ChameleonSpec v1 (revised: spec format is the keystone)
+- `lib-src/engine/spec/schema.ts` — zod schema **generated from `ai-manifest.ts` prop
+  data**; scope: `{ version: 1, template?, blocks: [{ component, props, slots? }], theme,
+  mode, brand? }`. Flat composition only — no arbitrary nesting, no raw JSX in v1.
+- `validateSpec(spec)` → structured, agent-actionable errors ("Button has no prop 'colour',
+  did you mean 'variant'?").
+- `renderSpec(spec)` — runtime React component resolving names via composite registry
+  (exported from `@chameleon-ui-lib/react`).
+- `scaffoldSpec(spec)` — codegen emitting strict-TS-clean JSX files (engine).
+- Recipes become **stored specs**: ~10 named patterns (login-form, signup-with-2fa,
+  pricing-page, settings-panel, dashboard-shell, team-members, landing-hero, data-table-page,
+  notification-center, onboarding-steps) in a `recipes` section of the manifest.
+- CI check: every exported component has a manifest entry (fail build otherwise).
+
+### F60 — `@chameleon-ui-lib/mcp` (`packages/mcp`)
+`@modelcontextprotocol/sdk`, stdio, pinned version, one adapter file. Launched via
+`npx @chameleon-ui-lib/mcp` or `chameleon mcp`. Tools (all over engine):
+`search_components(query)`, `get_component_info(name)`, `list_catalog(kind?)`,
+`scaffold_component(name, path?)`, `scaffold_template(name, path?)`,
+`get_recipe(pattern)` → returns a spec, `compose_from_blocks(spec)` → validate + scaffold,
+`set_theme` / `list_themes`, `validate_project()`. README covers Claude Code / Cursor /
+generic registration. **`compose_from_blocks` accepts/returns ChameleonSpec — do not ship
+an ad-hoc JSON shape.**
+
+### F64 — `chameleon agents init`
+Repoint the existing ruleset generator (`.nexus/ai/instructions.md` → `CLAUDE.md`/
+`.cursorrules`/`AGENTS.md`) at consumer projects: condensed template with catalog summary,
+import conventions, `chameleon list --json` discovery, MCP registration snippet. Writes
+between `<!-- chameleon:start/end -->` markers (never clobbers user content);
+`chameleon update --agents` refreshes the block.
+
+## Success criteria
+1. Fresh Vite app + registered MCP server: "add a login form using chameleon" → themed
+   LoginCard, zero manual edits (search → scaffold → validate_project).
+2. "Build a team-members settings page" (no matching template) succeeds via
+   `get_recipe`/`compose_from_blocks` spec path.
+3. `verify:consumer` extended: spawn MCP server, call `list_catalog`, assert envelope;
+   plus `--json` snapshot tests.
+4. Existing CLI behavior unchanged; `npx tsc --noEmit && yarn test && yarn lint` green.

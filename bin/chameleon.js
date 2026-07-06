@@ -22,6 +22,14 @@ const c = {
   red:     "\x1b[38;2;248;113;113m",
 };
 
+// ── F58: machine-readable output mode (--json) ──────────────────────────────
+// Envelope: { ok, command, version, data, warnings[], errors[], filesWritten[], nextSteps[] }
+// Documented in docs/CLI_JSON.md. Foundation for the MCP server (F60).
+const JSON_MODE  = process.argv.slice(2).includes("--json");
+// eslint-disable-next-line no-control-regex
+const stripAnsi  = (s) => String(s).replace(/\x1b\[[0-9;]*m/g, "");
+const jsonOut    = { checks: [], warnings: [], errors: [], filesWritten: [], filesDeleted: [], nextSteps: [] };
+
 const LIB_ROOT   = path.resolve(__dirname, "..");
 const _pkgJson   = JSON.parse(fs.readFileSync(path.join(LIB_ROOT, "package.json"), "utf8"));
 const VERSION    = _pkgJson.version || "0.0.0";
@@ -83,12 +91,21 @@ const TEMPLATES = {
 
 const VALID_THEMES = ["material", "simple", "minimalist", "glassy", "liquid"];
 
-// Helpers
-const log  = (msg) => console.log(msg);
-const ok   = (msg) => log(`  ${c.emerald}✔${c.reset} ${c.white}${msg}${c.reset}`);
-const warn = (msg) => log(`  ${c.yellow}⚠${c.reset} ${c.white}${msg}${c.reset}`);
-const fail = (msg) => log(`  ${c.red}✖${c.reset} ${c.white}${msg}${c.reset}`);
-const info = (msg) => log(`  ${c.gray}${msg}${c.reset}`);
+// Helpers (JSON mode: silence human output, collect structured results instead)
+const log  = (msg) => { if (!JSON_MODE) console.log(msg); };
+const ok   = (msg) => {
+  if (JSON_MODE) { jsonOut.checks.push({ level: "ok", message: stripAnsi(msg) }); return; }
+  log(`  ${c.emerald}✔${c.reset} ${c.white}${msg}${c.reset}`);
+};
+const warn = (msg) => {
+  if (JSON_MODE) { jsonOut.checks.push({ level: "warn", message: stripAnsi(msg) }); jsonOut.warnings.push(stripAnsi(msg)); return; }
+  log(`  ${c.yellow}⚠${c.reset} ${c.white}${msg}${c.reset}`);
+};
+const fail = (msg) => {
+  if (JSON_MODE) { jsonOut.checks.push({ level: "error", message: stripAnsi(msg) }); jsonOut.errors.push({ code: "ERROR", message: stripAnsi(msg) }); return; }
+  log(`  ${c.red}✖${c.reset} ${c.white}${msg}${c.reset}`);
+};
+const info = (msg) => { if (JSON_MODE) return; log(`  ${c.gray}${msg}${c.reset}`); };
 const toPascalCase = (str) => str.split("-").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join("");
 
 function readConfig() {
@@ -97,6 +114,7 @@ function readConfig() {
 }
 function writeConfig(cfg) {
   fs.writeFileSync(CONFIG_FILE, JSON.stringify(cfg, null, 2) + "\n", "utf8");
+  if (JSON_MODE) jsonOut.filesWritten.push("chameleon.config.json");
 }
 function readProjectPkg() {
   const p = path.join(process.cwd(), "package.json");
@@ -144,8 +162,9 @@ function autoConfigureTailwindVite() {
     }
     const newPlugins = currentPlugins ? `${currentPlugins}tailwindcss()` : `tailwindcss()`;
     content = content.replace(/plugins:\s*\[.*?\]/s, `plugins: [${newPlugins}]`);
-    
+
     fs.writeFileSync(confPath, content, "utf8");
+    if (JSON_MODE) jsonOut.filesWritten.push(viteConf);
     ok(`Successfully updated ${viteConf}`);
     return true;
   } else {
@@ -161,6 +180,7 @@ function checkCssTailwindImport(configCssPath) {
     if (!content.includes("@import 'tailwindcss'") && !content.includes('@import "tailwindcss"')) {
       content = `@import "tailwindcss";\n` + content;
       fs.writeFileSync(cssPath, content, "utf8");
+      if (JSON_MODE) jsonOut.filesWritten.push(configCssPath || "src/index.css");
       ok(`Injected @import "tailwindcss" into ${configCssPath}`);
     } else {
       ok(`Tailwind directives found in ${configCssPath}`);
@@ -193,7 +213,8 @@ function printHelp() {
   log(`    ${c.emerald}dev${c.reset}                     Launch the local component playground\n`);
   log(`  ${c.bold}${c.white}OPTIONS${c.reset}`);
   log(`    ${c.emerald}-h, --help${c.reset}              Show this help message`);
-  log(`    ${c.emerald}-v, --version${c.reset}           Show the version number\n`);
+  log(`    ${c.emerald}-v, --version${c.reset}           Show the version number`);
+  log(`    ${c.emerald}--json${c.reset}                  Machine-readable JSON output (for scripts & AI agents)\n`);
   log(`  ${c.bold}${c.white}EXAMPLES${c.reset}`);
   log(`    $ ${c.emerald}chameleon init${c.reset}`);
   log(`    $ ${c.emerald}chameleon add button${c.reset}`);
@@ -208,14 +229,30 @@ function printHelp() {
 const args = process.argv.slice(2);
 if (args.length === 0 || args[0] === "-h" || args[0] === "--help") { printHelp(); process.exit(0); }
 if (args[0] === "-v" || args[0] === "--version") {
+  if (JSON_MODE) { process.stdout.write(JSON.stringify({ ok: true, command: "version", version: VERSION, data: { cli: VERSION, library: VERSION } }, null, 2) + "\n"); process.exit(0); }
   log(`${c.emerald}Chameleon CLI${c.reset}     v${VERSION}`);
   log(`${c.indigo}Chameleon UI lib${c.reset}   v${VERSION}`);
   process.exit(0);
 }
 
 const cmd   = args[0];
-const item  = args[1];
+const item  = args.slice(1).find(a => !a.startsWith("--"));
 const flags = new Set(args.slice(1).filter(a => a.startsWith("--")));
+
+// ── F58: JSON envelope emitters ──────────────────────────────────────────────
+function emitJson(data = {}, okFlag = jsonOut.errors.length === 0) {
+  const envelope = { ok: okFlag, command: cmd, version: VERSION, data, warnings: jsonOut.warnings, errors: jsonOut.errors };
+  if (jsonOut.filesWritten.length) envelope.filesWritten = jsonOut.filesWritten;
+  if (jsonOut.filesDeleted.length) envelope.filesDeleted = jsonOut.filesDeleted;
+  if (jsonOut.nextSteps.length)    envelope.nextSteps    = jsonOut.nextSteps;
+  process.stdout.write(JSON.stringify(envelope, null, 2) + "\n");
+  process.exit(okFlag ? 0 : 1);
+}
+function jsonDie(code, message, extra = {}) {
+  jsonOut.errors.push({ code, message, ...extra });
+  emitJson({}, false);
+}
+const trackWrite = (relPath) => { if (JSON_MODE) jsonOut.filesWritten.push(relPath); };
 
 // ── helper: scaffold a single component and return export info ─────────────
 function scaffoldComponent(key, cfg, opts = {}) {
@@ -231,6 +268,7 @@ function scaffoldComponent(key, cfg, opts = {}) {
   const foundDeps = localDeps.filter(dep => content.includes(`from "./${dep}"`) || content.includes(`from './${dep}'`));
   content = content.replace(/from\s+['"]\.\/.*?['"]/g, 'from "@chameleon-ui-lib/react"');
   fs.writeFileSync(outFile, content, "utf8");
+  trackWrite(`${cfg.dir}/${key}.tsx`);
   if (!opts.silent) {
     ok(`${cfg.dir}/${key}.tsx created`);
     if (meta.deps.length > 0) info(`External deps: ${meta.deps.join(", ")}`);
@@ -251,6 +289,7 @@ function regenerateBarrel(cfg) {
   });
   const barrel = `// Auto-generated by Chameleon UI CLI — do not edit manually\n${lines.join("\n")}\n`;
   fs.writeFileSync(path.join(outDir, "index.ts"), barrel, "utf8");
+  trackWrite(`${cfg.dir}/index.ts`);
   ok(`${cfg.dir}/index.ts updated (barrel export for ${files.length} component(s))`);
 }
 
@@ -258,7 +297,10 @@ function regenerateBarrel(cfg) {
 if (cmd === "init") {
   log(`\n${c.emerald}➜${c.reset} ${c.indigo}Initializing Chameleon UI in your project...${c.reset}\n`);
   const pkg = readProjectPkg();
-  if (!pkg) { fail("No package.json found. Run this inside your project root."); process.exit(1); }
+  if (!pkg) {
+    if (JSON_MODE) jsonDie("NO_PACKAGE_JSON", "No package.json found. Run this inside your project root.");
+    fail("No package.json found. Run this inside your project root."); process.exit(1);
+  }
   ok("package.json found");
 
   const allDeps = { ...pkg.dependencies, ...pkg.devDependencies };
@@ -295,8 +337,28 @@ if (cmd === "init") {
   log(`  ${c.gray}5.${c.reset} Health check:   ${c.emerald}chameleon doctor${c.reset}`);
   log(`  ${c.gray}6.${c.reset} See all:        ${c.emerald}chameleon list${c.reset}\n`);
 
+  if (JSON_MODE) {
+    jsonOut.nextSteps.push(
+      'Ensure CSS entry starts with: @import "tailwindcss"; @import "@chameleon-ui-lib/react/styles";',
+      'Wrap your app in <ChameleonProvider initialTheme="simple" initialMode="light">',
+      "Run: chameleon add <component> / chameleon template <name> / chameleon doctor",
+    );
+    emitJson({ config: readConfig() });
+  }
+
 // ── list ──────────────────────────────────────────────────────────────────────
 } else if (cmd === "list") {
+  if (JSON_MODE) {
+    emitJson({
+      components: Object.entries(COMPONENTS).map(([name, m]) => ({
+        name, category: m.category, description: m.desc, variants: m.variants, dependencies: m.deps, sourceFile: m.file,
+      })),
+      templates: Object.entries(TEMPLATES).map(([name, m]) => ({
+        name, export: m.export, description: m.desc, sourceFile: m.file,
+      })),
+      themes: VALID_THEMES,
+    });
+  }
   log(`\n${c.emerald}➜${c.reset} ${c.bold}${c.white}Chameleon UI Component Registry${c.reset}\n`);
   for (const group of ["Atom", "Molecule", "Composite"]) {
     const members = Object.entries(COMPONENTS).filter(([, v]) => v.category === group);
@@ -313,7 +375,10 @@ if (cmd === "init") {
 // ── add ───────────────────────────────────────────────────────────────────────
 } else if (cmd === "add") {
   const cfg = readConfig();
-  if (!cfg) { log(`\n${c.yellow}⚠ Run ${c.emerald}chameleon init${c.yellow} first.${c.reset}\n`); process.exit(1); }
+  if (!cfg) {
+    if (JSON_MODE) jsonDie("NOT_INITIALIZED", "No chameleon.config.json found. Run `chameleon init` first.");
+    log(`\n${c.yellow}⚠ Run ${c.emerald}chameleon init${c.yellow} first.${c.reset}\n`); process.exit(1);
+  }
 
   // ── bulk flags ──────────────────────────────────────────────────────────
   const bulkMap = {
@@ -333,6 +398,10 @@ if (cmd === "init") {
       if (result) { ok(`${cfg.dir}/${key}.tsx`); added.push(result); }
     }
     regenerateBarrel(cfg);
+    if (JSON_MODE) {
+      jsonOut.nextSteps.push(`Import via: import { ${added.map(r => r.pascalName).join(", ")} } from '${cfg.dir}'`);
+      emitJson({ added: added.map(r => ({ name: r.key, export: r.pascalName, file: `${cfg.dir}/${r.file}` })) });
+    }
     log(`\n${c.emerald}Done!${c.reset} ${c.gray}${added.length} component(s) scaffolded.${c.reset}`);
     log(`${c.gray}Import all via:  ${c.cyan}import { ${added.slice(0,3).map(r => r.pascalName).join(", ")}${added.length > 3 ? ", ..." : ""} } from '${cfg.dir}'${c.reset}\n`);
     process.exit(0);
@@ -340,44 +409,74 @@ if (cmd === "init") {
 
   // ── single component ────────────────────────────────────────────────────
   if (!item || item.startsWith("--")) {
+    if (JSON_MODE) jsonDie("MISSING_ARGUMENT", "Missing component name. Usage: chameleon add <component> [--json]");
     log(`\n${c.red}✖ Missing component name${c.reset}\n  ${c.gray}Usage: ${c.emerald}chameleon add ${c.indigo}<component>${c.reset}`);
     log(`  ${c.gray}       ${c.emerald}chameleon add ${c.indigo}--all-atoms${c.gray}  (or --all-molecules, --all-composites, --all)${c.reset}\n`);
     process.exit(1);
   }
   const key  = item.toLowerCase();
   const meta = COMPONENTS[key];
-  if (!meta) { log(`\n${c.red}✖ Unknown component: '${item}'${c.reset}`); info(`Run ${c.emerald}chameleon list${c.gray} to see all available components.`); log(""); process.exit(1); }
+  if (!meta) {
+    if (JSON_MODE) jsonDie("UNKNOWN_COMPONENT", `Unknown component: '${item}'. Run \`chameleon list --json\` for the catalog.`);
+    log(`\n${c.red}✖ Unknown component: '${item}'${c.reset}`); info(`Run ${c.emerald}chameleon list${c.gray} to see all available components.`); log(""); process.exit(1);
+  }
   log(`\n${c.emerald}➜${c.reset} ${c.indigo}Adding ${c.white}${key}${c.indigo} to your project...${c.reset}\n`);
   const result = scaffoldComponent(key, cfg);
   if (result) {
     regenerateBarrel(cfg);
     log(`\n${c.emerald}Ready!${c.reset} ${c.gray}Import: ${c.cyan}import { ${result.pascalName} } from '${cfg.dir}'${c.reset}\n`);
   }
+  if (JSON_MODE) {
+    if (result) jsonOut.nextSteps.push(`Import via: import { ${result.pascalName} } from '${cfg.dir}'`);
+    emitJson(result ? { added: [{ name: result.key, export: result.pascalName, file: `${cfg.dir}/${result.file}`, externalDependencies: meta.deps }] } : {});
+  }
 
 // ── remove ────────────────────────────────────────────────────────────────────
 } else if (cmd === "remove") {
-  if (!item) { log(`\n${c.red}✖ Missing component name${c.reset}\n  ${c.gray}Usage: ${c.emerald}chameleon remove ${c.indigo}<component>${c.reset}\n`); process.exit(1); }
+  if (!item) {
+    if (JSON_MODE) jsonDie("MISSING_ARGUMENT", "Missing component name. Usage: chameleon remove <component> [--json]");
+    log(`\n${c.red}✖ Missing component name${c.reset}\n  ${c.gray}Usage: ${c.emerald}chameleon remove ${c.indigo}<component>${c.reset}\n`); process.exit(1);
+  }
   const cfg = readConfig();
-  if (!cfg) { log(`\n${c.yellow}⚠ Run ${c.emerald}chameleon init${c.yellow} first.${c.reset}\n`); process.exit(1); }
+  if (!cfg) {
+    if (JSON_MODE) jsonDie("NOT_INITIALIZED", "No chameleon.config.json found. Run `chameleon init` first.");
+    log(`\n${c.yellow}⚠ Run ${c.emerald}chameleon init${c.yellow} first.${c.reset}\n`); process.exit(1);
+  }
   const key     = item.toLowerCase();
   const outFile = path.join(process.cwd(), cfg.dir, `${key}.tsx`);
   log(`\n${c.emerald}➜${c.reset} ${c.red}Removing ${c.white}${key}${c.red}...${c.reset}\n`);
-  if (!fs.existsSync(outFile)) { warn(`${cfg.dir}/${key}.tsx not found — nothing to remove.`); log(""); process.exit(0); }
+  if (!fs.existsSync(outFile)) {
+    warn(`${cfg.dir}/${key}.tsx not found — nothing to remove.`);
+    if (JSON_MODE) emitJson({ removed: null });
+    log(""); process.exit(0);
+  }
   fs.unlinkSync(outFile);
+  if (JSON_MODE) jsonOut.filesDeleted.push(`${cfg.dir}/${key}.tsx`);
   ok(`${cfg.dir}/${key}.tsx deleted`);
   log(`\n${c.emerald}Done.${c.reset} ${c.gray}Component removed cleanly.${c.reset}\n`);
+  if (JSON_MODE) emitJson({ removed: key });
 
 // ── theme ─────────────────────────────────────────────────────────────────────
 } else if (cmd === "theme") {
-  if (!item) { log(`\n${c.red}✖ Missing theme name${c.reset}\n  ${c.gray}Usage: ${c.emerald}chameleon theme ${c.indigo}<name>${c.reset}\n`); process.exit(1); }
-  if (!VALID_THEMES.includes(item)) { log(`\n${c.red}✖ Invalid theme: '${item}'${c.reset}`); info(`Valid: ${VALID_THEMES.join(", ")}`); log(""); process.exit(1); }
+  if (!item) {
+    if (JSON_MODE) jsonDie("MISSING_ARGUMENT", "Missing theme name. Usage: chameleon theme <name> [--json]", { validThemes: VALID_THEMES });
+    log(`\n${c.red}✖ Missing theme name${c.reset}\n  ${c.gray}Usage: ${c.emerald}chameleon theme ${c.indigo}<name>${c.reset}\n`); process.exit(1);
+  }
+  if (!VALID_THEMES.includes(item)) {
+    if (JSON_MODE) jsonDie("INVALID_THEME", `Invalid theme: '${item}'.`, { validThemes: VALID_THEMES });
+    log(`\n${c.red}✖ Invalid theme: '${item}'${c.reset}`); info(`Valid: ${VALID_THEMES.join(", ")}`); log(""); process.exit(1);
+  }
   const cfg = readConfig();
-  if (!cfg) { log(`\n${c.yellow}⚠ Run ${c.emerald}chameleon init${c.yellow} first.${c.reset}\n`); process.exit(1); }
+  if (!cfg) {
+    if (JSON_MODE) jsonDie("NOT_INITIALIZED", "No chameleon.config.json found. Run `chameleon init` first.");
+    log(`\n${c.yellow}⚠ Run ${c.emerald}chameleon init${c.yellow} first.${c.reset}\n`); process.exit(1);
+  }
   log(`\n${c.emerald}➜${c.reset} ${c.indigo}Setting theme to ${c.bold}${c.white}${item}${c.reset}...\n`);
   cfg.theme = item;
   writeConfig(cfg);
   ok(`chameleon.config.json updated → theme: ${item}`);
   log(`\n${c.emerald}Success!${c.reset} ${c.gray}Now using the ${c.cyan}${item}${c.gray} theme.${c.reset}\n`);
+  if (JSON_MODE) emitJson({ theme: item });
 
 // ── themes ────────────────────────────────────────────────────────────────────
 } else if (cmd === "themes") {
@@ -389,6 +488,7 @@ if (cmd === "init") {
     glassy:     "Translucent frosted glass with backdrop blur — modern iOS/macOS feel.",
     liquid:     "Organic morphing gradients and fluid animations.",
   };
+  if (JSON_MODE) emitJson({ themes: Object.entries(descs).map(([name, description]) => ({ name, description })) });
   for (const [name, desc] of Object.entries(descs)) log(`  ${c.cyan}${name.padEnd(14)}${c.reset}${c.dim}${desc}${c.reset}`);
   log("");
   info(`Use ${c.emerald}chameleon theme <name>${c.gray} to apply.`);
@@ -397,40 +497,71 @@ if (cmd === "init") {
 // ── template ──────────────────────────────────────────────────────────────────
 } else if (cmd === "template") {
   if (!item) {
+    if (JSON_MODE) jsonDie("MISSING_ARGUMENT", "Missing template name. Usage: chameleon template <name> [--json]", { available: Object.keys(TEMPLATES) });
     log(`\n${c.red}✖ Missing template name${c.reset}\n  ${c.gray}Usage: ${c.emerald}chameleon template ${c.indigo}<name>${c.reset}\n`);
     log(`  ${c.gray}Available: ${Object.keys(TEMPLATES).join(", ")}${c.reset}\n`);
     process.exit(1);
   }
   const key  = item.toLowerCase();
   const meta = TEMPLATES[key];
-  if (!meta) { log(`\n${c.red}✖ Unknown template: '${item}'${c.reset}`); info(`Available: ${Object.keys(TEMPLATES).join(", ")}`); log(""); process.exit(1); }
+  if (!meta) {
+    if (JSON_MODE) jsonDie("UNKNOWN_TEMPLATE", `Unknown template: '${item}'.`, { available: Object.keys(TEMPLATES) });
+    log(`\n${c.red}✖ Unknown template: '${item}'${c.reset}`); info(`Available: ${Object.keys(TEMPLATES).join(", ")}`); log(""); process.exit(1);
+  }
   const cfg = readConfig();
-  if (!cfg) { log(`\n${c.yellow}⚠ Run ${c.emerald}chameleon init${c.yellow} first.${c.reset}\n`); process.exit(1); }
+  if (!cfg) {
+    if (JSON_MODE) jsonDie("NOT_INITIALIZED", "No chameleon.config.json found. Run `chameleon init` first.");
+    log(`\n${c.yellow}⚠ Run ${c.emerald}chameleon init${c.yellow} first.${c.reset}\n`); process.exit(1);
+  }
   log(`\n${c.emerald}➜${c.reset} ${c.indigo}Scaffolding template: ${c.white}${key}${c.reset}...\n`);
   const srcFile = path.join(LIB_SRC, meta.file);
   const outDir  = path.join(process.cwd(), cfg.pagesDir || "src/pages");
   const outFile = path.join(outDir, `${key}.tsx`);
-  if (!fs.existsSync(srcFile)) { fail(`Source file not found: ${meta.file}`); process.exit(1); }
+  if (!fs.existsSync(srcFile)) {
+    if (JSON_MODE) jsonDie("SOURCE_NOT_FOUND", `Source file not found: ${meta.file}`);
+    fail(`Source file not found: ${meta.file}`); process.exit(1);
+  }
   fs.mkdirSync(outDir, { recursive: true });
-  
+
   let content = fs.readFileSync(srcFile, "utf8");
   const localDeps = ["context", "utils", "animations", "atoms", "molecules", "composites", "auth-components"];
   const foundDeps = localDeps.filter(dep => content.includes(`from "./${dep}"`) || content.includes(`from './${dep}'`));
-  
+
   content = content.replace(/from\s+['"]\.\/.*?['"]/g, 'from "@chameleon-ui-lib/react"');
   fs.writeFileSync(outFile, content, "utf8");
+  trackWrite(`${cfg.pagesDir || "src/pages"}/${key}.tsx`);
 
   ok(`${cfg.pagesDir || "src/pages"}/${key}.tsx created`);
   ok(`Exported: ${meta.export}`);
   if (foundDeps.length > 0) info(`Mapped local dependencies to package exports: ${foundDeps.join(", ")}`);
   log(`\n${c.emerald}Success!${c.reset} ${c.gray}Import: ${c.cyan}import { ${meta.export} } from './pages/${key}'${c.reset}\n`);
+  if (JSON_MODE) {
+    jsonOut.nextSteps.push(`Import via: import { ${meta.export} } from './pages/${key}'`);
+    emitJson({ template: key, export: meta.export, file: `${cfg.pagesDir || "src/pages"}/${key}.tsx` });
+  }
 
 // ── info ──────────────────────────────────────────────────────────────────────
 } else if (cmd === "info") {
-  if (!item) { log(`\n${c.red}✖ Missing component name${c.reset}\n  ${c.gray}Usage: ${c.emerald}chameleon info ${c.indigo}<component>${c.reset}\n`); process.exit(1); }
+  if (!item) {
+    if (JSON_MODE) jsonDie("MISSING_ARGUMENT", "Missing component name. Usage: chameleon info <component> [--json]");
+    log(`\n${c.red}✖ Missing component name${c.reset}\n  ${c.gray}Usage: ${c.emerald}chameleon info ${c.indigo}<component>${c.reset}\n`); process.exit(1);
+  }
   const key  = item.toLowerCase();
   const meta = COMPONENTS[key] || TEMPLATES[key];
-  if (!meta) { log(`\n${c.red}✖ Unknown item: '${item}'${c.reset}`); info(`Run ${c.emerald}chameleon list${c.gray} to see all available items.`); log(""); process.exit(1); }
+  if (!meta) {
+    if (JSON_MODE) jsonDie("UNKNOWN_ITEM", `Unknown item: '${item}'. Run \`chameleon list --json\` for the catalog.`);
+    log(`\n${c.red}✖ Unknown item: '${item}'${c.reset}`); info(`Run ${c.emerald}chameleon list${c.gray} to see all available items.`); log(""); process.exit(1);
+  }
+  if (JSON_MODE) emitJson({
+    name: key,
+    kind: COMPONENTS[key] ? "component" : "template",
+    category: meta.category || "Template",
+    description: meta.desc,
+    sourceFile: `src/app/components/chameleon/${meta.file}`,
+    ...(meta.variants ? { variants: meta.variants } : {}),
+    ...(meta.deps ? { dependencies: meta.deps } : {}),
+    ...(meta.export ? { export: meta.export } : {}),
+  });
   log(`\n${c.emerald}➜${c.reset} ${c.bold}${c.white}${key}${c.reset}\n`);
   log(`  ${c.gray}Category:${c.reset}     ${meta.category || "Template"}`);
   log(`  ${c.gray}Description:${c.reset}  ${meta.desc}`);
@@ -575,17 +706,28 @@ if (cmd === "init") {
 
   if (issues === 0) { log(`\n${c.emerald}All checks passed!${c.reset} ${c.gray}Your project is healthy.${c.reset}\n`); }
   else { log(`\n${c.yellow}${issues} issue(s) found.${c.reset} ${c.gray}Address the warnings above.${c.reset}\n`); }
+  if (JSON_MODE) emitJson({ healthy: issues === 0, issues, checks: jsonOut.checks }, issues === 0);
 
 // ── diff ──────────────────────────────────────────────────────────────────────
 } else if (cmd === "diff") {
   log(`\n${c.emerald}➜${c.reset} ${c.indigo}Comparing local components to library source...${c.reset}\n`);
   const cfg = readConfig();
-  if (!cfg) { log(`\n${c.yellow}⚠ Run ${c.emerald}chameleon init${c.yellow} first.${c.reset}\n`); process.exit(1); }
+  if (!cfg) {
+    if (JSON_MODE) jsonDie("NOT_INITIALIZED", "No chameleon.config.json found. Run `chameleon init` first.");
+    log(`\n${c.yellow}⚠ Run ${c.emerald}chameleon init${c.yellow} first.${c.reset}\n`); process.exit(1);
+  }
   const outDir = path.join(process.cwd(), cfg.dir);
-  if (!fs.existsSync(outDir)) { info(`No scaffolded components found in ${cfg.dir}`); log(""); process.exit(0); }
+  if (!fs.existsSync(outDir)) {
+    if (JSON_MODE) emitJson({ components: [], outOfSync: 0 });
+    info(`No scaffolded components found in ${cfg.dir}`); log(""); process.exit(0);
+  }
   const localFiles = fs.readdirSync(outDir).filter(f => f.endsWith(".tsx"));
-  if (localFiles.length === 0) { info(`No scaffolded components found in ${cfg.dir}`); log(""); process.exit(0); }
+  if (localFiles.length === 0) {
+    if (JSON_MODE) emitJson({ components: [], outOfSync: 0 });
+    info(`No scaffolded components found in ${cfg.dir}`); log(""); process.exit(0);
+  }
   let diffCount = 0;
+  const diffResults = [];
   for (const file of localFiles) {
     const key  = file.replace(".tsx","").toLowerCase();
     const meta = COMPONENTS[key];
@@ -593,25 +735,36 @@ if (cmd === "init") {
     const localContent  = fs.readFileSync(path.join(outDir, file), "utf8");
     let sourceContent = fs.existsSync(path.join(LIB_SRC, meta.file)) ? fs.readFileSync(path.join(LIB_SRC, meta.file), "utf8") : null;
     if (!sourceContent) continue;
-    
+
     // Apply the same rewrite before comparing
     sourceContent = sourceContent.replace(/from\s+['"]\.\/.*?['"]/g, 'from "@chameleon-ui-lib/react"');
 
-    if (localContent === sourceContent) { ok(`${file} — up to date`); }
-    else { warn(`${file} — differs from library source`); diffCount++; }
+    if (localContent === sourceContent) { ok(`${file} — up to date`); diffResults.push({ name: key, status: "in-sync" }); }
+    else { warn(`${file} — differs from library source`); diffResults.push({ name: key, status: "out-of-sync" }); diffCount++; }
   }
   if (diffCount === 0) { log(`\n${c.emerald}All components are in sync.${c.reset}\n`); }
   else { log(`\n${c.yellow}${diffCount} component(s) out of sync.${c.reset} ${c.gray}Run ${c.emerald}chameleon update${c.gray} to fix.${c.reset}\n`); }
+  if (JSON_MODE) {
+    if (diffCount > 0) jsonOut.nextSteps.push("Run `chameleon update --json` to re-sync out-of-sync components.");
+    emitJson({ components: diffResults, outOfSync: diffCount });
+  }
 
 // ── update ────────────────────────────────────────────────────────────────────
 } else if (cmd === "update") {
   log(`\n${c.emerald}➜${c.reset} ${c.indigo}Updating scaffolded components...${c.reset}\n`);
   const cfg = readConfig();
-  if (!cfg) { log(`\n${c.yellow}⚠ Run ${c.emerald}chameleon init${c.yellow} first.${c.reset}\n`); process.exit(1); }
+  if (!cfg) {
+    if (JSON_MODE) jsonDie("NOT_INITIALIZED", "No chameleon.config.json found. Run `chameleon init` first.");
+    log(`\n${c.yellow}⚠ Run ${c.emerald}chameleon init${c.yellow} first.${c.reset}\n`); process.exit(1);
+  }
   const outDir = path.join(process.cwd(), cfg.dir);
-  if (!fs.existsSync(outDir)) { info(`No scaffolded components found in ${cfg.dir}`); log(""); process.exit(0); }
+  if (!fs.existsSync(outDir)) {
+    if (JSON_MODE) emitJson({ updated: [], upToDate: [] });
+    info(`No scaffolded components found in ${cfg.dir}`); log(""); process.exit(0);
+  }
   const localFiles = fs.readdirSync(outDir).filter(f => f.endsWith(".tsx"));
   let updated = 0;
+  const updateResults = { updated: [], upToDate: [] };
   for (const file of localFiles) {
     const key  = file.replace(".tsx","").toLowerCase();
     const meta = COMPONENTS[key] || TEMPLATES[key]; // Actually templates might not be in dir, but if they are, handle them
@@ -621,20 +774,29 @@ if (cmd === "init") {
     if (!fs.existsSync(sourcePath)) continue;
     const localContent  = fs.readFileSync(localPath, "utf8");
     let sourceContent = fs.readFileSync(sourcePath, "utf8");
-    
+
     // Apply the same rewrite used in add/template
     sourceContent = sourceContent.replace(/from\s+['"]\.\/.*?['"]/g, 'from "@chameleon-ui-lib/react"');
-    
-    if (localContent !== sourceContent) { fs.writeFileSync(localPath, sourceContent, "utf8"); ok(`Updated ${file}`); updated++; }
-    else { info(`${file} already up to date`); }
+
+    if (localContent !== sourceContent) {
+      fs.writeFileSync(localPath, sourceContent, "utf8");
+      trackWrite(`${cfg.dir}/${file}`);
+      ok(`Updated ${file}`); updateResults.updated.push(key); updated++;
+    }
+    else { info(`${file} already up to date`); updateResults.upToDate.push(key); }
   }
   if (updated === 0) { log(`\n${c.emerald}Everything is already up to date.${c.reset}\n`); }
   else { log(`\n${c.emerald}Update complete!${c.reset} ${c.gray}${updated} component(s) updated.${c.reset}\n`); }
+  if (JSON_MODE) emitJson(updateResults);
 
 // ── config ────────────────────────────────────────────────────────────────────
 } else if (cmd === "config") {
   const cfg = readConfig();
-  if (!cfg) { log(`\n${c.yellow}⚠ No chameleon.config.json found.${c.reset}`); info(`Run ${c.emerald}chameleon init${c.gray} to create one.`); log(""); process.exit(1); }
+  if (!cfg) {
+    if (JSON_MODE) jsonDie("NOT_INITIALIZED", "No chameleon.config.json found. Run `chameleon init` to create one.");
+    log(`\n${c.yellow}⚠ No chameleon.config.json found.${c.reset}`); info(`Run ${c.emerald}chameleon init${c.gray} to create one.`); log(""); process.exit(1);
+  }
+  if (JSON_MODE) emitJson({ config: cfg, path: CONFIG_FILE });
   log(`\n${c.emerald}➜${c.reset} ${c.bold}${c.white}chameleon.config.json${c.reset} ${c.dim}(${CONFIG_FILE})${c.reset}\n`);
   const fieldColor = { theme: c.cyan, mode: c.cyan, lang: c.cyan, dir: c.indigo, pagesDir: c.indigo, css: c.indigo, version: c.gray };
   for (const [key, val] of Object.entries(cfg)) log(`  ${(fieldColor[key] || c.white)}${key.padEnd(12)}${c.reset}${c.white}${val}${c.reset}`);
@@ -644,6 +806,7 @@ if (cmd === "init") {
 
 // ── dev ───────────────────────────────────────────────────────────────────────
 } else if (cmd === "dev") {
+  if (JSON_MODE) jsonDie("INTERACTIVE_COMMAND", "`chameleon dev` launches an interactive dev server and does not support --json.");
   log(`\n${c.emerald}➜${c.reset} ${c.indigo}Starting Chameleon UI playground...${c.reset}\n`);
   const viteBin = path.join(LIB_ROOT, "node_modules", ".bin", "vite");
   if (!fs.existsSync(viteBin)) { fail(`Vite not found at ${viteBin}`); process.exit(1); }
@@ -656,6 +819,7 @@ if (cmd === "init") {
 
 // ── unknown ───────────────────────────────────────────────────────────────────
 } else {
+  if (JSON_MODE) jsonDie("UNKNOWN_COMMAND", `Unknown command: '${cmd}'. Run \`chameleon --help\` for valid commands.`);
   log(`\n${c.red}✖ Unknown command: '${cmd}'${c.reset}`);
   info(`Run ${c.emerald}chameleon --help${c.gray} for a list of valid commands.`);
   log("");

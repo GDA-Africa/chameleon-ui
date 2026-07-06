@@ -24,10 +24,10 @@ last_updated: "2026-05-04"
 
 ## 🎯 Current Objective
 
-**Current Phase:** Phase 10 — **Post-v1.1.0 Polish** — reviewing deferred items
-**Active Task:** None — v1.1.0 shipped, picking next backlog item
+**Current Phase:** Phase 11 — **Agents Can Call Chameleon (v1.2.0)** — see `NEXUS_ROADMAP_v2.0.md` (master, Phases 11–16 → v2.0.0) + `.nexus/plans/phase-11-agent-callable.md`
+**Active Task:** None — F58 shipped 2026-07-05; next is F59 (engine extraction)
 **Blocked:** None
-**Next Up:** Liquid theme light-mode audit (deferred from v1.0.9); `--all-templates` CLI flag; Playwright E2E setup
+**Next Up:** F59 engine extraction → F61 ChameleonSpec v1 → F60 MCP server → F64 agents init. Then Phases 12–16 per roadmap. Deferred: Liquid light-mode audit, `--all-templates` flag, Playwright E2E (folds into F69)
 
 ---
 
@@ -127,6 +127,25 @@ last_updated: "2026-05-04"
 | F55 | Composite docs directory page | P1 | ✅ Done | 10 | v1.1.0 — searchable expandable docs matching component docs UX |
 | F56 | Hooks & Utils docs directory | P1 | ✅ Done | 10 | v1.1.0 — standardised directory format with search, API tables, AI copy |
 | F57 | Full `styleConfig` propagation (part2 templates) | P0 | ✅ Done | 10 | v1.1.0 — all 6 templates in `comprehensive-templates-part2.tsx` wired |
+| F58 | `--json` output mode for CLI | P0 | ✅ Done | 11 | 2026-07-05 — envelope on all 13 commands + version, structured error codes, `docs/CLI_JSON.md` |
+| F59 | Shared engine extraction (`lib-src/engine/`) | P0 | 📋 Planned | 11 | catalog/scaffold/health modules; CLI + MCP share one code path |
+| F60 | `@chameleon-ui-lib/mcp` MCP server | P0 | 📋 Planned | 11 | `packages/mcp` — search/scaffold/validate tools so agents can "create a login form" via tool calls |
+| F61 | ChameleonSpec v1 + recipes-as-specs | P0 | 📋 Planned | 11 | REVISED — declarative page spec, zod validator from manifest, `renderSpec`/`scaffoldSpec`, ~10 recipes as stored specs |
+| F62 | `chameleon brand` token pipeline | P0 | 📋 Planned | 12 | `brand init/check` — colors, font, radius, density → persisted tokens, WCAG AA checked; extends F34 |
+| F63 | MCP brand tools + agent docs refresh | P1 | 📋 Planned | 12 | `set_brand`/`check_brand_contrast`/`extract_brand` tools; update `AI_INTEGRATION_GUIDE.md`, `llms.txt`, `context.md` |
+| F64 | `chameleon agents init` | P1 | 📋 Planned | 11 | Consumer-project agent rulesets between `<!-- chameleon:start/end -->` markers |
+| F65 | Brand extraction `from-url`/`from-logo` | P1 | 📋 Planned | 12 | Candidates-with-provenance, never auto-applied; feeds F62 |
+| F66 | `/render?spec=` route | P0 | 📋 Planned | 13 | Bare canvas rendering ChameleonSpec — shared by F67/F68/F69/F70 |
+| F67 | `preview(spec)` MCP tool | P0 | 📋 Planned | 13 | Playwright screenshots + axe + contrast audit; graceful degradation |
+| F68 | `/play?spec=` playground links | P1 | 📋 Planned | 13 | lz-string encoded, theme switcher, copy-CLI; agents share before scaffolding |
+| F69 | Visual regression CI | P2 | 📋 Planned | 13 | Component × theme × mode screenshot matrix (absorbs deferred Playwright E2E) |
+| F70 | MCP Apps spike (SEP-1865) | P0 | 📋 Planned | 14 | 1-week timebox — `renderSpec` in widget template, demo in 2 hosts; may pull forward |
+| F71 | `@chameleon-ui-lib/apps` package | P0 | 📋 Planned | 14 | Widget template + `actions` spec field → live UI in Claude/ChatGPT/VS Code |
+| F72 | Registry format + first-party registry | P1 | 📋 Planned | 15 | `registry.json`, spec vs source item types, GitHub-hosted, PR-gated |
+| F73 | `chameleon add` remote items | P1 | 📋 Planned | 15 | Spec items auto-validated; source items diff + confirm; integrity hashes |
+| F74 | AppSpec v2 | P0 | 📋 Planned | 16 | Pages, routes, nav, shell, mock dataSlots — embeds v1 page specs |
+| F75 | `scaffold_app` + `chameleon new` | P0 | 📋 Planned | 16 | Runnable multi-page app: routing, nav, brand, green tsc/lint/test |
+| F76 | v2.0 breaking cleanups + migration | P0 | 📋 Planned | 16 | Remove `customBrandColor`, split legacy composites.tsx, engine-only contract, MIGRATION_v2 |
 
 ---
 
@@ -185,6 +204,26 @@ last_updated: "2026-05-04"
 ---
 
 ## 🔄 Progress Log
+
+### 2026-07-05 — F58 shipped: `--json` machine-readable CLI output
+- ✅ All 13 commands + `--version` emit a stable envelope: `{ ok, command, version, data, warnings, errors, filesWritten, filesDeleted, nextSteps }`
+- ✅ Structured error codes (`NOT_INITIALIZED`, `UNKNOWN_COMPONENT`, `INVALID_THEME`, …); exit 0/1 mirrors `ok`; `doctor` sets `ok` = healthy
+- ✅ Human output byte-identical without the flag; `item` arg parsing now flag-safe (`add --json button` works)
+- ✅ `docs/CLI_JSON.md` documents the contract; help text updated
+- ✅ Smoke-tested all commands incl. error paths in a temp project; `tsc --noEmit` + eslint green (vitest not runnable in Linux sandbox — macOS-installed rollup native binary; suite doesn't cover the CLI)
+- ▶️ Next: F59 — extract `lib-src/engine/` so CLI and MCP server share one code path
+
+### 2026-07-05 — v2.0 Roadmap approved: six releases, six flagships (Phases 11–16)
+- ✅ `NEXUS_ROADMAP_v2.0.md` — master arc v1.2.0 → v2.0.0; ChameleonSpec as keystone
+- ✅ Six phase plans in `.nexus/plans/phase-11…16-*.md`; backlog extended to F76
+- ✅ F61 revised: composition recipes → full ChameleonSpec v1 (spec format reshapes F60 tool contracts)
+- 🧭 Flagships: MCP server → brand → render/verify/share → MCP Apps (SEP-1865, finalizes 2026-07-28) → registry → AppSpec/`chameleon new`
+- ▶️ Execution started: F58 `--json` CLI output mode
+
+### 2026-07-05 — Agent SDK plan approved (Phases 11–12)
+- ✅ Wrote `NEXUS_PLAN_v1.2.0.md` — MCP server (v1.2.0) + brand pipeline (v1.3.0)
+- ✅ Backlog extended F58–F63; Current Objective set to Phase 11
+- 🧭 Reframe: Chameleon becomes the *tool surface* agents call (MCP), not an AI itself — manifest, CLI, and composites already cover most of the vision; missing layers are a machine-callable interface and a persisted brand-token pipeline
 
 ### 2026-05-06 — Notification system overhaul (post-v1.1.0)
 - ✅ Enhanced `NotificationCenterItem`: added `actions[]` array (backward-compat `action` kept), `priority` (critical/high/medium/low), `avatar`, `avatarFallback`, `icon` override

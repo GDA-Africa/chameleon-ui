@@ -259,3 +259,27 @@ Optional: Brief supporting detail (1-2 sentences max).
 ### [pattern] Snooze implemented as local `Record<string,number>` map — not a new status value
 
 **2026-05-06** — NotificationInbox snooze uses `useState<Record<string, number>>` mapping item.id → epoch ms, filtered in the existing `useMemo`. No new "snoozed" status enum was added to avoid breaking the status filter logic or the `NotificationInboxItem.status` union type.
+
+### [architecture] Agent SDK vision = MCP tool surface, not an in-library AI
+
+**2026-07-05** — Decision (Phases 11–12, `NEXUS_PLAN_v1.2.0.md`): the "agent can say 'create a login form' and Chameleon dispatches it" vision is delivered by exposing an MCP server (`packages/mcp`) over a shared engine extracted from the CLI (`lib-src/engine/`) — the agent supplies NL understanding, Chameleon supplies callable tools. Brand customization ships as a token layer (`chameleon brand`, extends F34 `customBrandColor`) that composes with the 5 themes rather than adding a 6th.
+
+### [convention] MCP and CLI must share one engine — never fork scaffold logic
+
+**2026-07-05** — F59 extracts catalog/scaffold/health into `lib-src/engine/`; both `bin/chameleon.js` and the MCP server are thin skins over it. Any future machine interface (HTTP, plugin) must also consume the engine, not reimplement FS ops.
+
+### [architecture] ChameleonSpec is the keystone of the v2.0 roadmap — everything produces or consumes specs
+
+**2026-07-05** — Roadmap decision (`NEXUS_ROADMAP_v2.0.md`, Phases 11–16): a declarative, manifest-validated page spec (v1) / app spec (v2) is the shared contract for recipes (F61), MCP compose tools (F60), preview/audit (F67), playground links (F68), MCP Apps chat widgets (F70/71), registry items (F72), and `chameleon new` (F75). Spec v1 stays deliberately flat — template + composite slots + props, no arbitrary nesting, no raw JSX; expressiveness pressure is signal for v2 design, not v1 patches.
+
+### [gotcha] MCP Apps (SEP-1865) finalizes 2026-07-28 — Phase 14 spike may need to jump the queue
+
+**2026-07-05** — MCP Apps is the first official MCP extension (sandboxed iframe templates, JSON-RPC/postMessage bridge, hosts: ChatGPT/Claude/Goose/VS Code). One audited `renderSpec` widget template fits its prefetch/security-review model unusually well. Early libraries win tutorial mindshare — re-check host support and consider running the F70 spike alongside Phase 12/13 rather than strictly after.
+
+### [pattern] --json mode implemented as global collectors + per-command emitJson, not a parallel code path
+
+**2026-07-05** — F58: `ok/warn/fail` helpers collect into `jsonOut` when `--json` is set (human output silenced via no-op `log`), each command branch ends with `emitJson(data)` and error exits use `jsonDie(code, message)`. Keeps one code path per command. When F59 extracts the engine, the engine should return these structures directly and both skins format them.
+
+### [gotcha] Repo node_modules are macOS-installed — vitest fails on Linux with rollup MODULE_NOT_FOUND
+
+**2026-07-05** — `@rollup/rollup-linux-x64-gnu` native binary is absent because deps were installed on darwin-arm64. Cross-platform sandboxes must reinstall deps or skip vitest; `tsc --noEmit` and eslint work fine.
