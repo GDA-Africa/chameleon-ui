@@ -46,7 +46,8 @@
     "lint": "eslint .",
     "format": "prettier --write .",
     "check:manifest": "node scripts/check-manifest.mjs",
-    "build:widget": "node scripts/build-widget.mjs"
+    "build:widget": "node scripts/build-widget.mjs",
+    "build:registry": "node scripts/build-registry.mjs"
   },
   "sideEffects": [
     "./dist/styles.css"

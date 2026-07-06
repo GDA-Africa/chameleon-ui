@@ -17,6 +17,7 @@ import {
   doctor, diffComponents,
   validateSpec, scaffoldSpec, listRecipes, getRecipe, agentsInit,
   brandInit, brandCheck, brandFromUrl, brandFromLogo, previewSpec,
+  listRegistry, addRegistryItem,
 } from "./engine/index.mjs";
 
 const __filename = fs.realpathSync(fileURLToPath(import.meta.url));
@@ -203,6 +204,27 @@ if (cmd === "init") {
 
 // ── add ───────────────────────────────────────────────────────────────────────
 } else if (cmd === "add") {
+  // F73: remote registry items — `chameleon add @chameleon/<name>` or `--registry <url|file>`
+  const registrySource = getFlagValue("--registry");
+  if (item && (item.startsWith("@") || registrySource)) {
+    const name = item.startsWith("@") ? (item.split("/")[1] || item.slice(1)) : item;
+    const result = await addRegistryItem(ctx, name, { source: registrySource, confirmed: flags.has("--yes") });
+    if (JSON_MODE) finishJson(result);
+    log(`\n${c.emerald}➜${c.reset} ${c.indigo}Installing ${c.white}${name}${c.indigo} from registry...${c.reset}\n`);
+    if (!result.ok) {
+      const err = result.errors[0];
+      if (err.code === "CONFIRM_REQUIRED") {
+        renderEvents(result.events);
+        warn(err.message);
+        for (const f of err.files || []) { log(`\n  ${c.cyan}${f.path}${c.reset} ${c.dim}(${f.bytes} bytes)${c.reset}`); log(`${c.gray}${f.preview.split("\n").slice(0, 8).map(l => "    " + l).join("\n")}${c.reset}`); }
+        log(`\n  ${c.gray}Re-run with ${c.emerald}--yes${c.gray} to install.${c.reset}\n`);
+      } else if (!renderCommonError(result)) { fail(err.message); log(""); }
+      process.exit(1);
+    }
+    renderEvents(result.events);
+    log(`\n${c.emerald}Installed!${c.reset} ${c.gray}${result.nextSteps[0] || ""}${c.reset}\n`);
+    process.exit(0);
+  }
   const bulkFlag = [...flags].find(f => selectBulk(f));
 
   if (bulkFlag) {
@@ -419,6 +441,20 @@ if (cmd === "init") {
   for (const [key, val] of Object.entries(cfg)) log(`  ${(fieldColor[key] || c.white)}${key.padEnd(12)}${c.reset}${c.white}${val}${c.reset}`);
   log("");
   info(`Edit ${c.emerald}chameleon.config.json${c.gray} directly, or use ${c.emerald}chameleon theme <name>${c.gray} to change the theme.`);
+  log("");
+
+// ── registry ──────────────────────────────────────────────────────────────────
+} else if (cmd === "registry") {
+  const result = await listRegistry(getFlagValue("--registry"));
+  if (JSON_MODE) finishJson(result);
+  log(`\n${c.emerald}➜${c.reset} ${c.bold}${c.white}Chameleon Registry${c.reset}\n`);
+  if (!result.ok) { fail(result.errors[0].message); log(""); process.exit(1); }
+  log(`  ${c.dim}${result.data.registry}${c.reset}\n`);
+  for (const it of result.data.items) {
+    log(`  ${it.type === "spec" ? c.emerald : c.yellow}${it.name.padEnd(22)}${c.reset}${c.dim}[${it.type}] ${it.description}${c.reset}`);
+  }
+  log("");
+  info(`Install with ${c.emerald}chameleon add @chameleon/<name>${c.gray} (source items need ${c.emerald}--yes${c.gray} after review).`);
   log("");
 
 // ── preview ───────────────────────────────────────────────────────────────────

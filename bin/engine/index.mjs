@@ -21,3 +21,4 @@ export {
   contrastRatio, contrastColor, variations, luminance, hexToRgb, BRAND_FILE, BRAND_CSS,
 } from "./brand.mjs";
 export { previewSpec, specUrl } from "./preview.mjs";
+export { fetchRegistry, listRegistry, searchRegistry as searchRemoteRegistry, addRegistryItem, packageRegistryItem, DEFAULT_REGISTRY } from "./remote-registry.mjs";

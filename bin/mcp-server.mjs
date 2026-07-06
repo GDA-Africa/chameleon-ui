@@ -25,6 +25,7 @@ import {
   doctor, validateSpec, scaffoldSpec, listRecipes, getRecipe, searchRecipes,
   brandInit, brandCheck, readBrand, brandFromUrl, brandFromLogo,
   previewSpec, specUrl,
+  searchRemoteRegistry, addRegistryItem,
 } from "./engine/index.mjs";
 
 const __dirname = path.dirname(fs.realpathSync(fileURLToPath(import.meta.url)));
@@ -198,6 +199,26 @@ const TOOLS = [
       if (logoPath) return run(brandFromLogo(ctx(), logoPath));
       throw { code: "MISSING_ARGUMENT", message: "Provide either 'url' or 'logoPath'." };
     },
+  },
+  {
+    name: "search_registry",
+    description: "Search the remote Chameleon registry (community/first-party specs and source components) by keywords. Complements search_components for patterns not shipped in the library.",
+    inputSchema: { type: "object", properties: { query: str("Keywords"), registry: str("Registry URL override (optional)") }, required: ["query"] },
+    handler: async ({ query, registry }) => run(await searchRemoteRegistry(query, registry)),
+  },
+  {
+    name: "add_registry_item",
+    description: "Install a registry item. Spec items are schema-validated and safe. Source items REQUIRE confirmed:true — before setting it, show the user the CONFIRM_REQUIRED preview (file paths + content excerpts) and get their approval.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        name: str("Item name from search_registry"),
+        registry: str("Registry URL override (optional)"),
+        confirmed: { type: "boolean", description: "Set true ONLY after the user approved the source-item preview" },
+      },
+      required: ["name"],
+    },
+    handler: async ({ name, registry, confirmed }) => run(await addRegistryItem(ctx(), name, { source: registry, confirmed: !!confirmed })),
   },
   {
     name: "validate_project",
