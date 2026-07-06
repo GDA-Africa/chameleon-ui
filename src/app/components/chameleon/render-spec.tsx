@@ -28,9 +28,20 @@ import {
 type LooseComponent = React.ComponentType<Record<string, unknown>>;
 const loose = (c: unknown) => c as LooseComponent;
 
+/** F71: spec-declared intents forwarded to the MCP host as tool calls. */
+export interface ChameleonSpecAction {
+  tool: string;
+  args?: Record<string, unknown>;
+}
+
 export interface ChameleonSpecBlock {
   component: string;
   props?: Record<string, unknown>;
+  actions?: { onClick?: ChameleonSpecAction };
+}
+
+declare global {
+  interface Window { __chameleonDispatchAction?: (action: ChameleonSpecAction) => void; }
 }
 
 export interface ChameleonSpec {
@@ -133,11 +144,20 @@ export function RenderSpec({ spec, className }: RenderSpecProps) {
         const Component = SPEC_COMPONENTS[block.component];
         if (!Component) return <SpecError key={i} message={`unknown component: '${block.component}'`} />;
         const { children, ...rest } = block.props ?? {};
-        return (
+        const el = (
           <Component key={i} {...rest}>
             {children as React.ReactNode}
           </Component>
         );
+        const onClick = block.actions?.onClick;
+        if (onClick && typeof window !== "undefined") {
+          return (
+            <div key={i} onClick={() => window.__chameleonDispatchAction?.(onClick)} style={{ cursor: "pointer" }} data-spec-action={onClick.tool}>
+              {el}
+            </div>
+          );
+        }
+        return el;
       })}
     </div>
   );

@@ -34,6 +34,17 @@ const PROTOCOL  = "2025-06-18";
 
 const ctx = () => createContext({ cwd: process.cwd(), libRoot: LIB_ROOT });
 
+// ── MCP Apps (SEP-1865) — EXPERIMENTAL, gated until the spec finalizes ───────
+// Enable with CHAMELEON_MCP_APPS=1 after `npm run build:widget`. One audited
+// template (dist-widget/widget.html) renders any ChameleonSpec.
+const WIDGET_URI  = "ui://chameleon/widget.html";
+const WIDGET_PATH = path.join(LIB_ROOT, "dist-widget", "widget.html");
+const APPS_ENABLED = process.env.CHAMELEON_MCP_APPS === "1" && fs.existsSync(WIDGET_PATH);
+const uiMeta = () =>
+  APPS_ENABLED
+    ? { _meta: { "ui/template": WIDGET_URI, "openai/outputTemplate": WIDGET_URI } }
+    : {};
+
 // ── tool definitions ─────────────────────────────────────────────────────────
 const str = (description) => ({ type: "string", description });
 
@@ -226,7 +237,26 @@ function handle(msg) {
   if (method === "notifications/initialized" || method === "notifications/cancelled") return; // notifications: no response
   if (method === "ping") return reply(id, {});
   if (method === "tools/list") {
-    return reply(id, { tools: TOOLS.map(({ name, description, inputSchema }) => ({ name, description, inputSchema })) });
+    const UI_TOOLS = new Set(["get_recipe", "compose_from_blocks", "preview_spec", "get_playground_url"]);
+    return reply(id, {
+      tools: TOOLS.map(({ name, description, inputSchema }) => ({
+        name, description, inputSchema,
+        ...(UI_TOOLS.has(name) ? uiMeta() : {}),
+      })),
+    });
+  }
+  if (method === "resources/list") {
+    return reply(id, {
+      resources: APPS_ENABLED
+        ? [{ uri: WIDGET_URI, name: "Chameleon spec widget", mimeType: "text/html;profile=mcp-app" }]
+        : [],
+    });
+  }
+  if (method === "resources/read") {
+    if (APPS_ENABLED && params?.uri === WIDGET_URI) {
+      return reply(id, { contents: [{ uri: WIDGET_URI, mimeType: "text/html;profile=mcp-app", text: fs.readFileSync(WIDGET_PATH, "utf8") }] });
+    }
+    return replyErr(id, -32602, `Unknown resource: ${params?.uri}`);
   }
   if (method === "tools/call") {
     const tool = TOOLS.find((t) => t.name === params?.name);
