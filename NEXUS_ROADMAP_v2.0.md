@@ -35,7 +35,7 @@ registry items are specs, chat widgets receive specs, apps are trees of specs.
 | # | Feature | Phase | Priority |
 |---|---|---|---|
 | F58 | `--json` output mode for CLI | 11 | P0 |
-| F59 | Shared engine extraction (`lib-src/engine/`) | 11 | P0 |
+| F59 | Shared engine extraction (`bin/engine/`) | 11 | P0 |
 | F60 | `@chameleon-ui-lib/mcp` MCP server | 11 | P0 |
 | F61 | ChameleonSpec v1 + recipes-as-specs + `renderSpec`/`scaffoldSpec` | 11 | P0 |
 | F64 | `chameleon agents init` — consumer agent rulesets | 11 | P1 |

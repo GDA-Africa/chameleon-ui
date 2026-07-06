@@ -25,9 +25,9 @@ last_updated: "2026-05-04"
 ## 🎯 Current Objective
 
 **Current Phase:** Phase 11 — **Agents Can Call Chameleon (v1.2.0)** — see `NEXUS_ROADMAP_v2.0.md` (master, Phases 11–16 → v2.0.0) + `.nexus/plans/phase-11-agent-callable.md`
-**Active Task:** None — F58 shipped 2026-07-05; next is F59 (engine extraction)
+**Active Task:** None — F58 + F59 shipped 2026-07-05; next is F61 (ChameleonSpec v1)
 **Blocked:** None
-**Next Up:** F59 engine extraction → F61 ChameleonSpec v1 → F60 MCP server → F64 agents init. Then Phases 12–16 per roadmap. Deferred: Liquid light-mode audit, `--all-templates` flag, Playwright E2E (folds into F69)
+**Next Up:** F61 ChameleonSpec v1 → F60 MCP server → F64 agents init. Then Phases 12–16 per roadmap. Deferred: Liquid light-mode audit, `--all-templates` flag, Playwright E2E (folds into F69)
 
 ---
 
@@ -128,7 +128,7 @@ last_updated: "2026-05-04"
 | F56 | Hooks & Utils docs directory | P1 | ✅ Done | 10 | v1.1.0 — standardised directory format with search, API tables, AI copy |
 | F57 | Full `styleConfig` propagation (part2 templates) | P0 | ✅ Done | 10 | v1.1.0 — all 6 templates in `comprehensive-templates-part2.tsx` wired |
 | F58 | `--json` output mode for CLI | P0 | ✅ Done | 11 | 2026-07-05 — envelope on all 13 commands + version, structured error codes, `docs/CLI_JSON.md` |
-| F59 | Shared engine extraction (`lib-src/engine/`) | P0 | 📋 Planned | 11 | catalog/scaffold/health modules; CLI + MCP share one code path |
+| F59 | Shared engine extraction (`bin/engine/`) | P0 | ✅ Done | 11 | 2026-07-05 — registry/catalog/scaffold/health/core modules, `./engine` subpath export, CLI is a thin skin; golden-diff parity verified |
 | F60 | `@chameleon-ui-lib/mcp` MCP server | P0 | 📋 Planned | 11 | `packages/mcp` — search/scaffold/validate tools so agents can "create a login form" via tool calls |
 | F61 | ChameleonSpec v1 + recipes-as-specs | P0 | 📋 Planned | 11 | REVISED — declarative page spec, zod validator from manifest, `renderSpec`/`scaffoldSpec`, ~10 recipes as stored specs |
 | F62 | `chameleon brand` token pipeline | P0 | 📋 Planned | 12 | `brand init/check` — colors, font, radius, density → persisted tokens, WCAG AA checked; extends F34 |
@@ -204,6 +204,14 @@ last_updated: "2026-05-04"
 ---
 
 ## 🔄 Progress Log
+
+### 2026-07-05 — F59 shipped: shared engine extraction (`bin/engine/`)
+- ✅ Engine modules: `registry.mjs` (catalog data, single source of truth), `catalog.mjs` (list/info/themes + `searchCatalog` for F60), `scaffold.mjs` (init/add/remove/template/theme/update), `health.mjs` (doctor/diff), `core.mjs` (Result shape, config I/O)
+- ✅ Engine contract: functions never print or `process.exit`; return `{ ok, data, events, filesWritten, filesDeleted, nextSteps, errors }` — CLI replays `events` through ANSI formatters, `--json` maps them to the F58 envelope. MCP server (F60) consumes the same Results
+- ✅ `bin/chameleon.js` rewritten as thin skin (~350 lines of logic removed); `./engine` subpath export added to package.json
+- ✅ Location deviation from plan: `bin/engine/` not `lib-src/engine/` (lib-src is gitignored + build-generated — logged in knowledge.md)
+- ✅ Verified: golden-output diff across 30 command runs (human + JSON + exit codes) — byte-identical except two additive JSON fields (`data.dir`, bulk `externalDependencies`); 22-assertion engine harness green; eslint + `tsc --noEmit` green; vitest suite added (`__tests__/engine.test.ts`, run locally)
+- ▶️ Next: F61 — ChameleonSpec v1 (zod schema from manifest, `renderSpec`/`scaffoldSpec`, recipes-as-specs)
 
 ### 2026-07-05 — F58 shipped: `--json` machine-readable CLI output
 - ✅ All 13 commands + `--version` emit a stable envelope: `{ ok, command, version, data, warnings, errors, filesWritten, filesDeleted, nextSteps }`
