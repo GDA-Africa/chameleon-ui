@@ -25,9 +25,9 @@ last_updated: "2026-05-04"
 ## 🎯 Current Objective
 
 **Current Phase:** Phase 11 — **Agents Can Call Chameleon (v1.2.0)** — see `NEXUS_ROADMAP_v2.0.md` (master, Phases 11–16 → v2.0.0) + `.nexus/plans/phase-11-agent-callable.md`
-**Active Task:** None — Phase 11 core complete (F58–F61, F64 shipped 2026-07-05)
-**Blocked:** None
-**Next Up:** Phase 11 wrap-up: `verify:consumer` MCP smoke test, manifest-completeness CI check, `renderSpec` React runtime (feeds F66), real-agent E2E test (Claude Code + MCP), v1.2.0 release. Then Phase 12 (brand). Then Phases 12–16 per roadmap. Deferred: Liquid light-mode audit, `--all-templates` flag, Playwright E2E (folds into F69)
+**Active Task:** None — Phase 11 COMPLETE pending local validation + release
+**Blocked:** v1.2.0 release awaits local `npx tsc --noEmit && yarn test && yarn lint && npm run verify:consumer` (sandbox cannot run vitest/full tsc/build)
+**Next Up:** Local validation → real-agent E2E (Claude Code + registered MCP) → bump v1.2.0 + publish. Then F77 manifest backfill, then Phase 12 (brand). Then Phases 12–16 per roadmap. Deferred: Liquid light-mode audit, `--all-templates` flag, Playwright E2E (folds into F69)
 
 ---
 
@@ -146,6 +146,7 @@ last_updated: "2026-05-04"
 | F74 | AppSpec v2 | P0 | 📋 Planned | 16 | Pages, routes, nav, shell, mock dataSlots — embeds v1 page specs |
 | F75 | `scaffold_app` + `chameleon new` | P0 | 📋 Planned | 16 | Runnable multi-page app: routing, nav, brand, green tsc/lint/test |
 | F76 | v2.0 breaking cleanups + migration | P0 | 📋 Planned | 16 | Remove `customBrandColor`, split legacy composites.tsx, engine-only contract, MIGRATION_v2 |
+| F77 | ai-manifest.ts backfill (17 components) | P1 | 📋 Planned | 11.x | Found by `check:manifest` — spinner, avatar, toggle, tooltip, separator, breadcrumb, textarea + 10 composites lack entries; flip CI to `--strict` after |
 
 ---
 
@@ -204,6 +205,14 @@ last_updated: "2026-05-04"
 ---
 
 ## 🔄 Progress Log
+
+### 2026-07-05 — Phase 11 wrap-up: RenderSpec runtime + catalog gate + consumer checks (`7a2e8e4`)
+- ✅ `render-spec.tsx`: live React runtime for ChameleonSpec v1 — `RenderSpec` renders template or block specs; unknown refs render inline `role="alert"` error boxes (agents screenshotting via F67 see failures). `SPEC_COMPONENTS`/`SPEC_TEMPLATES` mirror the engine registry; exported from the library entry
+- ✅ `scripts/check-manifest.mjs` + CI step (`check:manifest`): registry ↔ source exports ↔ runtime maps ↔ recipes consistency. Immediately caught real drift: 17 components missing from `ai-manifest.ts` (→ F77, warnings until backfill; `--strict` flips CI) and the DatePicker export-name mismatch
+- ✅ fix: `componentExport()` registry override — `chameleon add datepicker` now hints `DatePicker` (was `Datepicker`)
+- ✅ `verify:consumer` extended: `/engine` subpath check, CLI `--json` envelope check, MCP server initialize/tools/search smoke test against the packed tarball
+- ✅ `render-spec.test.tsx`: runtime↔registry mirror test + render + inline-error tests
+- 🧪 Validated in sandbox: catalog check green, eslint green, `render-spec.tsx` strict-tsc green in isolation, MCP + CLI datepicker fix verified live. **Run locally before release:** `npx tsc --noEmit && yarn test && yarn lint && npm run verify:consumer`
 
 ### 2026-07-05 — F60 + F61 + F64 shipped: the agent surface is live
 - ✅ F61 ChameleonSpec v1: `bin/engine/spec.mjs` — `validateSpec` (pathed errors + typo suggestions via prefix matching), `scaffoldSpec` (template specs copy templates under the spec name; block specs scaffold components + generate a composed page). `bin/engine/recipes.mjs`: 10 stored specs using verified component props (StatCard/DataTable/KanbanBoard/Timeline APIs checked against source). CLI: `chameleon recipes`, `chameleon compose <spec-file|recipe> [--validate-only]`

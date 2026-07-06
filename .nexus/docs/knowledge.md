@@ -307,3 +307,11 @@ Optional: Brief supporting detail (1-2 sentences max).
 ### [gotcha] CORRECTION: nohup/setsid does NOT survive between sandbox bash calls
 
 **2026-07-05** — Supersedes the earlier tsc entry: background jobs (even nohup+setsid) are killed when the sandbox bash session ends — the log files stay empty. For long validations in the sandbox, either scope the check (e.g. `npx tsc --noEmit --ignoreConfig --strict <changed-file>` for isolated files) or defer full `tsc/vitest` to a local run. Full-project tsc was green at F59; only isolated-checked files changed after.
+
+### [gotcha] ai-manifest.ts only covers 12 of 29 components — vision doc's "manifest completeness ✅" was stale
+
+**2026-07-05** — `check:manifest` (new CI gate) found 17 components without ai-manifest entries and a DatePicker export-name mismatch the day it landed. Backfill tracked as F77; until then the manifest check warns (CI flips to `--strict` after). Lesson: claimed-done features need executable checks, not checklist ticks.
+
+### [pattern] Registry export-name overrides: use componentExport(), never toPascalCase() directly
+
+**2026-07-05** — `toPascalCase("datepicker")` = "Datepicker" but the real export is `DatePicker`. Registry entries may carry `exportName`; `componentExport(key)` resolves override-or-PascalCase. All engine codegen and import hints must go through it.
