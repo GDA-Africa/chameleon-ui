@@ -16,7 +16,7 @@ import {
   addComponents, selectBulk, removeComponent, scaffoldTemplate, setTheme, updateComponents, initProject,
   doctor, diffComponents,
   validateSpec, scaffoldSpec, listRecipes, getRecipe, agentsInit,
-  brandInit, brandCheck, brandFromUrl, brandFromLogo,
+  brandInit, brandCheck, brandFromUrl, brandFromLogo, previewSpec,
 } from "./engine/index.mjs";
 
 const __filename = fs.realpathSync(fileURLToPath(import.meta.url));
@@ -420,6 +420,36 @@ if (cmd === "init") {
   log("");
   info(`Edit ${c.emerald}chameleon.config.json${c.gray} directly, or use ${c.emerald}chameleon theme <name>${c.gray} to change the theme.`);
   log("");
+
+// ── preview ───────────────────────────────────────────────────────────────────
+} else if (cmd === "preview") {
+  if (!item) {
+    if (JSON_MODE) jsonDie("MISSING_ARGUMENT", "Usage: chameleon preview <spec-file.json | recipe-name> [--base-url http://localhost:5173] [--themes all] [--json]");
+    log(`\n${c.red}✖ Missing spec${c.reset}\n  ${c.gray}Usage: ${c.emerald}chameleon preview ${c.indigo}<spec-file.json | recipe-name>${c.gray} [--base-url ...] [--themes all]${c.reset}\n`); process.exit(1);
+  }
+  let spec;
+  const recipe = getRecipe(item);
+  if (recipe) spec = recipe.spec;
+  else if (fs.existsSync(path.resolve(process.cwd(), item))) {
+    try { spec = JSON.parse(fs.readFileSync(path.resolve(process.cwd(), item), "utf8")); }
+    catch { if (JSON_MODE) jsonDie("INVALID_SPEC", `Could not parse JSON from '${item}'.`); log(`\n${c.red}✖ Could not parse JSON from '${item}'${c.reset}\n`); process.exit(1); }
+  } else {
+    if (JSON_MODE) jsonDie("UNKNOWN_RECIPE", `'${item}' is neither a recipe nor a spec file.`);
+    log(`\n${c.red}✖ '${item}' is neither a recipe nor a spec file${c.reset}\n`); process.exit(1);
+  }
+  const result = await previewSpec(ctx, spec, {
+    baseUrl: getFlagValue("--base-url") || "http://localhost:5173",
+    themes: [getFlagValue("--themes") || "current"],
+  });
+  if (JSON_MODE) finishJson(result);
+  log(`\n${c.emerald}➜${c.reset} ${c.indigo}Previewing ${c.white}${spec?.name ?? item}${c.indigo} (${result.data?.level ?? "static"} audit)...${c.reset}\n`);
+  if (!result.ok) {
+    fail(result.errors[0].message);
+    for (const e of result.errors[0].validationErrors || []) fail(`${e.path}: ${e.message}${e.suggestion ? ` (did you mean: ${e.suggestion}?)` : ""}`);
+    log(""); process.exit(1);
+  }
+  renderEvents(result.events);
+  log(`\n${c.emerald}Preview ready.${c.reset} ${c.gray}Playground: ${c.cyan}${result.data.playUrl}${c.reset}\n`);
 
 // ── brand ─────────────────────────────────────────────────────────────────────
 } else if (cmd === "brand") {

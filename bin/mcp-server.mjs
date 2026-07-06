@@ -24,6 +24,7 @@ import {
   addComponents, scaffoldTemplate, setTheme, initProject,
   doctor, validateSpec, scaffoldSpec, listRecipes, getRecipe, searchRecipes,
   brandInit, brandCheck, readBrand, brandFromUrl, brandFromLogo,
+  previewSpec, specUrl,
 } from "./engine/index.mjs";
 
 const __dirname = path.dirname(fs.realpathSync(fileURLToPath(import.meta.url)));
@@ -120,6 +121,27 @@ const TOOLS = [
     description: "List the 5 Chameleon design languages with descriptions.",
     inputSchema: { type: "object", properties: {} },
     handler: () => ({ themes: listThemes() }),
+  },
+  {
+    name: "preview_spec",
+    description: "Audit a ChameleonSpec before/after composing: validation, brand WCAG contrast, composition notes, and — when Playwright + a running dev server are available — screenshots per theme/mode with render-error detection. Always returns a shareable /play URL to hand to the user.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        spec: { type: "object", description: "ChameleonSpec v1 object" },
+        baseUrl: str("Render host for screenshots (default http://localhost:5173)"),
+        themes: str("'current' (default), 'all', or a theme name"),
+      },
+      required: ["spec"],
+    },
+    handler: async ({ spec, baseUrl, themes }) =>
+      run(await previewSpec(ctx(), spec, { baseUrl: baseUrl || "http://localhost:5173", themes: [themes || "current"] })),
+  },
+  {
+    name: "get_playground_url",
+    description: "Get a shareable chameleon.glenhalton.com/play URL that renders a ChameleonSpec live in the browser — hand this to the user so they can see the page BEFORE files are written.",
+    inputSchema: { type: "object", properties: { spec: { type: "object", description: "ChameleonSpec v1 object" } }, required: ["spec"] },
+    handler: ({ spec }) => ({ playUrl: specUrl(spec, {}), renderUrl: specUrl(spec, { page: "render" }) }),
   },
   {
     name: "set_brand",

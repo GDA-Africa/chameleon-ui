@@ -20,3 +20,4 @@ export {
   brandInit, brandCheck, brandCheckData, readBrand, brandFromUrl, brandFromLogo,
   contrastRatio, contrastColor, variations, luminance, hexToRgb, BRAND_FILE, BRAND_CSS,
 } from "./brand.mjs";
+export { previewSpec, specUrl } from "./preview.mjs";

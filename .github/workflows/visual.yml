@@ -1,0 +1,38 @@
+# F69 (Phase 13) — visual regression: recipes × themes × modes via /render.
+# EXPERIMENTAL: continue-on-error until baselines are committed from a local
+# `npx playwright test tests/visual --update-snapshots` run.
+name: Visual Regression
+
+on:
+  pull_request:
+    paths:
+      - "src/**"
+      - "bin/engine/**"
+      - "tests/visual/**"
+
+jobs:
+  visual:
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+      - run: pnpm install --no-frozen-lockfile
+      - run: npx playwright install --with-deps chromium
+      - name: Start render host
+        run: pnpm run dev &
+      - name: Wait for dev server
+        run: npx wait-on http://localhost:5173 --timeout 60000
+      - name: Run visual matrix
+        run: npx playwright test tests/visual --reporter=line
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: visual-diffs
+          path: test-results/
