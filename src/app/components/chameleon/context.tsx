@@ -391,16 +391,31 @@ const LiquidBackground: React.FC<{ mode: ChameleonMode; intensity: number }> = R
 
 // ─── Provider ────────────────────────────────────────────────────────────────
 
+/**
+ * Brand tokens (F62) — persisted in brand.config.json by `chameleon brand init`
+ * and passed here. Composes with all 5 themes: the theme keeps its physics and
+ * surfaces, the brand supplies hue, type, and radius.
+ */
+export interface ChameleonBrand {
+  primaryColor: string;
+  secondaryColor?: string;
+  accentColor?: string;
+  fontFamily?: string;
+  radius?: string;
+}
+
 export function ChameleonProvider({
   children,
   initialTheme = "simple",
   initialMode = "light",
   initialLang = "en",
+  brand = null,
 }: {
   children: ReactNode;
   initialTheme?: ChameleonTheme;
   initialMode?: ChameleonMode;
   initialLang?: ChameleonLang;
+  brand?: ChameleonBrand | null;
 }) {
   const [theme, setTheme] = useState<ChameleonTheme>(initialTheme);
   const [mode, setMode] = useState<ChameleonMode>(initialMode);
@@ -424,6 +439,25 @@ export function ChameleonProvider({
       vars["--secondary-foreground"] = getContrastColor(varsSecondary);
     }
 
+    // Apply brand tokens (F62) — takes precedence over customBrandColor (deprecated)
+    if (brand?.primaryColor) {
+      const primary = mode === "dark" ? generateVariations(brand.primaryColor).light : brand.primaryColor;
+      vars["--primary"] = primary;
+      vars["--primary-foreground"] = getContrastColor(primary);
+      vars["--ring"] = primary;
+      if (brand.secondaryColor) {
+        const secondary = mode === "dark" ? generateVariations(brand.secondaryColor).light : brand.secondaryColor;
+        vars["--secondary"] = secondary;
+        vars["--secondary-foreground"] = getContrastColor(secondary);
+      }
+      if (brand.accentColor) {
+        const accent = mode === "dark" ? generateVariations(brand.accentColor).light : brand.accentColor;
+        vars["--accent"] = accent;
+        vars["--accent-foreground"] = getContrastColor(accent);
+      }
+      if (brand.radius) vars["--radius"] = brand.radius;
+    }
+
     // Apply intensity-based adjustments for glassy theme
     if (theme === "glassy") {
       const blurAmount = 16 + (glassyIntensity / 100) * 16; // 16-32px
@@ -431,7 +465,7 @@ export function ChameleonProvider({
     }
 
     return vars as React.CSSProperties;
-  }, [theme, mode, glassyIntensity, customBrandColor]);
+  }, [theme, mode, glassyIntensity, customBrandColor, brand]);
 
   // Apply dark class to document root for Tailwind dark mode
   React.useEffect(() => {
@@ -467,7 +501,7 @@ export function ChameleonProvider({
         data-chameleon-theme={theme}
         data-chameleon-mode={mode}
         className="contents"
-        style={cssVars}
+        style={brand?.fontFamily ? { ...cssVars, fontFamily: `"${brand.fontFamily}", system-ui, sans-serif` } : cssVars}
       >
         {children}
       </div>

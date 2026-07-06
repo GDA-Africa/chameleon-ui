@@ -16,6 +16,7 @@ import {
   addComponents, selectBulk, removeComponent, scaffoldTemplate, setTheme, updateComponents, initProject,
   doctor, diffComponents,
   validateSpec, scaffoldSpec, listRecipes, getRecipe, agentsInit,
+  brandInit, brandCheck, brandFromUrl, brandFromLogo,
 } from "./engine/index.mjs";
 
 const __filename = fs.realpathSync(fileURLToPath(import.meta.url));
@@ -118,6 +119,11 @@ if (args[0] === "-v" || args[0] === "--version") {
 const cmd   = args[0];
 const item  = args.slice(1).find(a => !a.startsWith("--"));
 const flags = new Set(args.slice(1).filter(a => a.startsWith("--")));
+/** Value flags: `--primary #fff` → getFlagValue("--primary") === "#fff" */
+function getFlagValue(name) {
+  const i = args.indexOf(name);
+  return i !== -1 && args[i + 1] && !args[i + 1].startsWith("--") ? args[i + 1] : undefined;
+}
 
 // ── F58: JSON envelope emitters ──────────────────────────────────────────────
 function emitJsonRaw(envelope) {
@@ -414,6 +420,60 @@ if (cmd === "init") {
   log("");
   info(`Edit ${c.emerald}chameleon.config.json${c.gray} directly, or use ${c.emerald}chameleon theme <name>${c.gray} to change the theme.`);
   log("");
+
+// ── brand ─────────────────────────────────────────────────────────────────────
+} else if (cmd === "brand") {
+  const sub = item;
+  const usage = () => {
+    if (JSON_MODE) jsonDie("MISSING_ARGUMENT", "Usage: chameleon brand <init|check|from-url|from-logo> [options] [--json]");
+    log(`\n${c.red}✖ Unknown brand subcommand${c.reset}`);
+    log(`  ${c.gray}Usage: ${c.emerald}chameleon brand init ${c.indigo}--primary #hex${c.gray} [--secondary #hex] [--accent #hex] [--font Name] [--radius 0.75rem]${c.reset}`);
+    log(`  ${c.gray}       ${c.emerald}chameleon brand check${c.reset}`);
+    log(`  ${c.gray}       ${c.emerald}chameleon brand from-url ${c.indigo}<url>${c.reset}`);
+    log(`  ${c.gray}       ${c.emerald}chameleon brand from-logo ${c.indigo}<logo.svg>${c.reset}\n`);
+    process.exit(1);
+  };
+  const renderBrandResult = (result, intro, outro) => {
+    if (JSON_MODE) finishJson(result);
+    log(`\n${c.emerald}➜${c.reset} ${c.indigo}${intro}${c.reset}\n`);
+    if (!result.ok && result.errors[0] && !result.events.length) { fail(result.errors[0].message); log(""); process.exit(1); }
+    renderEvents(result.events);
+    if (!result.ok) { log(`\n${c.yellow}${result.errors[0]?.message || "Check failed."}${c.reset}\n`); process.exit(1); }
+    log(`\n${c.emerald}${outro}${c.reset}`);
+    for (const s of result.nextSteps) info(s);
+    log("");
+  };
+  if (sub === "init") {
+    const result = brandInit(ctx, {
+      primaryColor: getFlagValue("--primary"),
+      secondaryColor: getFlagValue("--secondary"),
+      accentColor: getFlagValue("--accent"),
+      fontFamily: getFlagValue("--font"),
+      radius: getFlagValue("--radius"),
+    });
+    renderBrandResult(result, "Initializing brand tokens...", "Brand ready!");
+  } else if (sub === "check") {
+    renderBrandResult(brandCheck(ctx), "Auditing brand contrast (WCAG AA)...", "All brand pairs pass AA.");
+  } else if (sub === "from-url") {
+    const url = args.slice(2).find(a => !a.startsWith("--"));
+    if (!url) usage();
+    const result = await brandFromUrl(url);
+    if (JSON_MODE) finishJson(result);
+    log(`\n${c.emerald}➜${c.reset} ${c.indigo}Extracting brand candidates from ${c.white}${url}${c.indigo}...${c.reset}\n`);
+    if (!result.ok) { fail(result.errors[0].message); log(""); process.exit(1); }
+    for (const cc of result.data.colorCandidates) log(`  ${c.cyan}${cc.color}${c.reset}  ${c.dim}×${cc.occurrences} (${cc.sources.join(", ")})${c.reset}`);
+    if (result.data.fontCandidates.length) log(`\n  ${c.gray}Fonts:${c.reset} ${result.data.fontCandidates.join(", ")}`);
+    log(""); for (const s of result.nextSteps) info(s); log("");
+  } else if (sub === "from-logo") {
+    const file = args.slice(2).find(a => !a.startsWith("--"));
+    if (!file) usage();
+    const result = brandFromLogo(ctx, file);
+    if (JSON_MODE) finishJson(result);
+    log(`\n${c.emerald}➜${c.reset} ${c.indigo}Extracting brand candidates from ${c.white}${file}${c.indigo}...${c.reset}\n`);
+    if (!result.ok) { fail(result.errors[0].message); log(""); process.exit(1); }
+    for (const cc of result.data.colorCandidates) log(`  ${c.cyan}${cc.color}${c.reset}  ${c.dim}×${cc.occurrences}${c.reset}`);
+    log(""); for (const s of result.nextSteps) info(s); log("");
+  } else usage();
 
 // ── agents ────────────────────────────────────────────────────────────────────
 } else if (cmd === "agents") {

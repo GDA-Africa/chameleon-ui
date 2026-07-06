@@ -23,6 +23,7 @@ import {
   createContext, listCatalog, getInfo, listThemes, searchCatalog,
   addComponents, scaffoldTemplate, setTheme, initProject,
   doctor, validateSpec, scaffoldSpec, listRecipes, getRecipe, searchRecipes,
+  brandInit, brandCheck, readBrand, brandFromUrl, brandFromLogo,
 } from "./engine/index.mjs";
 
 const __dirname = path.dirname(fs.realpathSync(fileURLToPath(import.meta.url)));
@@ -121,6 +122,51 @@ const TOOLS = [
     handler: () => ({ themes: listThemes() }),
   },
   {
+    name: "set_brand",
+    description: "Persist brand tokens (F62): writes brand.config.json + chameleon-brand.css and runs a WCAG AA contrast audit. Colors are hex. The consumer passes the config to <ChameleonProvider brand={...}>.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        primaryColor: str("Primary brand color, e.g. #FF6B35"),
+        secondaryColor: str("Optional secondary color"),
+        accentColor: str("Optional accent color"),
+        fontFamily: str("Optional font family name, e.g. Sora"),
+        radius: str("Optional radius, e.g. 0.75rem"),
+      },
+      required: ["primaryColor"],
+    },
+    handler: (args) => run(brandInit(ctx(), args)),
+  },
+  {
+    name: "get_brand",
+    description: "Read the project's persisted brand tokens (brand.config.json), or null if none.",
+    inputSchema: { type: "object", properties: {} },
+    handler: () => ({ brand: readBrand(ctx()) }),
+  },
+  {
+    name: "check_brand_contrast",
+    description: "WCAG AA audit of the persisted brand: contrast ratios for every brand pair. Run after set_brand or when adjusting colors.",
+    inputSchema: { type: "object", properties: {} },
+    handler: () => {
+      const r = brandCheck(ctx());
+      if (r.errors[0]?.code === "NO_BRAND") throw r.errors[0];
+      return r.data; // includes per-pair ratios even when failing
+    },
+  },
+  {
+    name: "extract_brand",
+    description: "Extract brand candidates (colors with occurrence counts, fonts) from a website URL or a local SVG logo. Returns SUGGESTIONS with provenance — confirm with the user, then call set_brand.",
+    inputSchema: {
+      type: "object",
+      properties: { url: str("Website URL (http/https)"), logoPath: str("Path to a local .svg logo") },
+    },
+    handler: async ({ url, logoPath }) => {
+      if (url) return run(await brandFromUrl(url));
+      if (logoPath) return run(brandFromLogo(ctx(), logoPath));
+      throw { code: "MISSING_ARGUMENT", message: "Provide either 'url' or 'logoPath'." };
+    },
+  },
+  {
     name: "validate_project",
     description: "Run health checks on the current project (config, deps, Tailwind wiring, CSS imports, generated-code lint risks). Run this after scaffolding to self-verify.",
     inputSchema: { type: "object", properties: {} },
@@ -163,13 +209,13 @@ function handle(msg) {
   if (method === "tools/call") {
     const tool = TOOLS.find((t) => t.name === params?.name);
     if (!tool) return replyErr(id, -32602, `Unknown tool: ${params?.name}`);
-    try {
-      const out = tool.handler(params.arguments || {});
-      return reply(id, { content: [{ type: "text", text: JSON.stringify(out, null, 2) }], structuredContent: out, isError: false });
-    } catch (e) {
-      const payload = e && e.code ? e : { code: "INTERNAL", message: String(e?.message || e) };
-      return reply(id, { content: [{ type: "text", text: JSON.stringify(payload, null, 2) }], structuredContent: payload, isError: true });
-    }
+    return Promise.resolve()
+      .then(() => tool.handler(params.arguments || {}))
+      .then((out) => reply(id, { content: [{ type: "text", text: JSON.stringify(out, null, 2) }], structuredContent: out, isError: false }))
+      .catch((e) => {
+        const payload = e && e.code ? e : { code: "INTERNAL", message: String(e?.message || e) };
+        reply(id, { content: [{ type: "text", text: JSON.stringify(payload, null, 2) }], structuredContent: payload, isError: true });
+      });
   }
   if (id !== undefined) replyErr(id, -32601, `Method not found: ${method}`);
 }

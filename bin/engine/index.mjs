@@ -16,3 +16,7 @@ export { doctor, diffComponents } from "./health.mjs";
 export { validateSpec, scaffoldSpec, listRecipes, getRecipe, searchRecipes } from "./spec.mjs";
 export { RECIPES } from "./recipes.mjs";
 export { agentsInit } from "./agents.mjs";
+export {
+  brandInit, brandCheck, brandCheckData, readBrand, brandFromUrl, brandFromLogo,
+  contrastRatio, contrastColor, variations, luminance, hexToRgb, BRAND_FILE, BRAND_CSS,
+} from "./brand.mjs";
