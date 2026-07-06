@@ -1,0 +1,213 @@
+{
+  "$schema": "https://chameleon.glenhalton.com/manifest-schema.json",
+  "name": "Chameleon UI",
+  "package": "@chameleon-ui-lib/react",
+  "version": "1.0.0",
+  "icons": [
+    {
+      "src": "/logo.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/logo.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "description": "React 19 + TypeScript component library with 5 automatic themes and 2 colour modes.",
+  "repository": "https://github.com/GDA-Africa/chameleon-ui",
+  "npm": "https://www.npmjs.com/package/@chameleon-ui-lib/react",
+  "workshop": "https://chameleon.glenhalton.com",
+  "llmContext": "https://chameleon.glenhalton.com/context.md",
+  "llmsTxt": "https://chameleon.glenhalton.com/llms.txt",
+  "themes": ["material", "simple", "minimalist", "glassy", "liquid"],
+  "modes": ["light", "dark"],
+  "languages": ["en", "es", "fr"],
+  "totalComponents": 46,
+  "categories": {
+    "atoms": 9,
+    "molecules": 10,
+    "composites": 10,
+    "auth": 7,
+    "templates": 14
+  },
+  "atoms": [
+    {
+      "name": "Button",
+      "props": ["variant", "size", "animated", "asChild"],
+      "importFrom": "@chameleon-ui-lib/react"
+    },
+    { "name": "Input", "props": ["animated"], "importFrom": "@chameleon-ui-lib/react" },
+    { "name": "Badge", "props": ["animated"], "importFrom": "@chameleon-ui-lib/react" },
+    {
+      "name": "Progress",
+      "props": ["value", "label", "showValue", "animated"],
+      "importFrom": "@chameleon-ui-lib/react"
+    },
+    { "name": "Spinner", "props": ["size"], "importFrom": "@chameleon-ui-lib/react" },
+    {
+      "name": "Avatar",
+      "props": ["src", "fallback", "size", "animated"],
+      "importFrom": "@chameleon-ui-lib/react"
+    },
+    {
+      "name": "Toggle",
+      "props": ["checked", "onChange", "label", "animated"],
+      "importFrom": "@chameleon-ui-lib/react"
+    },
+    {
+      "name": "Tooltip",
+      "props": ["content", "side", "children"],
+      "importFrom": "@chameleon-ui-lib/react"
+    },
+    {
+      "name": "DatePicker",
+      "props": [
+        "mode",
+        "value",
+        "onChange",
+        "rangeValue",
+        "onRangeChange",
+        "minDate",
+        "maxDate",
+        "placeholder",
+        "disabled"
+      ],
+      "importFrom": "@chameleon-ui-lib/react"
+    }
+  ],
+  "molecules": [
+    {
+      "name": "Card",
+      "exports": ["Card", "CardHeader", "CardTitle", "CardContent", "CardFooter"],
+      "importFrom": "@chameleon-ui-lib/react"
+    },
+    {
+      "name": "Tabs",
+      "exports": ["Tabs", "TabsList", "TabsTrigger", "TabsContent"],
+      "importFrom": "@chameleon-ui-lib/react"
+    },
+    {
+      "name": "Dialog",
+      "exports": [
+        "Dialog",
+        "DialogTrigger",
+        "DialogContent",
+        "DialogHeader",
+        "DialogTitle",
+        "DialogFooter"
+      ],
+      "importFrom": "@chameleon-ui-lib/react"
+    },
+    { "name": "Alert", "props": ["variant"], "importFrom": "@chameleon-ui-lib/react" },
+    {
+      "name": "StatCard",
+      "props": ["title", "value", "change", "icon", "animated"],
+      "importFrom": "@chameleon-ui-lib/react"
+    },
+    { "name": "Select", "importFrom": "@chameleon-ui-lib/react" },
+    {
+      "name": "Breadcrumb",
+      "exports": ["Breadcrumb", "BreadcrumbItem"],
+      "importFrom": "@chameleon-ui-lib/react"
+    },
+    { "name": "Separator", "importFrom": "@chameleon-ui-lib/react" },
+    { "name": "Textarea", "importFrom": "@chameleon-ui-lib/react" },
+    { "name": "SearchBar", "importFrom": "@chameleon-ui-lib/react" }
+  ],
+  "composites": [
+    {
+      "name": "DataTable",
+      "props": ["data", "columns", "searchable", "paginated"],
+      "importFrom": "@chameleon-ui-lib/react"
+    },
+    {
+      "name": "KanbanBoard",
+      "props": ["columns", "onMove", "animated"],
+      "importFrom": "@chameleon-ui-lib/react"
+    },
+    {
+      "name": "MultiStepForm",
+      "props": ["steps", "onComplete"],
+      "importFrom": "@chameleon-ui-lib/react"
+    },
+    { "name": "NotificationFeed", "importFrom": "@chameleon-ui-lib/react" },
+    {
+      "name": "CalendarWidget",
+      "props": ["events", "onEventClick", "view"],
+      "importFrom": "@chameleon-ui-lib/react"
+    },
+    { "name": "FileUploader", "importFrom": "@chameleon-ui-lib/react" },
+    { "name": "MediaGallery", "importFrom": "@chameleon-ui-lib/react" },
+    { "name": "Timeline", "importFrom": "@chameleon-ui-lib/react" },
+    { "name": "ThemeChart", "importFrom": "@chameleon-ui-lib/react" },
+    { "name": "PricingCard", "importFrom": "@chameleon-ui-lib/react" }
+  ],
+  "auth": [
+    "LoginForm",
+    "SignupForm",
+    "TwoFactorAuth",
+    "MagicLinkForm",
+    "ForgotPasswordForm",
+    "ResetPasswordForm",
+    "UserProfile"
+  ],
+  "templates": [
+    "Dashboard",
+    "Landing",
+    "Settings",
+    "Analytics",
+    "Inbox",
+    "ECommerce",
+    "Profile",
+    "Calendar",
+    "Auth",
+    "Blog",
+    "Pricing",
+    "Team",
+    "Reports",
+    "Onboarding"
+  ],
+  "hooks": [
+    {
+      "name": "useChameleon",
+      "returns": [
+        "theme",
+        "setTheme",
+        "mode",
+        "setMode",
+        "lang",
+        "setLang",
+        "customBrandColor",
+        "setCustomBrandColor",
+        "glassyIntensity",
+        "setGlassyIntensity",
+        "liquidIntensity",
+        "setLiquidIntensity"
+      ]
+    },
+    {
+      "name": "useThemeClasses",
+      "returns": [
+        "buttonPrimary",
+        "buttonSecondary",
+        "buttonGhost",
+        "buttonOutline",
+        "cardClass",
+        "inputClass",
+        "badgeClass",
+        "textPrimary",
+        "textMuted",
+        "theme",
+        "mode"
+      ]
+    }
+  ],
+  "cli": {
+    "package": "chameleon",
+    "commands": ["init", "add", "list", "info", "themes", "doctor", "config", "version"]
+  },
+  "cssImport": "@import '@chameleon-ui-lib/react/styles';",
+  "providerExample": "import { ChameleonProvider } from '@chameleon-ui-lib/react';\n\n<ChameleonProvider theme=\"simple\" mode=\"light\">\n  <App />\n</ChameleonProvider>"
+}
