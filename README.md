@@ -14,6 +14,15 @@ One component library. Five complete design systems. Switch themes at runtime wi
 
 Each theme ships with a full `light` and `dark` mode, its own typography, spacing, and ambient backgrounds — no CSS overrides required.
 
+**v2.0 — built for AI agents.** Chameleon is a tool surface agents call, not just a library they read about: an MCP server (`chameleon mcp`, 23 tools), a validated spec language for pages (**ChameleonSpec**) and whole applications (**AppSpec** → `chameleon new`), a brand pipeline with WCAG AA auditing (`chameleon brand`), live previews (`/play`), and an integrity-checked registry. Say *"build me a CRM for my bakery — brand from my site"* to Claude Code and it lands as a running app.
+
+```bash
+# register the MCP server once
+claude mcp add chameleon -- npx -y -p @chameleon-ui-lib/react chameleon mcp
+# or teach any agent without MCP
+npx chameleon agents init
+```
+
 ---
 
 ## Install

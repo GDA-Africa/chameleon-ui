@@ -10,7 +10,7 @@
 ## Package
 
 - NPM: @chameleon-ui-lib/react
-- Version: 1.1.0
+- Version: 2.0.0-alpha.1
 - Framework: React 19 + Vite 6 + TypeScript (strict mode)
 - Styling: Tailwind CSS v4 + CSS custom properties (tokens)
 - Animations: Framer Motion (motion/react)
@@ -182,3 +182,24 @@ All component props are exported: ButtonProps, InputProps, BadgeProps, etc.
 - Full context (Markdown): https://chameleon.glenhalton.com/context.md
 - Machine manifest (this file): https://chameleon.glenhalton.com/llms.txt
 - Component manifest (JSON): https://chameleon.glenhalton.com/manifest.json
+
+## v2.0 — The Agent SDK Surface
+
+Chameleon UI is designed to be CALLED BY AI AGENTS, not just read about.
+
+- MCP server: `chameleon mcp` (register: `claude mcp add chameleon -- npx -y -p @chameleon-ui-lib/react chameleon mcp`)
+  23 tools: search_components, list_catalog, get_component_info, scaffold_component,
+  scaffold_template, list_recipes, get_recipe, validate_spec, compose_from_blocks,
+  preview_spec, get_playground_url, set_brand, get_brand, check_brand_contrast,
+  extract_brand, validate_app_spec, scaffold_app, search_registry, add_registry_item,
+  init_project, set_theme, list_themes, validate_project.
+- ChameleonSpec v1 (declarative page): { "version": 1, "name": "kebab", "template": "..."
+  OR "blocks": [{ "component": "stat-card", "props": {...} }], "theme"?, "mode"?, "brand"? }
+  Validate: `chameleon compose <file> --validate-only --json` → pathed errors with suggestions.
+- AppSpec v2 (whole application): { "version": 2, "app": {name, brand?}, "shell": {nav},
+  "pages": [{route, title, spec}], "dataSlots"? } → `chameleon new <dir> --app-spec <file>`
+- Brand tokens: `chameleon brand init --primary "#hex" [--font Name]` → brand.config.json,
+  pass to <ChameleonProvider brand={...}>. Audit: `chameleon brand check --json`.
+- Live preview: https://chameleon.glenhalton.com/play?spec=<base64url(spec)>
+- Every CLI command supports --json (stable envelope, see docs/CLI_JSON.md).
+- Agent rulesets: `chameleon agents init` writes this knowledge into CLAUDE.md/AGENTS.md/.cursorrules.

@@ -1,3 +1,18 @@
+# 2.0.0-alpha.1 — The Agent SDK (2026-07-05)
+
+Six releases of roadmap in one arc (Phases 11–16 → v2.0). Chameleon becomes the
+tool surface AI agents call. Full details: `NEXUS_ROADMAP_v2.0.md`, `docs/MIGRATION_v2.md`.
+
+- **MCP server** (`chameleon mcp`) — zero-dep JSON-RPC/stdio, 23 tools
+- **ChameleonSpec v1** — validated declarative pages; 10 recipes; `chameleon compose`; `RenderSpec` runtime
+- **AppSpec v2** — `chameleon new <dir> --app-spec` scaffolds runnable apps (router, nav, brand, mock data seams)
+- **Brand pipeline** — `chameleon brand init/check/from-url/from-logo`; `ChameleonProvider brand` prop; WCAG AA audit
+- **Preview & playground** — `chameleon preview`, `/render` + `/play` routes, visual-regression CI (experimental)
+- **Registry** — `chameleon add @chameleon/<name>`; spec vs source trust split, sha256 integrity, `--yes` confirm
+- **Agent rulesets** — `chameleon agents init`; `--json` on every command; engine extracted to `bin/engine/` (`./engine` export)
+- **MCP Apps widget** (experimental, SEP-1865) — `npm run build:widget` + `CHAMELEON_MCP_APPS=1`
+- Deprecated: `customBrandColor` (use `brand` prop; removal in v3)
+
 # Changelog
 
 All notable changes to this project will be documented in this file.

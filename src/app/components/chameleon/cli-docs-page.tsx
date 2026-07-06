@@ -35,6 +35,95 @@ import { CopyPageForAIPanel } from "./ai-helpers";
 
 const CLI_COMMANDS = [
   {
+    cmd: "mcp",
+    usage: "chameleon mcp",
+    icon: Download,
+    category: "AI Agents",
+    badge: "v2.0",
+    desc: "Start the MCP server (stdio) — 23 tools that let AI agents search the catalog, compose specs, apply brands, preview pages, and scaffold whole apps. Register once: `claude mcp add chameleon -- npx -y -p @chameleon-ui-lib/react chameleon mcp`.",
+    example: `chameleon mcp
+# chameleon-ui MCP server ready (stdio)
+# tools: search_components, compose_from_blocks, scaffold_app, ...`,
+    flags: [],
+  },
+  {
+    cmd: "compose",
+    usage: "chameleon compose <spec-file | recipe>",
+    icon: Plus,
+    category: "AI Agents",
+    badge: "v2.0",
+    desc: "Scaffold a page from a ChameleonSpec v1 — a validated JSON description ({ version:1, name, template|blocks[] }). Pass a recipe name (see `chameleon recipes`) or a spec file. `--validate-only` checks without writing.",
+    example: `chameleon compose team-members
+# ✓ src/pages/team-members.tsx composed from 2 block(s)`,
+    flags: ["--validate-only", "--json"],
+  },
+  {
+    cmd: "recipes",
+    usage: "chameleon recipes",
+    icon: Download,
+    category: "AI Agents",
+    badge: "v2.0",
+    desc: "List the 10 built-in composition recipes — stored, validated page specs (login-form, analytics-overview, kanban-workspace, ...).",
+    example: `chameleon recipes
+# login-form        Login and signup forms with validation.`,
+    flags: ["--json"],
+  },
+  {
+    cmd: "new",
+    usage: "chameleon new <dir> --app-spec <file>",
+    icon: Plus,
+    category: "AI Agents",
+    badge: "v2.0",
+    desc: "Scaffold a complete runnable application from an AppSpec v2: Vite + React + TS + Tailwind, router and nav generated from pages, brand applied, mock dataSlots with replacement seams, agent rulesets included.",
+    example: `chameleon new bakery-crm --app-spec app.json
+# ✓ 21 files — cd bakery-crm && npm install && npm run dev`,
+    flags: ["--validate-only", "--json"],
+  },
+  {
+    cmd: "brand",
+    usage: "chameleon brand <init|check|from-url|from-logo>",
+    icon: Download,
+    category: "Config",
+    badge: "v2.0",
+    desc: "Brand token pipeline: `init` persists colors/font/radius (brand.config.json + CSS layer) and audits WCAG AA contrast; `check` re-audits; `from-url`/`from-logo` extract candidate palettes with provenance — never auto-applied.",
+    example: `chameleon brand init --primary "#635BFF" --font Sora
+# ✓ brand.config.json created — pass to <ChameleonProvider brand={...}>`,
+    flags: ["--primary", "--secondary", "--accent", "--font", "--radius", "--json"],
+  },
+  {
+    cmd: "preview",
+    usage: "chameleon preview <spec-file | recipe>",
+    icon: Download,
+    category: "AI Agents",
+    badge: "v2.0",
+    desc: "Audit a spec before scaffolding: validation + brand contrast always; Playwright screenshots per theme/mode with render-error detection when available. Returns a shareable /play URL.",
+    example: `chameleon preview analytics-overview
+# ✓ Spec is valid — Playground: chameleon.glenhalton.com/play?spec=...`,
+    flags: ["--base-url", "--themes", "--json"],
+  },
+  {
+    cmd: "registry",
+    usage: "chameleon registry · chameleon add @chameleon/<name>",
+    icon: Download,
+    category: "Scaffold",
+    badge: "v2.0",
+    desc: "Browse and install remote registry items. Spec items are schema-validated (safe by construction); source items are sha256-verified and require an explicit `--yes` after a diff preview.",
+    example: `chameleon add @chameleon/kanban-workspace
+# ✓ Installed — provenance recorded in chameleon.config.json`,
+    flags: ["--registry", "--yes", "--json"],
+  },
+  {
+    cmd: "agents init",
+    usage: "chameleon agents init",
+    icon: Download,
+    category: "AI Agents",
+    badge: "v2.0",
+    desc: "Write the Chameleon catalog + workflow into your project's CLAUDE.md, AGENTS.md, and .cursorrules between marker comments — every coding agent learns the library, even without MCP. Idempotent refresh.",
+    example: `chameleon agents init
+# ✓ CLAUDE.md — Chameleon block appended`,
+    flags: ["--json"],
+  },
+  {
     cmd: "init",
     usage: "chameleon init",
     icon: Download,
@@ -208,7 +297,7 @@ chameleon list --templates
   },
 ];
 
-const CATEGORY_ORDER = ["Setup", "Scaffold", "Discovery", "Config", "Health", "Dev"];
+const CATEGORY_ORDER = ["AI Agents", "Setup", "Scaffold", "Discovery", "Config", "Health", "Dev"];
 
 const BADGE_COLORS: Record<string, string> = {
   interactive: "bg-indigo-500/10 text-indigo-400 border-indigo-500/20",
@@ -217,6 +306,7 @@ const BADGE_COLORS: Record<string, string> = {
   "writes config": "bg-purple-500/10 text-purple-400 border-purple-500/20",
   diagnostic: "bg-cyan-500/10 text-cyan-400 border-cyan-500/20",
   server: "bg-rose-500/10 text-rose-400 border-rose-500/20",
+  "v2.0": "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
 };
 
 // ─── Code Block ───────────────────────────────────────────────────────────────
