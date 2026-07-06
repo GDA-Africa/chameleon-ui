@@ -264,7 +264,7 @@ export const EnhancedLandingPage: React.FC<EnhancedLandingPageProps> = ({ onNavi
         <Animated type="fadeUp" delay={0}>
           <Badge className="px-4 py-2 text-xs font-black tracking-widest uppercase">
             <Sparkles className="w-3.5 h-3.5 mr-2" />
-            Version 1.1.0 • Stable Release
+            Version 2.0 • The Agent SDK Release
           </Badge>
         </Animated>
 
@@ -299,9 +299,9 @@ export const EnhancedLandingPage: React.FC<EnhancedLandingPageProps> = ({ onNavi
               textMuted,
             )}
           >
-            60+ accessible components that morph between 5 distinct design languages.
+            60+ accessible components that morph between 5 distinct design languages —
             <br className="hidden md:block" />
-            Built for developers who refuse to compromise on design quality.
+            now callable by AI agents. Say it, and Chameleon builds it: pages, brands, whole apps.
           </p>
         </Animated>
 
@@ -310,12 +310,22 @@ export const EnhancedLandingPage: React.FC<EnhancedLandingPageProps> = ({ onNavi
             <Button
               size="lg"
               animated
-              onClick={() => onNavigate?.("docs")}
+              onClick={() => onNavigate?.("agent-sdk")}
               className="h-16 px-10 text-lg font-black group shadow-2xl shadow-[var(--primary)]/25"
+            >
+              <Sparkles className="w-5 h-5 mr-3" />
+              Meet the Agent SDK
+              <ArrowRight className="ml-3 w-5 h-5 transition-transform group-hover:translate-x-1" />
+            </Button>
+            <Button
+              variant="secondary"
+              size="lg"
+              animated
+              onClick={() => onNavigate?.("docs")}
+              className="h-16 px-10 text-lg font-black"
             >
               <Terminal className="w-5 h-5 mr-3" />
               Get Started
-              <ArrowRight className="ml-3 w-5 h-5 transition-transform group-hover:translate-x-1" />
             </Button>
             <Button
               variant="outline"
@@ -560,6 +570,61 @@ export const EnhancedLandingPage: React.FC<EnhancedLandingPageProps> = ({ onNavi
             </Card>
           ))}
         </AnimatedList>
+      </section>
+
+      {/* Agent SDK (v2.0) */}
+      <section className="px-4 sm:px-6 max-w-7xl mx-auto space-y-8 sm:space-y-12">
+        <Animated type="fadeUp">
+          <div className="text-center space-y-4">
+            <Badge className="px-4 py-2 text-xs font-black tracking-widest uppercase">
+              <Sparkles className="w-3.5 h-3.5 mr-2" />
+              New in v2.0
+            </Badge>
+            <h2 className={cn("text-4xl sm:text-5xl font-black tracking-tight", textPrimary)}>
+              Built for AI Agents
+            </h2>
+            <p className={cn("text-lg max-w-3xl mx-auto", textMuted)}>
+              Chameleon is a tool surface agents <em>call</em> — not just a library they read about.
+              One sentence in Claude Code becomes a branded, WCAG-audited, running application.
+            </p>
+          </div>
+        </Animated>
+        <Animated type="fadeUp" delay={0.1}>
+          <div className="grid lg:grid-cols-2 gap-6 items-stretch">
+            <Card className="overflow-hidden">
+              <CardContent className="p-0">
+                <div className="p-4 bg-black/90 text-emerald-300 font-mono text-xs sm:text-sm leading-relaxed rounded-xl">
+                  <p className="text-white/50"># register once</p>
+                  <p>$ claude mcp add chameleon -- npx -y -p @chameleon-ui-lib/react chameleon mcp</p>
+                  <p className="mt-3 text-white/50"># then just ask</p>
+                  <p className="text-white">&gt; build me a CRM for my bakery — brand from my site</p>
+                  <p className="mt-2">✓ extract_brand · 4 candidates from bakery.com</p>
+                  <p>✓ set_brand · WCAG AA verified</p>
+                  <p>✓ compose_from_blocks · 3 pages validated</p>
+                  <p>✓ preview_spec · chameleon.glenhalton.com/play?spec=…</p>
+                  <p>✓ scaffold_app · 21 files — npm run dev</p>
+                </div>
+              </CardContent>
+            </Card>
+            <div className="space-y-4">
+              {[
+                ["23 MCP tools", "Search the catalog, compose validated specs, apply brands, preview live, scaffold whole apps."],
+                ["A spec language, not guesswork", "Agents emit JSON validated against the catalog before any file is written — errors come back pathed, with suggestions."],
+                ["See it before it lands", "Every composition gets a shareable /play link and screenshot verification."],
+                ["Works without MCP too", "chameleon agents init teaches any coding agent via CLAUDE.md — and every CLI command speaks --json."],
+              ].map(([title, desc]) => (
+                <div key={title} className={cn("rounded-xl border p-4", cardClass)}>
+                  <div className={cn("font-black text-sm mb-1", textPrimary)}>{title}</div>
+                  <div className={cn("text-sm leading-relaxed", textMuted)}>{desc}</div>
+                </div>
+              ))}
+              <Button animated onClick={() => onNavigate?.("agent-sdk")} className="w-full h-12 font-black group">
+                Explore the Agent SDK
+                <ArrowRight className="ml-2 w-4 h-4 transition-transform group-hover:translate-x-1" />
+              </Button>
+            </div>
+          </div>
+        </Animated>
       </section>
 
       {/* Architecture Overview */}

@@ -657,6 +657,7 @@ function Workshop() {
                 { label: "Components", page: "component-docs" as Page },
                 { label: "Composites", page: "composites" as Page },
                 { label: "Templates", page: "templates" as Page },
+                { label: "Agent SDK", page: "agent-sdk" as Page },
                 { label: "CLI Tool", page: "cli-docs" as Page },
                 { label: "Getting Started", page: "docs" as Page },
               ]},
