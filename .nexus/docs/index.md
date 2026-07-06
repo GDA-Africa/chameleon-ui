@@ -206,6 +206,11 @@ last_updated: "2026-05-04"
 
 ## 🔄 Progress Log
 
+### 2026-07-05 — Website updated for v2.0 (`f714343`)
+- ✅ New "Agent SDK" workshop page (Sparkles icon, v2.0 badge): MCP registration, 5-step agent flow, spec examples, 23-tool grouped reference, /play links
+- ✅ Landing: Agent SDK highlighted feature card + 3 new comparison rows; index.html meta/og lead with the agent story; context.md v2 section for crawlers
+- 🖥️ Deploy is local (deploy.sh needs the macOS build env): `npm run build:app` + deploy after validation
+
 ### 2026-07-05 — Phases 12–16 implemented: v2.0.0-alpha.1 (`ff38216`…`952eb74`)
 - ✅ Phase 12 brand: `engine/brand.mjs` (WCAG math, from-url/from-svg-logo candidates), `ChameleonProvider brand` prop, CLI `brand`, 4 MCP tools. Verified: init/check/extraction incl. local-server from-url; honest AA failures (#FF6B35 on white = 2.56:1)
 - ✅ Phase 13 preview: `/render` + `/play` routes (base64url spec param), `previewSpec` (static always / Playwright when available), `specUrl` share links, visual CI matrix (continue-on-error until baselines)
