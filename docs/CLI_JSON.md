@@ -40,14 +40,18 @@ Exit code: `0` when `ok: true`, `1` when `ok: false`.
 | `doctor` | `{ healthy, issues, checks: [{level: "ok"\|"warn"\|"error", message}] }` — `ok` mirrors `healthy` |
 | `diff` | `{ components: [{name, status: "in-sync"\|"out-of-sync"}], outOfSync }` |
 | `update` | `{ updated: [...], upToDate: [...] }` |
+| `recipes` | `{ recipes: [{name, description, keywords}] }` |
+| `compose <x>` | `{ name, source: "template"\|"blocks", export, file, ... }` (`--validate-only`: `{ valid, errors }`) |
+| `agents init` | `{ files: [...], markers: [...] }` |
 | `--version` | `{ cli, library }` |
 
 ## Error codes
 
 `NOT_INITIALIZED` · `MISSING_ARGUMENT` · `UNKNOWN_COMPONENT` · `UNKNOWN_TEMPLATE` ·
-`UNKNOWN_ITEM` · `UNKNOWN_COMMAND` · `INVALID_THEME` · `NO_PACKAGE_JSON` ·
-`SOURCE_NOT_FOUND` · `INTERACTIVE_COMMAND` (`dev` does not support `--json`) ·
-`ERROR` (generic check failure)
+`UNKNOWN_ITEM` · `UNKNOWN_COMMAND` · `UNKNOWN_RECIPE` · `INVALID_THEME` ·
+`INVALID_SPEC` (carries `validationErrors: [{path, message, suggestion?}]`) ·
+`NO_PACKAGE_JSON` · `SOURCE_NOT_FOUND` · `INTERACTIVE_COMMAND` (`dev` does not
+support `--json`) · `ERROR` (generic check failure)
 
 Errors may carry extra fields (e.g. `INVALID_THEME` includes `validThemes`,
 `UNKNOWN_TEMPLATE` includes `available`).

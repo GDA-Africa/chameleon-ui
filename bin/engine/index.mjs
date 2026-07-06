@@ -15,3 +15,4 @@ export { addComponents, selectBulk, removeComponent, scaffoldTemplate, setTheme,
 export { doctor, diffComponents } from "./health.mjs";
 export { validateSpec, scaffoldSpec, listRecipes, getRecipe, searchRecipes } from "./spec.mjs";
 export { RECIPES } from "./recipes.mjs";
+export { agentsInit } from "./agents.mjs";

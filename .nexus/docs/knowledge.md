@@ -291,3 +291,15 @@ Optional: Brief supporting detail (1-2 sentences max).
 ### [pattern] Engine Result events are replayed by skins — never print inside the engine
 
 **2026-07-05** — Engine functions return `{ ok, data, events: [{level, message}], filesWritten, filesDeleted, nextSteps, errors: [{code, message}] }`. Event levels: ok/warn/error/info/dim/detail. The CLI replays events through its ANSI formatters (byte-identical human output, verified by golden diff); `--json` maps events→checks/warnings and errors pass through. New engine features must emit events, not console.log — otherwise the MCP server (F60) will leak text onto stdio and corrupt the JSON-RPC stream.
+
+### [architecture] MCP server is zero-dep and in-package (bin/mcp-server.mjs), not packages/mcp + SDK
+
+**2026-07-05** — F60 deviation: the phase plan called for `packages/mcp` with `@modelcontextprotocol/sdk`. Shipped instead as a ~200-line zero-dependency JSON-RPC/stdio server inside the react package, launched via `chameleon mcp` — no workspace wiring, no SDK version churn, ships with the existing tarball. If richer MCP features are needed (resources, prompts, HTTP transport), wrap the same engine in an SDK-based `@chameleon-ui-lib/mcp` package then.
+
+### [gotcha] Sandbox tsc takes >45s — run via nohup setsid to a log file and poll
+
+**2026-07-05** — `npx tsc --noEmit` on this repo exceeds the 45s bash timeout in the Cowork sandbox. Plain `&` backgrounding dies with the call (each bash is a fresh session); `nohup setsid bash -c '... > /tmp/log' &` survives and can be polled. Same trick applies to any long-running validation.
+
+### [pattern] Recipe specs must use only verified component props
+
+**2026-07-05** — Generated pages must pass consumer strict TS. Before adding a recipe, grep the component's props interface in source (e.g. Timeline events need `date`/`status`, not `time`/`type` — caught during F61). A future manifest-derived prop validator (Phase 11 wrap-up) will automate this.

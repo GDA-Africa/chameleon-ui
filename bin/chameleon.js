@@ -15,7 +15,7 @@ import {
   createContext, listCatalog, getInfo, listThemes, readConfig,
   addComponents, selectBulk, removeComponent, scaffoldTemplate, setTheme, updateComponents, initProject,
   doctor, diffComponents,
-  validateSpec, scaffoldSpec, listRecipes, getRecipe,
+  validateSpec, scaffoldSpec, listRecipes, getRecipe, agentsInit,
 } from "./engine/index.mjs";
 
 const __filename = fs.realpathSync(fileURLToPath(import.meta.url));
@@ -89,7 +89,8 @@ function printHelp() {
   log(`    ${c.emerald}update${c.reset}                  Re-sync outdated scaffolded components`);
   log(`    ${c.emerald}config${c.reset}                  Show or manage chameleon.config.json`);
   log(`    ${c.emerald}dev${c.reset}                     Launch the local component playground`);
-  log(`    ${c.emerald}mcp${c.reset}                     Start the MCP server for AI agents (stdio)\n`);
+  log(`    ${c.emerald}mcp${c.reset}                     Start the MCP server for AI agents (stdio)`);
+  log(`    ${c.emerald}agents init${c.reset}             Write Chameleon rulesets for coding agents (CLAUDE.md, ...)\n`);
   log(`  ${c.bold}${c.white}OPTIONS${c.reset}`);
   log(`    ${c.emerald}-h, --help${c.reset}              Show this help message`);
   log(`    ${c.emerald}-v, --version${c.reset}           Show the version number`);
@@ -413,6 +414,19 @@ if (cmd === "init") {
   log("");
   info(`Edit ${c.emerald}chameleon.config.json${c.gray} directly, or use ${c.emerald}chameleon theme <name>${c.gray} to change the theme.`);
   log("");
+
+// ── agents ────────────────────────────────────────────────────────────────────
+} else if (cmd === "agents") {
+  if (item !== "init") {
+    if (JSON_MODE) jsonDie("MISSING_ARGUMENT", "Usage: chameleon agents init [--json]");
+    log(`\n${c.red}✖ Unknown subcommand${c.reset}\n  ${c.gray}Usage: ${c.emerald}chameleon agents init${c.reset}\n`); process.exit(1);
+  }
+  const result = agentsInit(ctx, { version: VERSION });
+  if (JSON_MODE) finishJson(result);
+  log(`\n${c.emerald}➜${c.reset} ${c.indigo}Writing Chameleon agent rulesets...${c.reset}\n`);
+  if (!result.ok) { renderCommonError(result); process.exit(1); }
+  renderEvents(result.events);
+  log(`\n${c.emerald}Done!${c.reset} ${c.gray}Coding agents in this project now know the Chameleon catalog and workflow.${c.reset}\n`);
 
 // ── mcp ───────────────────────────────────────────────────────────────────────
 } else if (cmd === "mcp") {

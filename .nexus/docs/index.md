@@ -25,9 +25,9 @@ last_updated: "2026-05-04"
 ## 🎯 Current Objective
 
 **Current Phase:** Phase 11 — **Agents Can Call Chameleon (v1.2.0)** — see `NEXUS_ROADMAP_v2.0.md` (master, Phases 11–16 → v2.0.0) + `.nexus/plans/phase-11-agent-callable.md`
-**Active Task:** None — F58 + F59 shipped 2026-07-05; next is F61 (ChameleonSpec v1)
+**Active Task:** None — Phase 11 core complete (F58–F61, F64 shipped 2026-07-05)
 **Blocked:** None
-**Next Up:** F61 ChameleonSpec v1 → F60 MCP server → F64 agents init. Then Phases 12–16 per roadmap. Deferred: Liquid light-mode audit, `--all-templates` flag, Playwright E2E (folds into F69)
+**Next Up:** Phase 11 wrap-up: `verify:consumer` MCP smoke test, manifest-completeness CI check, `renderSpec` React runtime (feeds F66), real-agent E2E test (Claude Code + MCP), v1.2.0 release. Then Phase 12 (brand). Then Phases 12–16 per roadmap. Deferred: Liquid light-mode audit, `--all-templates` flag, Playwright E2E (folds into F69)
 
 ---
 
@@ -129,11 +129,11 @@ last_updated: "2026-05-04"
 | F57 | Full `styleConfig` propagation (part2 templates) | P0 | ✅ Done | 10 | v1.1.0 — all 6 templates in `comprehensive-templates-part2.tsx` wired |
 | F58 | `--json` output mode for CLI | P0 | ✅ Done | 11 | 2026-07-05 — envelope on all 13 commands + version, structured error codes, `docs/CLI_JSON.md` |
 | F59 | Shared engine extraction (`bin/engine/`) | P0 | ✅ Done | 11 | 2026-07-05 — registry/catalog/scaffold/health/core modules, `./engine` subpath export, CLI is a thin skin; golden-diff parity verified |
-| F60 | `@chameleon-ui-lib/mcp` MCP server | P0 | 📋 Planned | 11 | `packages/mcp` — search/scaffold/validate tools so agents can "create a login form" via tool calls |
-| F61 | ChameleonSpec v1 + recipes-as-specs | P0 | 📋 Planned | 11 | REVISED — declarative page spec, zod validator from manifest, `renderSpec`/`scaffoldSpec`, ~10 recipes as stored specs |
+| F60 | Chameleon MCP server | P0 | ✅ Done | 11 | 2026-07-05 — zero-dep JSON-RPC/stdio server (`bin/mcp-server.mjs`), 13 tools, `chameleon mcp` launch; `@chameleon-ui-lib/mcp` wrapper package deferred |
+| F61 | ChameleonSpec v1 + recipes-as-specs | P0 | ✅ Done | 11 | 2026-07-05 — `spec.mjs` validate/scaffold, 10 recipes, `chameleon compose`/`recipes`; `renderSpec` (React runtime) deferred to F66 prep |
 | F62 | `chameleon brand` token pipeline | P0 | 📋 Planned | 12 | `brand init/check` — colors, font, radius, density → persisted tokens, WCAG AA checked; extends F34 |
 | F63 | MCP brand tools + agent docs refresh | P1 | 📋 Planned | 12 | `set_brand`/`check_brand_contrast`/`extract_brand` tools; update `AI_INTEGRATION_GUIDE.md`, `llms.txt`, `context.md` |
-| F64 | `chameleon agents init` | P1 | 📋 Planned | 11 | Consumer-project agent rulesets between `<!-- chameleon:start/end -->` markers |
+| F64 | `chameleon agents init` | P1 | ✅ Done | 11 | 2026-07-05 — writes/refreshes marker block in CLAUDE.md, AGENTS.md, .cursorrules; idempotent, preserves user content |
 | F65 | Brand extraction `from-url`/`from-logo` | P1 | 📋 Planned | 12 | Candidates-with-provenance, never auto-applied; feeds F62 |
 | F66 | `/render?spec=` route | P0 | 📋 Planned | 13 | Bare canvas rendering ChameleonSpec — shared by F67/F68/F69/F70 |
 | F67 | `preview(spec)` MCP tool | P0 | 📋 Planned | 13 | Playwright screenshots + axe + contrast audit; graceful degradation |
@@ -204,6 +204,14 @@ last_updated: "2026-05-04"
 ---
 
 ## 🔄 Progress Log
+
+### 2026-07-05 — F60 + F61 + F64 shipped: the agent surface is live
+- ✅ F61 ChameleonSpec v1: `bin/engine/spec.mjs` — `validateSpec` (pathed errors + typo suggestions via prefix matching), `scaffoldSpec` (template specs copy templates under the spec name; block specs scaffold components + generate a composed page). `bin/engine/recipes.mjs`: 10 stored specs using verified component props (StatCard/DataTable/KanbanBoard/Timeline APIs checked against source). CLI: `chameleon recipes`, `chameleon compose <spec-file|recipe> [--validate-only]`
+- ✅ F60 MCP server: `bin/mcp-server.mjs` — zero-dependency JSON-RPC 2.0/stdio implementation (initialize, tools/list, tools/call, ping), 13 tools over the engine. Launch: `chameleon mcp`. Registration: `claude mcp add chameleon -- npx -y -p @chameleon-ui-lib/react chameleon mcp`. DEVIATION from plan: no `packages/mcp` + SDK — zero-dep in-package server avoids pnpm-workspace/SDK-install complexity; wrapper package can come later (logged in knowledge.md)
+- ✅ F64 agents init: `chameleon agents init` writes a condensed catalog + workflow block between `<!-- chameleon:start/end -->` markers in CLAUDE.md / AGENTS.md / .cursorrules; idempotent refresh, never touches user content
+- ✅ Verified: MCP smoke test end-to-end (initialize → search "login form" → get_recipe → compose_from_blocks → files written → validate_project); spec harness 10/10; eslint green; commits `136e64b`, agents-init commit follows
+- 📋 Remaining for v1.2.0: `verify:consumer` MCP check, manifest CI check, `renderSpec` React runtime, real-agent E2E, release
+- ▶️ Next session: run `yarn test` locally (vitest can't run in the Linux sandbox), then Phase 11 wrap-up items
 
 ### 2026-07-05 — F59 shipped: shared engine extraction (`bin/engine/`)
 - ✅ Engine modules: `registry.mjs` (catalog data, single source of truth), `catalog.mjs` (list/info/themes + `searchCatalog` for F60), `scaffold.mjs` (init/add/remove/template/theme/update), `health.mjs` (doctor/diff), `core.mjs` (Result shape, config I/O)
