@@ -303,3 +303,7 @@ Optional: Brief supporting detail (1-2 sentences max).
 ### [pattern] Recipe specs must use only verified component props
 
 **2026-07-05** — Generated pages must pass consumer strict TS. Before adding a recipe, grep the component's props interface in source (e.g. Timeline events need `date`/`status`, not `time`/`type` — caught during F61). A future manifest-derived prop validator (Phase 11 wrap-up) will automate this.
+
+### [gotcha] CORRECTION: nohup/setsid does NOT survive between sandbox bash calls
+
+**2026-07-05** — Supersedes the earlier tsc entry: background jobs (even nohup+setsid) are killed when the sandbox bash session ends — the log files stay empty. For long validations in the sandbox, either scope the check (e.g. `npx tsc --noEmit --ignoreConfig --strict <changed-file>` for isolated files) or defer full `tsc/vitest` to a local run. Full-project tsc was green at F59; only isolated-checked files changed after.
