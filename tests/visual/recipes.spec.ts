@@ -6,7 +6,6 @@
  * Update baselines:  npx playwright test tests/visual --update-snapshots
  */
 import { test, expect } from "@playwright/test";
-// eslint-disable-next-line import/no-relative-packages
 import { RECIPES, VALID_THEMES } from "../../bin/engine/index.mjs";
 
 const BASE = process.env.RENDER_BASE_URL || "http://localhost:5173";

@@ -12,7 +12,7 @@ import {
   addComponents, selectBulk, removeComponent, scaffoldTemplate, setTheme, updateComponents, initProject,
   doctor, diffComponents, readConfig,
   validateSpec, scaffoldSpec, listRecipes, getRecipe, searchRecipes, RECIPES,
-  // eslint-disable-next-line import/no-relative-packages
+// @ts-expect-error missing types
 } from "../../../../../bin/engine/index.mjs";
 
 const LIB_ROOT = path.resolve(__dirname, "../../../../..");
@@ -49,7 +49,7 @@ describe("catalog", () => {
   });
 
   it("lists 5 themes with descriptions", () => {
-    const themes = listThemes();
+    const themes: any[] = listThemes();
     expect(themes.map((t) => t.name)).toEqual(VALID_THEMES);
     themes.forEach((t) => expect(t.description.length).toBeGreaterThan(0));
   });

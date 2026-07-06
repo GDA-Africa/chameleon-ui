@@ -6,7 +6,7 @@ import { render, screen } from "@testing-library/react";
 import React from "react";
 import { ChameleonProvider } from "../context";
 import { RenderSpec, SPEC_COMPONENTS, SPEC_TEMPLATES, type ChameleonSpec } from "../render-spec";
-// eslint-disable-next-line import/no-relative-packages
+// @ts-expect-error missing types
 import { COMPONENTS, TEMPLATES } from "../../../../../bin/engine/registry.mjs";
 
 const wrap = (spec: ChameleonSpec) =>
