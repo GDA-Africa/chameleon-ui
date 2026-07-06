@@ -120,9 +120,9 @@ export const EnhancedLandingPage: React.FC<EnhancedLandingPageProps> = ({ onNavi
     },
     {
       icon: Rocket,
-      title: "AI-Optimized",
-      desc: "Structured metadata and recipes help AI agents automatically choose the right components.",
-      highlight: false,
+      title: "Agent SDK (v2.0)",
+      desc: "An MCP server with 23 tools: AI agents search the catalog, compose validated specs, apply your brand, preview live, and scaffold whole apps — first try.",
+      highlight: true,
     },
     {
       icon: Package,
@@ -250,7 +250,9 @@ export const EnhancedLandingPage: React.FC<EnhancedLandingPageProps> = ({ onNavi
     { feature: "Accessibility", us: "WCAG 2.1 AA", others: "Partial" },
     { feature: "Installation", us: "CLI + NPM", others: "NPM Only" },
     { feature: "Templates", us: "10 Production-Ready", others: "Examples Only" },
-    { feature: "AI Integration", us: "Structured Metadata", others: "None" },
+    { feature: "AI Integration", us: "MCP Server + Spec Language + Recipes", others: "None" },
+    { feature: "App Generation", us: "chameleon new — full apps from a spec", others: "None" },
+    { feature: "Brand Theming", us: "Token pipeline + WCAG AA audit", others: "Manual CSS" },
   ];
 
   return (

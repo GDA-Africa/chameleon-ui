@@ -44,6 +44,7 @@ import { DocumentationPage } from "./components/chameleon/documentation";
 import { EnhancedLandingPage } from "./components/chameleon/enhanced-landing";
 import { ComponentDocsDirectoryPage } from "./components/chameleon/component-docs-directory-page";
 import { CLIDocsPage } from "./components/chameleon/cli-docs-page";
+import { AgentSDKPage } from "./components/chameleon/agent-sdk-page";
 import { HooksUtilsDocsPage } from "./components/chameleon/hooks-utils-docs";
 import { CHAMELEON_AI_WRITEUP } from "./components/chameleon/ai-docs-page";
 import { CompositeShowcase } from "./components/chameleon/composite-showcase";
@@ -70,6 +71,7 @@ type Page =
   | "component-docs"
   | "hooks-utils"
   | "cli-docs"
+  | "agent-sdk"
   | "docs"
   | "visualizer"
   | "animations"
@@ -143,6 +145,7 @@ function Workshop() {
     { id: "notifications",   label: "Notifications",   icon: Bell,          group: "Components", badge: "8" },
     { id: "hooks-utils",    label: "Hooks & Utils",   icon: Wrench,        group: "Components" },
     { id: "templates",      label: "Templates",       icon: LayoutDashboard, group: "Components", badge: "14" },
+    { id: "agent-sdk",      label: "Agent SDK",       icon: Sparkles,      group: "Documentation", badge: "v2.0" },
     { id: "cli-docs",       label: "CLI Reference",   icon: Terminal,      group: "Documentation" },
     { id: "docs",           label: "Getting Started", icon: BookOpen,      group: "Documentation" },
     { id: "visualizer",     label: "Theme Visualizer",icon: Palette,       group: "Theme Tools" },
@@ -619,6 +622,7 @@ function Workshop() {
               {activePage === "component-docs" && <ComponentDocsDirectoryPage />}
               {activePage === "composites" && <CompositesPage />}
               {activePage === "hooks-utils" && <HooksUtilsDocsPage />}
+              {activePage === "agent-sdk" && <AgentSDKPage />}
               {activePage === "cli-docs" && <CLIDocsPage />}
               {activePage === "docs" && <DocsPage />}
               {activePage === "visualizer" && <ThemeVisualizer />}
