@@ -327,3 +327,11 @@ Optional: Brief supporting detail (1-2 sentences max).
 ### [gotcha] MCP Apps bridge shapes are RC-era guesses until hosts are tested
 
 **2026-07-05** — src/widget's specFromMessage tolerates several candidate message shapes and the server exposes both `ui/template` and `openai/outputTemplate` meta. After SEP-1865 finalizes (2026-07-28), test in Claude + ChatGPT and delete the shapes that don't exist.
+
+### [architecture] Brand = full derived palette (deriveBrandPalette), not primary/secondary swaps
+
+**2026-07-05** — The original visualizer only overrode --primary/--secondary, so the site never looked branded (static background/accent/muted, hardcoded ambient hexes in Glassy/LiquidBackground). Fix: `deriveBrandPalette(brand, mode)` in utils.ts generates all 14 tokens with brand-tinted neutrals; the provider applies it for both the `brand` prop and the runtime `brandOverride` (visualizer); ambient backgrounds take a `tint` prop. Any future token must be added to deriveBrandPalette or it will stay unbranded.
+
+### [pattern] brandOverride in context = walk-the-platform branding
+
+**2026-07-05** — The visualizer's "Apply to entire site" sets `brandOverride` in ThemeContext; because the whole workshop lives inside one provider, every demo page rebrands and stays branded while navigating. Copy surfaces (spec JSON export) embed the brand so agents receive it. Session-scoped by design (no persistence) — consider localStorage if users ask.
