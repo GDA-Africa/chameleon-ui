@@ -315,3 +315,15 @@ Optional: Brief supporting detail (1-2 sentences max).
 ### [pattern] Registry export-name overrides: use componentExport(), never toPascalCase() directly
 
 **2026-07-05** — `toPascalCase("datepicker")` = "Datepicker" but the real export is `DatePicker`. Registry entries may carry `exportName`; `componentExport(key)` resolves override-or-PascalCase. All engine codegen and import hints must go through it.
+
+### [architecture] Phases 12–16 shipped as one implementation arc; releases remain staged decisions
+
+**2026-07-05** — All v2.0 roadmap code landed on version 2.0.0-alpha.1 in six commits (brand ff38216, preview 038d7d8, apps 752093e, registry 576c383, appspec 0700c7b, docs 952eb74). Whether to publish as staged 1.2→2.0 tags or a single 2.0.0 is a release-time decision after local validation.
+
+### [gotcha] scaffoldSpec must mkdir the components dir — masked whenever init ran first
+
+**2026-07-05** — Found by the bakery-crm E2E: block-spec scaffolding wrote into cfg.dir without creating it. Any engine function that writes into cfg-relative paths must mkdirSync first; don't rely on initProject having run.
+
+### [gotcha] MCP Apps bridge shapes are RC-era guesses until hosts are tested
+
+**2026-07-05** — src/widget's specFromMessage tolerates several candidate message shapes and the server exposes both `ui/template` and `openai/outputTemplate` meta. After SEP-1865 finalizes (2026-07-28), test in Claude + ChatGPT and delete the shapes that don't exist.

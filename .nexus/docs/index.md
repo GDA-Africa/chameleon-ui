@@ -24,10 +24,10 @@ last_updated: "2026-05-04"
 
 ## 🎯 Current Objective
 
-**Current Phase:** Phase 11 — **Agents Can Call Chameleon (v1.2.0)** — see `NEXUS_ROADMAP_v2.0.md` (master, Phases 11–16 → v2.0.0) + `.nexus/plans/phase-11-agent-callable.md`
-**Active Task:** None — Phase 11 COMPLETE pending local validation + release
-**Blocked:** v1.2.0 release awaits local `npx tsc --noEmit && yarn test && yarn lint && npm run verify:consumer` (sandbox cannot run vitest/full tsc/build)
-**Next Up:** Local validation → real-agent E2E (Claude Code + registered MCP) → bump v1.2.0 + publish. Then F77 manifest backfill, then Phase 12 (brand). Then Phases 12–16 per roadmap. Deferred: Liquid light-mode audit, `--all-templates` flag, Playwright E2E (folds into F69)
+**Current Phase:** ALL PHASES 11–16 IMPLEMENTED — v2.0.0-alpha.1 (2026-07-05) — see `NEXUS_ROADMAP_v2.0.md`
+**Active Task:** None — release gate is Halton's local validation
+**Blocked:** 2.0.0 release awaits local: `npx tsc --noEmit && yarn test && yarn lint && npm run verify:consumer && npm run build:widget` + real-agent E2E (Claude Code + MCP) + visual baselines (`npx playwright test tests/visual --update-snapshots`)
+**Next Up:** Local validation → decide release strategy (single 2.0.0 vs staged 1.2→2.0 tags) → publish. Backlog: F77 manifest backfill (flip CI --strict), MCP Apps re-check after 2026-07-28 spec final, raster from-logo, Liquid light-mode audit
 
 ---
 
@@ -131,21 +131,21 @@ last_updated: "2026-05-04"
 | F59 | Shared engine extraction (`bin/engine/`) | P0 | ✅ Done | 11 | 2026-07-05 — registry/catalog/scaffold/health/core modules, `./engine` subpath export, CLI is a thin skin; golden-diff parity verified |
 | F60 | Chameleon MCP server | P0 | ✅ Done | 11 | 2026-07-05 — zero-dep JSON-RPC/stdio server (`bin/mcp-server.mjs`), 13 tools, `chameleon mcp` launch; `@chameleon-ui-lib/mcp` wrapper package deferred |
 | F61 | ChameleonSpec v1 + recipes-as-specs | P0 | ✅ Done | 11 | 2026-07-05 — `spec.mjs` validate/scaffold, 10 recipes, `chameleon compose`/`recipes`; `renderSpec` (React runtime) deferred to F66 prep |
-| F62 | `chameleon brand` token pipeline | P0 | 📋 Planned | 12 | `brand init/check` — colors, font, radius, density → persisted tokens, WCAG AA checked; extends F34 |
-| F63 | MCP brand tools + agent docs refresh | P1 | 📋 Planned | 12 | `set_brand`/`check_brand_contrast`/`extract_brand` tools; update `AI_INTEGRATION_GUIDE.md`, `llms.txt`, `context.md` |
+| F62 | `chameleon brand` token pipeline | P0 | ✅ Done | 12 | 2026-07-05 — engine/brand.mjs + Provider brand prop + CLI brand init/check |
+| F63 | MCP brand tools + agent docs refresh | P1 | ✅ Done | 12 | 2026-07-05 — MCP set_brand/get_brand/check_brand_contrast/extract_brand + AI docs refresh |
 | F64 | `chameleon agents init` | P1 | ✅ Done | 11 | 2026-07-05 — writes/refreshes marker block in CLAUDE.md, AGENTS.md, .cursorrules; idempotent, preserves user content |
-| F65 | Brand extraction `from-url`/`from-logo` | P1 | 📋 Planned | 12 | Candidates-with-provenance, never auto-applied; feeds F62 |
-| F66 | `/render?spec=` route | P0 | 📋 Planned | 13 | Bare canvas rendering ChameleonSpec — shared by F67/F68/F69/F70 |
-| F67 | `preview(spec)` MCP tool | P0 | 📋 Planned | 13 | Playwright screenshots + axe + contrast audit; graceful degradation |
-| F68 | `/play?spec=` playground links | P1 | 📋 Planned | 13 | lz-string encoded, theme switcher, copy-CLI; agents share before scaffolding |
-| F69 | Visual regression CI | P2 | 📋 Planned | 13 | Component × theme × mode screenshot matrix (absorbs deferred Playwright E2E) |
-| F70 | MCP Apps spike (SEP-1865) | P0 | 📋 Planned | 14 | 1-week timebox — `renderSpec` in widget template, demo in 2 hosts; may pull forward |
-| F71 | `@chameleon-ui-lib/apps` package | P0 | 📋 Planned | 14 | Widget template + `actions` spec field → live UI in Claude/ChatGPT/VS Code |
-| F72 | Registry format + first-party registry | P1 | 📋 Planned | 15 | `registry.json`, spec vs source item types, GitHub-hosted, PR-gated |
-| F73 | `chameleon add` remote items | P1 | 📋 Planned | 15 | Spec items auto-validated; source items diff + confirm; integrity hashes |
-| F74 | AppSpec v2 | P0 | 📋 Planned | 16 | Pages, routes, nav, shell, mock dataSlots — embeds v1 page specs |
-| F75 | `scaffold_app` + `chameleon new` | P0 | 📋 Planned | 16 | Runnable multi-page app: routing, nav, brand, green tsc/lint/test |
-| F76 | v2.0 breaking cleanups + migration | P0 | 📋 Planned | 16 | Remove `customBrandColor`, split legacy composites.tsx, engine-only contract, MIGRATION_v2 |
+| F65 | Brand extraction `from-url`/`from-logo` | P1 | ✅ Done | 12 | 2026-07-05 — from-url (HTML+CSS candidates w/ provenance) + from-logo (SVG) |
+| F66 | `/render?spec=` route | P0 | ✅ Done | 13 | 2026-07-05 — /render route, base64url spec param, bare canvas |
+| F67 | `preview(spec)` MCP tool | P0 | ✅ Done | 13 | 2026-07-05 — previewSpec: static audit always, Playwright screenshots when available; CLI+MCP |
+| F68 | `/play?spec=` playground links | P1 | ✅ Done | 13 | 2026-07-05 — /play playground: theme/mode switchers, copy spec/CLI, share URLs |
+| F69 | Visual regression CI | P2 | ✅ Done | 13 | 2026-07-05 — tests/visual matrix + visual.yml (continue-on-error until baselines committed) |
+| F70 | MCP Apps spike (SEP-1865) | P0 | ✅ Done | 14 | 2026-07-05 — widget spike shipped as src/widget (standalone #fragment testing works) |
+| F71 | `@chameleon-ui-lib/apps` package | P0 | ✅ Done | 14 | 2026-07-05 — actions field + resources/read template, gated CHAMELEON_MCP_APPS=1 (spec final 07-28) |
+| F72 | Registry format + first-party registry | P1 | ✅ Done | 15 | 2026-07-05 — registry.json v1, public/registry.json seeded (10 recipes), build:registry |
+| F73 | `chameleon add` remote items | P1 | ✅ Done | 15 | 2026-07-05 — add @chameleon/<name>; spec-validated vs sha256+--yes source items; tamper-tested |
+| F74 | AppSpec v2 | P0 | ✅ Done | 16 | 2026-07-05 — validateAppSpec: routes, embedded v1 specs, mock-only dataSlots |
+| F75 | `scaffold_app` + `chameleon new` | P0 | ✅ Done | 16 | 2026-07-05 — chameleon new + scaffold_app; bakery-crm E2E: 21 files, 3 routes, brand wired |
+| F76 | v2.0 breaking cleanups + migration | P0 | ✅ Done | 16 | 2026-07-05 — customBrandColor deprecated, MIGRATION_v2.md; destructive cleanups deferred to v3 |
 | F77 | ai-manifest.ts backfill (17 components) | P1 | 📋 Planned | 11.x | Found by `check:manifest` — spinner, avatar, toggle, tooltip, separator, breadcrumb, textarea + 10 composites lack entries; flip CI to `--strict` after |
 
 ---
@@ -205,6 +205,15 @@ last_updated: "2026-05-04"
 ---
 
 ## 🔄 Progress Log
+
+### 2026-07-05 — Phases 12–16 implemented: v2.0.0-alpha.1 (`ff38216`…`952eb74`)
+- ✅ Phase 12 brand: `engine/brand.mjs` (WCAG math, from-url/from-svg-logo candidates), `ChameleonProvider brand` prop, CLI `brand`, 4 MCP tools. Verified: init/check/extraction incl. local-server from-url; honest AA failures (#FF6B35 on white = 2.56:1)
+- ✅ Phase 13 preview: `/render` + `/play` routes (base64url spec param), `previewSpec` (static always / Playwright when available), `specUrl` share links, visual CI matrix (continue-on-error until baselines)
+- ✅ Phase 14 MCP Apps (EXPERIMENTAL): `src/widget` bridge-tolerant RenderSpec host, spec `actions` → tools/call, resources/read template gated `CHAMELEON_MCP_APPS=1`, `build:widget` inliner. Bridge shapes unverifiable until hosts tested — revisit after 2026-07-28
+- ✅ Phase 15 registry: spec-vs-source trust split, sha256 integrity, `--yes` confirm flow, provenance in config, `public/registry.json` seeded. Verified incl. tamper refusal
+- ✅ Phase 16 capstone: AppSpec v2 + `chameleon new`/`scaffold_app` — bakery-crm E2E: 21 files, 3 routes, sidebar shell, brand wired, agent rulesets. `customBrandColor` deprecated, `MIGRATION_v2.md`. Bug fixed en route: scaffoldSpec missing mkdir on fresh projects
+- ✅ Docs/frontend: README agent headline, AI_INTEGRATION_GUIDE v2 section, llms.txt agent surface, CLI docs page +8 v2.0 command cards ("AI Agents" category), CHANGELOG, version 2.0.0-alpha.1
+- 🧪 Sandbox-verified: every CLI/MCP/engine path above, eslint, isolated strict tsc per changed file, catalog gate. NOT verifiable here: vitest, full build, widget build, Playwright visual, real hosts
 
 ### 2026-07-05 — Phase 11 wrap-up: RenderSpec runtime + catalog gate + consumer checks (`7a2e8e4`)
 - ✅ `render-spec.tsx`: live React runtime for ChameleonSpec v1 — `RenderSpec` renders template or block specs; unknown refs render inline `role="alert"` error boxes (agents screenshotting via F67 see failures). `SPEC_COMPONENTS`/`SPEC_TEMPLATES` mirror the engine registry; exported from the library entry
