@@ -8,7 +8,7 @@
  * Engine functions never print and never call process.exit.
  */
 
-export { COMPONENTS, TEMPLATES, VALID_THEMES, THEME_DESCRIPTIONS, toPascalCase } from "./registry.mjs";
+export { COMPONENTS, TEMPLATES, VALID_THEMES, THEME_DESCRIPTIONS, toPascalCase, componentExport } from "./registry.mjs";
 export { createContext, makeResult, addError, readConfig, writeConfig, readProjectPkg, requireConfig } from "./core.mjs";
 export { listCatalog, getInfo, listThemes, searchCatalog } from "./catalog.mjs";
 export { addComponents, selectBulk, removeComponent, scaffoldTemplate, setTheme, updateComponents, initProject } from "./scaffold.mjs";

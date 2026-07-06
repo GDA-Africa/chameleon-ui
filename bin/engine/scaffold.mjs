@@ -6,7 +6,7 @@
 import fs from "fs";
 import path from "path";
 import {
-  COMPONENTS, TEMPLATES, VALID_THEMES, LOCAL_DEPS_COMPONENTS, LOCAL_DEPS_TEMPLATES, toPascalCase,
+  COMPONENTS, TEMPLATES, VALID_THEMES, LOCAL_DEPS_COMPONENTS, LOCAL_DEPS_TEMPLATES, componentExport,
 } from "./registry.mjs";
 import {
   makeResult, addError, evOk, evWarn, evInfo, evDim, requireConfig, readConfig, writeConfig, readProjectPkg,
@@ -40,7 +40,7 @@ function scaffoldOne(ctx, cfg, key, r, { verbose = true } = {}) {
   } else {
     evOk(r, `${cfg.dir}/${key}.tsx`);
   }
-  return { key, pascalName: toPascalCase(key), file: `${key}.tsx`, externalDependencies: meta.deps };
+  return { key, pascalName: componentExport(key), file: `${key}.tsx`, externalDependencies: meta.deps };
 }
 
 /** Regenerate the barrel index.ts in cfg.dir. */

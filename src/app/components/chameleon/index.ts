@@ -12,3 +12,4 @@ export * from "./auth-showcase";
 export * from "./templates";
 export * from "./comprehensive-templates";
 export * from "./comprehensive-templates-part2";
+export * from "./render-spec";

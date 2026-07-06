@@ -21,7 +21,7 @@
 
 import fs from "fs";
 import path from "path";
-import { COMPONENTS, TEMPLATES, VALID_THEMES, LOCAL_DEPS_TEMPLATES, toPascalCase } from "./registry.mjs";
+import { COMPONENTS, TEMPLATES, VALID_THEMES, LOCAL_DEPS_TEMPLATES, toPascalCase, componentExport } from "./registry.mjs";
 import { makeResult, addError, evOk, evInfo, requireConfig } from "./core.mjs";
 import { RECIPES } from "./recipes.mjs";
 
@@ -163,9 +163,9 @@ export function scaffoldSpec(ctx, spec) {
     r.filesWritten.push(`${cfg.dir}/index.ts`);
 
     const importPath = path.relative(outDir, compDir).split(path.sep).join("/");
-    const imports = [...new Set(spec.blocks.map((b) => toPascalCase(b.component)))].join(", ");
+    const imports = [...new Set(spec.blocks.map((b) => componentExport(b.component)))].join(", ");
     const body = spec.blocks.map((b) => {
-      const tag = toPascalCase(b.component);
+      const tag = componentExport(b.component);
       const children = b.props?.children;
       return children !== undefined
         ? `      <${tag}${propsToJsx(b.props)}>${children}</${tag}>`

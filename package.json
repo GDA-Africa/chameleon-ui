@@ -44,7 +44,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "lint": "eslint .",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "check:manifest": "node scripts/check-manifest.mjs"
   },
   "sideEffects": [
     "./dist/styles.css"

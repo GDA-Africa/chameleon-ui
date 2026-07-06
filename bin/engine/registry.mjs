@@ -13,7 +13,7 @@ export const COMPONENTS = {
   toggle:              { file: "atoms.tsx",      category: "Atom",      deps: [],                                            variants: ["default","sm"],                              desc: "Boolean on/off toggle switch." },
   progress:            { file: "atoms.tsx",      category: "Atom",      deps: [],                                            variants: ["default","animated"],                        desc: "Linear progress bar with animated fill." },
   tooltip:             { file: "atoms.tsx",      category: "Atom",      deps: [],                                            variants: ["top","bottom","left","right"],               desc: "Contextual hover tooltip for any element." },
-  datepicker:          { file: "atoms.tsx",      category: "Atom",      deps: [],                                            variants: ["single","range"],                            desc: "Date picker supporting single date or date range selection." },
+  datepicker:          { file: "atoms.tsx",      category: "Atom",      deps: [],                                            variants: ["single","range"],                            desc: "Date picker supporting single date or date range selection.", exportName: "DatePicker" },
   card:                { file: "molecules.tsx",  category: "Molecule",  deps: [],                                            variants: ["default","elevated","animated"],             desc: "Versatile content container with header/footer slots." },
   tabs:                { file: "molecules.tsx",  category: "Molecule",  deps: ["@radix-ui/react-tabs"],                      variants: ["default"],                                  desc: "Tabbed navigation panel." },
   dialog:              { file: "molecules.tsx",  category: "Molecule",  deps: ["@radix-ui/react-dialog"],                    variants: ["default"],                                  desc: "Accessible modal dialog overlay." },
@@ -70,3 +70,6 @@ export const LOCAL_DEPS_TEMPLATES = [...LOCAL_DEPS_COMPONENTS, "auth-components"
 
 export const toPascalCase = (str) =>
   str.split("-").map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join("");
+
+/** Component export name — registry override (e.g. DatePicker) or PascalCase. */
+export const componentExport = (key) => COMPONENTS[key]?.exportName || toPascalCase(key);

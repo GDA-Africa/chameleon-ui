@@ -33,6 +33,9 @@ jobs:
       - name: Typecheck
         run: pnpm run typecheck
 
+      - name: Catalog completeness check
+        run: pnpm run check:manifest
+
       - name: Run tests
         run: pnpm run test
 
