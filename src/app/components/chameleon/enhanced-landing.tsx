@@ -67,12 +67,33 @@ export const EnhancedLandingPage: React.FC<EnhancedLandingPageProps> = ({ onNavi
   const { textPrimary, textMuted, cardClass, theme, mode } = useThemeClasses();
   const { setTheme, setMode } = useChameleon();
   const [email, setEmail] = useState("");
+  const [downloads, setDownloads] = useState<string>("50K+");
+  const [rawDownloads, setRawDownloads] = useState<number | null>(null);
+
+  React.useEffect(() => {
+    fetch("https://api.npmjs.org/downloads/point/last-month/@chameleon-ui-lib/react")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data && typeof data.downloads === "number") {
+          const num = data.downloads;
+          setRawDownloads(num);
+          const formatted =
+            num >= 1000000
+              ? (num / 1000000).toFixed(1) + "M+"
+              : num >= 1000
+              ? (num / 1000).toFixed(1) + "K+"
+              : num.toString();
+          setDownloads(formatted);
+        }
+      })
+      .catch((err) => console.error("Failed to fetch npm downloads:", err));
+  }, []);
 
   const stats = [
     { label: "Components", value: "60+", icon: Box, trend: "up", trendValue: "+12 this month" },
     { label: "Templates", value: "10", icon: Layout, trend: "up", trendValue: "Production-ready" },
     { label: "Themes", value: "5", icon: Palette, trend: "stable", trendValue: "Distinct styles" },
-    { label: "Downloads", value: "50K+", icon: TrendingUp, trend: "up", trendValue: "+15% MoM" },
+    { label: "Downloads/mo", value: downloads, icon: TrendingUp, trend: "up", trendValue: "from npm" },
   ];
 
   const features = [
@@ -354,7 +375,7 @@ export const EnhancedLandingPage: React.FC<EnhancedLandingPageProps> = ({ onNavi
               <div className="w-1 h-1 rounded-full bg-current opacity-30" />
               <div className="flex items-center gap-2">
                 <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-                <span>50K+ Downloads</span>
+                <span>{rawDownloads !== null ? `${rawDownloads} monthly downloads` : "50K+ Downloads"}</span>
               </div>
             </div>
           </div>
@@ -747,7 +768,7 @@ export const EnhancedLandingPage: React.FC<EnhancedLandingPageProps> = ({ onNavi
               Loved by Developers
             </h2>
             <p className={cn("text-xl max-w-2xl mx-auto", textMuted)}>
-              Join thousands of teams building with Chameleon UI
+              Join {rawDownloads !== null && rawDownloads > 0 ? `${downloads} developers` : "50,000+ developers"} currently building with Chameleon UI
             </p>
           </div>
         </Animated>
@@ -800,7 +821,7 @@ export const EnhancedLandingPage: React.FC<EnhancedLandingPageProps> = ({ onNavi
                   Ready to Build Something Amazing?
                 </h2>
                 <p className={cn("text-xl md:text-2xl max-w-2xl mx-auto", textMuted)}>
-                  Join 50,000+ developers building with Chameleon UI
+                  Join {rawDownloads !== null && rawDownloads > 0 ? "others" : "50,000+ developers"} building with Chameleon UI
                 </p>
 
                 <div className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-6">
@@ -819,7 +840,7 @@ export const EnhancedLandingPage: React.FC<EnhancedLandingPageProps> = ({ onNavi
                 </div>
 
                 <p className={cn("text-sm", textMuted)}>
-                  No credit card required • MIT Licensed • 50K+ downloads
+                  No credit card required • MIT Licensed • {downloads} downloads/mo
                 </p>
               </div>
             </CardContent>
