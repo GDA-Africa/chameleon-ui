@@ -24,7 +24,7 @@ import fs from "fs";
 import path from "path";
 import crypto from "node:crypto";
 import { Buffer } from "node:buffer";
-import { makeResult, addError, evOk, evWarn, evInfo, requireConfig, readConfig, writeConfig } from "./core.mjs";
+import { makeResult, addError, evOk, evInfo, requireConfig, readConfig, writeConfig } from "./core.mjs";
 import { validateSpec, scaffoldSpec } from "./spec.mjs";
 
 export const DEFAULT_REGISTRY = "https://chameleon.glenhalton.com/registry.json";

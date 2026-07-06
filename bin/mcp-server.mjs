@@ -25,7 +25,7 @@ import {
   doctor, validateSpec, scaffoldSpec, listRecipes, getRecipe, searchRecipes,
   brandInit, brandCheck, readBrand, brandFromUrl, brandFromLogo,
   previewSpec, specUrl,
-  searchRemoteRegistry, addRegistryItem,
+  searchRemoteRegistry, addRegistryItem, validateAppSpec, scaffoldApp,
 } from "./engine/index.mjs";
 
 const __dirname = path.dirname(fs.realpathSync(fileURLToPath(import.meta.url)));
@@ -199,6 +199,25 @@ const TOOLS = [
       if (logoPath) return run(brandFromLogo(ctx(), logoPath));
       throw { code: "MISSING_ARGUMENT", message: "Provide either 'url' or 'logoPath'." };
     },
+  },
+  {
+    name: "validate_app_spec",
+    description: "Validate an AppSpec v2 (multi-page application: { version:2, app:{name,brand?}, shell:{nav,theme?,mode?}, pages:[{route,title,spec}], dataSlots? }) without writing files. Each page embeds an unchanged ChameleonSpec v1.",
+    inputSchema: { type: "object", properties: { appSpec: { type: "object", description: "AppSpec v2 object" } }, required: ["appSpec"] },
+    handler: ({ appSpec }) => validateAppSpec(appSpec),
+  },
+  {
+    name: "scaffold_app",
+    description: "THE capstone: scaffold a complete runnable application from an AppSpec v2 — Vite + React + TS + Tailwind skeleton, router + nav shell generated from pages, every page composed from its spec, brand tokens applied, mock dataSlots with replacement seams, agent rulesets included. Target directory must be empty. After scaffolding tell the user: cd <dir> && npm install && npm run dev.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        appSpec: { type: "object", description: "AppSpec v2 object" },
+        directory: str("Target directory for the new app"),
+      },
+      required: ["appSpec", "directory"],
+    },
+    handler: ({ appSpec, directory }) => run(scaffoldApp(LIB_ROOT, appSpec, directory, { version: VERSION })),
   },
   {
     name: "search_registry",

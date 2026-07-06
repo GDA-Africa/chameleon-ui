@@ -12,6 +12,7 @@ interface ThemeContextType {
   setMode: (mode: ChameleonMode) => void;
   lang: ChameleonLang;
   setLang: (lang: ChameleonLang) => void;
+  /** @deprecated since v1.3.0 — use the `brand` prop on ChameleonProvider (removed in v3). */
   customBrandColor: string | null;
   setCustomBrandColor: (color: string | null) => void;
   // Intensity controls (0-100)

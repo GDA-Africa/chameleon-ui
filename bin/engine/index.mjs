@@ -22,3 +22,4 @@ export {
 } from "./brand.mjs";
 export { previewSpec, specUrl } from "./preview.mjs";
 export { fetchRegistry, listRegistry, searchRegistry as searchRemoteRegistry, addRegistryItem, packageRegistryItem, DEFAULT_REGISTRY } from "./remote-registry.mjs";
+export { validateAppSpec, scaffoldApp } from "./app.mjs";

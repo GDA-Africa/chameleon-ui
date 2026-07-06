@@ -144,6 +144,7 @@ export function scaffoldSpec(ctx, spec) {
     void LOCAL_DEPS_TEMPLATES;
   } else {
     // Ensure block components exist in the project (idempotent), then compose.
+    fs.mkdirSync(path.join(ctx.cwd, cfg.dir), { recursive: true });
     const unique = [...new Set(spec.blocks.map((b) => b.component))];
     for (const key of unique) {
       const meta = COMPONENTS[key];

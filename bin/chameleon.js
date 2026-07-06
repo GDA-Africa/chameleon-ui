@@ -17,7 +17,7 @@ import {
   doctor, diffComponents,
   validateSpec, scaffoldSpec, listRecipes, getRecipe, agentsInit,
   brandInit, brandCheck, brandFromUrl, brandFromLogo, previewSpec,
-  listRegistry, addRegistryItem,
+  listRegistry, addRegistryItem, validateAppSpec, scaffoldApp,
 } from "./engine/index.mjs";
 
 const __filename = fs.realpathSync(fileURLToPath(import.meta.url));
@@ -441,6 +441,38 @@ if (cmd === "init") {
   for (const [key, val] of Object.entries(cfg)) log(`  ${(fieldColor[key] || c.white)}${key.padEnd(12)}${c.reset}${c.white}${val}${c.reset}`);
   log("");
   info(`Edit ${c.emerald}chameleon.config.json${c.gray} directly, or use ${c.emerald}chameleon theme <name>${c.gray} to change the theme.`);
+  log("");
+
+// ── new (AppSpec v2 → full application) ──────────────────────────────────────
+} else if (cmd === "new") {
+  const specFile = getFlagValue("--app-spec");
+  if (!item || !specFile) {
+    if (JSON_MODE) jsonDie("MISSING_ARGUMENT", "Usage: chameleon new <dir> --app-spec <appspec.json> [--json]");
+    log(`\n${c.red}✖ Missing arguments${c.reset}\n  ${c.gray}Usage: ${c.emerald}chameleon new ${c.indigo}<dir>${c.gray} --app-spec ${c.indigo}<appspec.json>${c.reset}\n`); process.exit(1);
+  }
+  let appSpec;
+  try { appSpec = JSON.parse(fs.readFileSync(path.resolve(process.cwd(), specFile), "utf8")); }
+  catch { if (JSON_MODE) jsonDie("INVALID_APP_SPEC", `Could not parse JSON from '${specFile}'.`); log(`\n${c.red}✖ Could not parse JSON from '${specFile}'${c.reset}\n`); process.exit(1); }
+  if (flags.has("--validate-only")) {
+    const v = validateAppSpec(appSpec);
+    if (JSON_MODE) emitJsonRaw({ ok: v.valid, command: cmd, version: VERSION, data: v, warnings: [], errors: v.valid ? [] : [{ code: "INVALID_APP_SPEC", message: `${v.errors.length} error(s).`, validationErrors: v.errors }] });
+    log(`\n${c.emerald}➜${c.reset} ${c.indigo}Validating app spec...${c.reset}\n`);
+    if (v.valid) { ok("App spec is valid"); log(""); process.exit(0); }
+    for (const e of v.errors) fail(`${e.path}: ${e.message}`);
+    log(""); process.exit(1);
+  }
+  const result = scaffoldApp(LIB_ROOT, appSpec, item, { version: VERSION });
+  if (JSON_MODE) finishJson(result);
+  log(`\n${c.emerald}➜${c.reset} ${c.indigo}Scaffolding application ${c.white}${appSpec?.app?.name ?? item}${c.indigo}...${c.reset}\n`);
+  if (!result.ok) {
+    const err = result.errors[0];
+    fail(err.message);
+    for (const e of err.validationErrors || []) fail(`${e.path}: ${e.message}`);
+    log(""); process.exit(1);
+  }
+  renderEvents(result.events);
+  log(`\n${c.emerald}App ready!${c.reset}`);
+  for (const s of result.nextSteps) info(s);
   log("");
 
 // ── registry ──────────────────────────────────────────────────────────────────
