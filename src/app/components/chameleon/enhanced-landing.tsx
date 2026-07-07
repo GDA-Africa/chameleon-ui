@@ -43,6 +43,9 @@ import {
   Github,
   Twitter,
   CheckCircle2,
+  Eye,
+  Tractor,
+  PlayCircle,
 } from "lucide-react";
 import { motion } from "motion/react";
 import { Button, Input, Badge, Progress } from "./atoms";
@@ -146,11 +149,23 @@ export const EnhancedLandingPage: React.FC<EnhancedLandingPageProps> = ({ onNavi
       highlight: true,
     },
     {
+      icon: Eye,
+      title: "Interactive Theme Visualizer",
+      desc: "Instantly see how your choices look across 5 distinct design languages. Preview fonts, colors, and border radii live.",
+      highlight: true,
+    },
+    {
       icon: Package,
       title: "10+ Composites",
       desc: "DataTable, Charts, Kanban, Calendar, Gallery—complex components that just work.",
       highlight: false,
     },
+    {
+      icon: PlayCircle,
+      title: "MCP to Browser Live Preview",
+      desc: "Agents hand you a /play link so you see the page before files are written — switch themes and modes live, copy the spec or the CLI command. ",
+      highlight: true,
+    }
   ];
 
   const architectureFeatures = [
@@ -337,6 +352,16 @@ export const EnhancedLandingPage: React.FC<EnhancedLandingPageProps> = ({ onNavi
               <Sparkles className="w-5 h-5 mr-3" />
               Meet the Agent SDK
               <ArrowRight className="ml-3 w-5 h-5 transition-transform group-hover:translate-x-1" />
+            </Button>
+            <Button
+              variant="outline"
+              size="lg"
+              animated
+              onClick={() => onNavigate?.("theme-visualizer")}
+              className="h-16 px-10 text-lg font-black group"
+            >
+              <Eye className="w-5 h-5 mr-3" />
+              Theme Visualizer
             </Button>
             <Button
               variant="secondary"
