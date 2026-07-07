@@ -33,7 +33,7 @@
     "./engine": "./bin/engine/index.mjs"
   },
   "scripts": {
-    "build": "vite build && npm run build:css && npm run build:src",
+    "build": "vite build && npm run build:css && npm run build:src && npm run build:widget",
     "build:css": "node scripts/build-css.mjs",
     "build:src": "node scripts/build-src.mjs",
     "verify:consumer": "node scripts/verify-consumer.mjs",
@@ -57,7 +57,8 @@
     "bin",
     "lib-src",
     "README.md",
-    "CHANGELOG.md"
+    "CHANGELOG.md",
+    "dist-widget"
   ],
   "dependencies": {
     "@emotion/react": "11.14.0",
