@@ -25,6 +25,7 @@ import {
   Wrench,
   PanelLeftClose,
   PanelLeftOpen,
+  Bell,
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import {
@@ -43,9 +44,16 @@ import { DocumentationPage } from "./components/chameleon/documentation";
 import { EnhancedLandingPage } from "./components/chameleon/enhanced-landing";
 import { ComponentDocsDirectoryPage } from "./components/chameleon/component-docs-directory-page";
 import { CLIDocsPage } from "./components/chameleon/cli-docs-page";
+import { AgentSDKPage } from "./components/chameleon/agent-sdk-page";
 import { HooksUtilsDocsPage } from "./components/chameleon/hooks-utils-docs";
 import { CHAMELEON_AI_WRITEUP } from "./components/chameleon/ai-docs-page";
 import { CompositeShowcase } from "./components/chameleon/composite-showcase";
+import {
+  NotificationCenter,
+  NotificationCenterProvider,
+  useNotificationCenter,
+} from "./components/chameleon/composites/NotificationCenter";
+import { NotificationPanel } from "./components/chameleon/composites/NotificationPanel";
 
 // ─── Page Components ──────────────────────────────────────────────────────────
 
@@ -63,11 +71,13 @@ type Page =
   | "component-docs"
   | "hooks-utils"
   | "cli-docs"
+  | "agent-sdk"
   | "docs"
   | "visualizer"
   | "animations"
   | "templates"
-  | "composites";
+  | "composites"
+  | "notifications";
 
 function Workshop() {
   const {
@@ -88,6 +98,7 @@ function Workshop() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [themeSwitcherOpen, setThemeSwitcherOpen] = useState(false);
   const [copiedBriefing, setCopiedBriefing] = useState(false);
+  const { success, info, error } = useNotificationCenter();
   const themeSwitcherRef = useRef<HTMLDivElement>(null);
   const t = translations[lang];
 
@@ -130,9 +141,11 @@ function Workshop() {
   const sidebarLinks: { id: Page; label: string; icon: any; group: string; badge?: string }[] = [
     { id: "landing",        label: "Home",            icon: Monitor,       group: "Overview" },
     { id: "component-docs", label: "Component Docs",  icon: Code,          group: "Components", badge: "35+" },
-  { id: "composites",     label: "Composites",      icon: Puzzle,        group: "Components", badge: "26" },
+  { id: "composites",     label: "Composites",      icon: Puzzle,        group: "Components", badge: "37" },
+    { id: "notifications",   label: "Notifications",   icon: Bell,          group: "Components", badge: "8" },
     { id: "hooks-utils",    label: "Hooks & Utils",   icon: Wrench,        group: "Components" },
     { id: "templates",      label: "Templates",       icon: LayoutDashboard, group: "Components", badge: "14" },
+    { id: "agent-sdk",      label: "Agent SDK",       icon: Sparkles,      group: "Documentation", badge: "v2.0" },
     { id: "cli-docs",       label: "CLI Reference",   icon: Terminal,      group: "Documentation" },
     { id: "docs",           label: "Getting Started", icon: BookOpen,      group: "Documentation" },
     { id: "visualizer",     label: "Theme Visualizer",icon: Palette,       group: "Theme Tools" },
@@ -527,10 +540,21 @@ function Workshop() {
             {/* Copy AI Briefing — with tooltip */}
             <div className="relative group hidden sm:block">
               <button
-                onClick={() => {
-                  navigator.clipboard.writeText(CHAMELEON_AI_WRITEUP);
-                  setCopiedBriefing(true);
-                  setTimeout(() => setCopiedBriefing(false), 2500);
+                onClick={async () => {
+                  try {
+                    await navigator.clipboard.writeText(CHAMELEON_AI_WRITEUP);
+                    setCopiedBriefing(true);
+                    success("AI briefing copied to clipboard", {
+                      title: "Briefing ready",
+                      duration: 2800,
+                    });
+                    setTimeout(() => setCopiedBriefing(false), 2500);
+                  } catch {
+                    error("Could not copy AI briefing. Please try again.", {
+                      title: "Copy failed",
+                      duration: 4200,
+                    });
+                  }
                 }}
                 aria-label="Copy AI briefing"
                 className={cn(
@@ -560,6 +584,18 @@ function Workshop() {
               </div>
             </div>
 
+            <button
+              type="button"
+              aria-label="Open Notification Panel"
+              className="relative rounded-full w-9 h-9 flex items-center justify-center hover:bg-[var(--muted)] transition-colors"
+              onClick={() => setActivePage("notifications")}
+            >
+              <Bell className="w-4 h-4" />
+              <span className="absolute top-1 right-1 flex h-4 w-4 items-center justify-center rounded-full bg-[var(--primary)] text-[9px] font-bold text-[var(--primary-foreground)]">
+                8
+              </span>
+            </button>
+
             <Button
               size="icon"
               variant="ghost"
@@ -586,11 +622,13 @@ function Workshop() {
               {activePage === "component-docs" && <ComponentDocsDirectoryPage />}
               {activePage === "composites" && <CompositesPage />}
               {activePage === "hooks-utils" && <HooksUtilsDocsPage />}
+              {activePage === "agent-sdk" && <AgentSDKPage />}
               {activePage === "cli-docs" && <CLIDocsPage />}
               {activePage === "docs" && <DocsPage />}
               {activePage === "visualizer" && <ThemeVisualizer />}
               {activePage === "animations" && <AnimationPresets currentTheme={theme} />}
               {activePage === "templates" && <TemplatesPage />}
+              {activePage === "notifications" && <NotificationPanel />}
             </motion.div>
           </AnimatePresence>
         </div>
@@ -619,6 +657,7 @@ function Workshop() {
                 { label: "Components", page: "component-docs" as Page },
                 { label: "Composites", page: "composites" as Page },
                 { label: "Templates", page: "templates" as Page },
+                { label: "Agent SDK", page: "agent-sdk" as Page },
                 { label: "CLI Tool", page: "cli-docs" as Page },
                 { label: "Getting Started", page: "docs" as Page },
               ]},
@@ -668,7 +707,10 @@ function Workshop() {
 export default function App() {
   return (
     <ChameleonProvider>
-      <Workshop />
+      <NotificationCenterProvider>
+        <Workshop />
+        <NotificationCenter position="top-right" />
+      </NotificationCenterProvider>
     </ChameleonProvider>
   );
 }

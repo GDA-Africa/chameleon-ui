@@ -119,6 +119,25 @@ export const DocumentationPage: React.FC = () => {
               </div>
             </div>
 
+            {/* v2.0 Agent SDK callout */}
+            <Card className="border-emerald-500/30">
+              <CardContent className="p-5 space-y-2">
+                <div className="flex items-center gap-2">
+                  <Badge className="bg-emerald-500/10 text-emerald-500 border-emerald-500/30">New in v2.0</Badge>
+                  <span className={cn("font-black", textPrimary)}>Using an AI coding agent?</span>
+                </div>
+                <p className={cn("text-sm leading-relaxed", textMuted)}>
+                  Skip the manual setup — register the Chameleon MCP server and your agent gets 23 tools to search,
+                  compose, brand, preview, and scaffold for you. See the <strong>Agent SDK</strong> page in the sidebar.
+                </p>
+                <pre className="p-3 rounded-lg bg-black/90 text-emerald-300 text-xs overflow-x-auto">
+                  <code>{`claude mcp add chameleon -- npx -y -p @chameleon-ui-lib/react chameleon mcp
+# or teach any agent without MCP:
+npx chameleon agents init`}</code>
+                </pre>
+              </CardContent>
+            </Card>
+
             {/* Step 1: Installation */}
             <Card>
               <CardHeader>

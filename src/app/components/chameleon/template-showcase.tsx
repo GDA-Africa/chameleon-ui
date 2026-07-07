@@ -17,6 +17,7 @@ import {
   Search,
   Copy,
   Check,
+  Bell,
 } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "./molecules";
 import { Button, Input, Badge } from "./atoms";
@@ -37,6 +38,7 @@ import {
   AuthFlowTemplate,
   DocumentationTemplate,
 } from "./comprehensive-templates-part2";
+import { NotificationPanel } from "./composites/NotificationPanel";
 
 const TEMPLATE_DOCS_MARKDOWN = `# Chameleon UI — Templates Directory
 
@@ -174,6 +176,15 @@ export const TemplateShowcase: React.FC = () => {
       summary: "Docs-style information architecture with sidebar navigation and code sections.",
       importPath: "./components/chameleon/comprehensive-templates-part2",
       usageExample: `<DocumentationTemplate />`,
+    },
+    {
+      id: "notifications",
+      label: "Notification Panel",
+      icon: Bell,
+      component: NotificationPanel,
+      summary: "Full-page notification management: TopBar with live bell dropdown, stats strip, category sidebar, and enhanced inbox with priority levels, avatars, bulk actions, and snooze.",
+      importPath: "./components/chameleon/composites/NotificationPanel",
+      usageExample: `<NotificationPanel />`,
     },
   ];
 

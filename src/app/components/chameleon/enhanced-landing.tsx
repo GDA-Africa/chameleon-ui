@@ -43,6 +43,9 @@ import {
   Github,
   Twitter,
   CheckCircle2,
+  Eye,
+  Tractor,
+  PlayCircle,
 } from "lucide-react";
 import { motion } from "motion/react";
 import { Button, Input, Badge, Progress } from "./atoms";
@@ -67,12 +70,33 @@ export const EnhancedLandingPage: React.FC<EnhancedLandingPageProps> = ({ onNavi
   const { textPrimary, textMuted, cardClass, theme, mode } = useThemeClasses();
   const { setTheme, setMode } = useChameleon();
   const [email, setEmail] = useState("");
+  const [downloads, setDownloads] = useState<string>("50K+");
+  const [rawDownloads, setRawDownloads] = useState<number | null>(null);
+
+  React.useEffect(() => {
+    fetch("https://api.npmjs.org/downloads/point/last-month/@chameleon-ui-lib/react")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data && typeof data.downloads === "number") {
+          const num = data.downloads;
+          setRawDownloads(num);
+          const formatted =
+            num >= 1000000
+              ? (num / 1000000).toFixed(1) + "M+"
+              : num >= 1000
+              ? (num / 1000).toFixed(1) + "K+"
+              : num.toString();
+          setDownloads(formatted);
+        }
+      })
+      .catch((err) => console.error("Failed to fetch npm downloads:", err));
+  }, []);
 
   const stats = [
     { label: "Components", value: "60+", icon: Box, trend: "up", trendValue: "+12 this month" },
     { label: "Templates", value: "10", icon: Layout, trend: "up", trendValue: "Production-ready" },
     { label: "Themes", value: "5", icon: Palette, trend: "stable", trendValue: "Distinct styles" },
-    { label: "Downloads", value: "50K+", icon: TrendingUp, trend: "up", trendValue: "+15% MoM" },
+    { label: "Downloads/mo", value: downloads, icon: TrendingUp, trend: "up", trendValue: "from npm" },
   ];
 
   const features = [
@@ -120,9 +144,15 @@ export const EnhancedLandingPage: React.FC<EnhancedLandingPageProps> = ({ onNavi
     },
     {
       icon: Rocket,
-      title: "AI-Optimized",
-      desc: "Structured metadata and recipes help AI agents automatically choose the right components.",
-      highlight: false,
+      title: "Agent SDK (v2.0)",
+      desc: "An MCP server with 23 tools: AI agents search the catalog, compose validated specs, apply your brand, preview live, and scaffold whole apps — first try.",
+      highlight: true,
+    },
+    {
+      icon: Eye,
+      title: "Interactive Theme Visualizer",
+      desc: "Instantly see how your choices look across 5 distinct design languages. Preview fonts, colors, and border radii live.",
+      highlight: true,
     },
     {
       icon: Package,
@@ -130,6 +160,12 @@ export const EnhancedLandingPage: React.FC<EnhancedLandingPageProps> = ({ onNavi
       desc: "DataTable, Charts, Kanban, Calendar, Gallery—complex components that just work.",
       highlight: false,
     },
+    {
+      icon: PlayCircle,
+      title: "MCP to Browser Live Preview",
+      desc: "Agents hand you a /play link so you see the page before files are written — switch themes and modes live, copy the spec or the CLI command. ",
+      highlight: true,
+    }
   ];
 
   const architectureFeatures = [
@@ -250,7 +286,9 @@ export const EnhancedLandingPage: React.FC<EnhancedLandingPageProps> = ({ onNavi
     { feature: "Accessibility", us: "WCAG 2.1 AA", others: "Partial" },
     { feature: "Installation", us: "CLI + NPM", others: "NPM Only" },
     { feature: "Templates", us: "10 Production-Ready", others: "Examples Only" },
-    { feature: "AI Integration", us: "Structured Metadata", others: "None" },
+    { feature: "AI Integration", us: "MCP Server + Spec Language + Recipes", others: "None" },
+    { feature: "App Generation", us: "chameleon new — full apps from a spec", others: "None" },
+    { feature: "Brand Theming", us: "Token pipeline + WCAG AA audit", others: "Manual CSS" },
   ];
 
   return (
@@ -262,7 +300,7 @@ export const EnhancedLandingPage: React.FC<EnhancedLandingPageProps> = ({ onNavi
         <Animated type="fadeUp" delay={0}>
           <Badge className="px-4 py-2 text-xs font-black tracking-widest uppercase">
             <Sparkles className="w-3.5 h-3.5 mr-2" />
-            Version 1.0.9 • Stable Release
+            Version 2.0 • The Agent SDK Release
           </Badge>
         </Animated>
 
@@ -297,9 +335,9 @@ export const EnhancedLandingPage: React.FC<EnhancedLandingPageProps> = ({ onNavi
               textMuted,
             )}
           >
-            60+ accessible components that morph between 5 distinct design languages.
+            60+ accessible components that morph between 5 distinct design languages —
             <br className="hidden md:block" />
-            Built for developers who refuse to compromise on design quality.
+            now callable by AI agents. Say it, and Chameleon builds it: pages, brands, whole apps.
           </p>
         </Animated>
 
@@ -308,12 +346,32 @@ export const EnhancedLandingPage: React.FC<EnhancedLandingPageProps> = ({ onNavi
             <Button
               size="lg"
               animated
-              onClick={() => onNavigate?.("docs")}
+              onClick={() => onNavigate?.("agent-sdk")}
               className="h-16 px-10 text-lg font-black group shadow-2xl shadow-[var(--primary)]/25"
+            >
+              <Sparkles className="w-5 h-5 mr-3" />
+              Meet the Agent SDK
+              <ArrowRight className="ml-3 w-5 h-5 transition-transform group-hover:translate-x-1" />
+            </Button>
+            <Button
+              variant="outline"
+              size="lg"
+              animated
+              onClick={() => onNavigate?.("theme-visualizer")}
+              className="h-16 px-10 text-lg font-black group"
+            >
+              <Eye className="w-5 h-5 mr-3" />
+              Theme Visualizer
+            </Button>
+            <Button
+              variant="secondary"
+              size="lg"
+              animated
+              onClick={() => onNavigate?.("docs")}
+              className="h-16 px-10 text-lg font-black"
             >
               <Terminal className="w-5 h-5 mr-3" />
               Get Started
-              <ArrowRight className="ml-3 w-5 h-5 transition-transform group-hover:translate-x-1" />
             </Button>
             <Button
               variant="outline"
@@ -342,7 +400,19 @@ export const EnhancedLandingPage: React.FC<EnhancedLandingPageProps> = ({ onNavi
               <div className="w-1 h-1 rounded-full bg-current opacity-30" />
               <div className="flex items-center gap-2">
                 <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-                <span>50K+ Downloads</span>
+                <span className="flex items-center gap-1.5">
+                  {rawDownloads !== null ? (
+                    <>
+                      <span className="relative flex h-2 w-2">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                        <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                      </span>
+                      {rawDownloads} monthly downloads
+                    </>
+                  ) : (
+                    "50K+ Downloads"
+                  )}
+                </span>
               </div>
             </div>
           </div>
@@ -560,6 +630,61 @@ export const EnhancedLandingPage: React.FC<EnhancedLandingPageProps> = ({ onNavi
         </AnimatedList>
       </section>
 
+      {/* Agent SDK (v2.0) */}
+      <section className="px-4 sm:px-6 max-w-7xl mx-auto space-y-8 sm:space-y-12">
+        <Animated type="fadeUp">
+          <div className="text-center space-y-4">
+            <Badge className="px-4 py-2 text-xs font-black tracking-widest uppercase">
+              <Sparkles className="w-3.5 h-3.5 mr-2" />
+              New in v2.0
+            </Badge>
+            <h2 className={cn("text-4xl sm:text-5xl font-black tracking-tight", textPrimary)}>
+              Built for AI Agents
+            </h2>
+            <p className={cn("text-lg max-w-3xl mx-auto", textMuted)}>
+              Chameleon is a tool surface agents <em>call</em> — not just a library they read about.
+              One sentence in Claude Code becomes a branded, WCAG-audited, running application.
+            </p>
+          </div>
+        </Animated>
+        <Animated type="fadeUp" delay={0.1}>
+          <div className="grid lg:grid-cols-2 gap-6 items-stretch">
+            <Card className="overflow-hidden">
+              <CardContent className="p-0">
+                <div className="p-4 bg-black/90 text-emerald-300 font-mono text-xs sm:text-sm leading-relaxed rounded-xl">
+                  <p className="text-white/50"># register once</p>
+                  <p>$ claude mcp add chameleon -- npx -y -p @chameleon-ui-lib/react chameleon mcp</p>
+                  <p className="mt-3 text-white/50"># then just ask</p>
+                  <p className="text-white">&gt; build me a CRM for my bakery — brand from my site</p>
+                  <p className="mt-2">✓ extract_brand · 4 candidates from bakery.com</p>
+                  <p>✓ set_brand · WCAG AA verified</p>
+                  <p>✓ compose_from_blocks · 3 pages validated</p>
+                  <p>✓ preview_spec · chameleon.glenhalton.com/play?spec=…</p>
+                  <p>✓ scaffold_app · 21 files — npm run dev</p>
+                </div>
+              </CardContent>
+            </Card>
+            <div className="space-y-4">
+              {[
+                ["23 MCP tools", "Search the catalog, compose validated specs, apply brands, preview live, scaffold whole apps."],
+                ["A spec language, not guesswork", "Agents emit JSON validated against the catalog before any file is written — errors come back pathed, with suggestions."],
+                ["See it before it lands", "Every composition gets a shareable /play link and screenshot verification."],
+                ["Works without MCP too", "chameleon agents init teaches any coding agent via CLAUDE.md — and every CLI command speaks --json."],
+              ].map(([title, desc]) => (
+                <div key={title} className={cn("rounded-xl border p-4", cardClass)}>
+                  <div className={cn("font-black text-sm mb-1", textPrimary)}>{title}</div>
+                  <div className={cn("text-sm leading-relaxed", textMuted)}>{desc}</div>
+                </div>
+              ))}
+              <Button animated onClick={() => onNavigate?.("agent-sdk")} className="w-full h-12 font-black group">
+                Explore the Agent SDK
+                <ArrowRight className="ml-2 w-4 h-4 transition-transform group-hover:translate-x-1" />
+              </Button>
+            </div>
+          </div>
+        </Animated>
+      </section>
+
       {/* Architecture Overview */}
       <section className="px-4 sm:px-6 max-w-7xl mx-auto space-y-8 sm:space-y-12">
         <Animated type="fadeUp">
@@ -680,7 +805,7 @@ export const EnhancedLandingPage: React.FC<EnhancedLandingPageProps> = ({ onNavi
               Loved by Developers
             </h2>
             <p className={cn("text-xl max-w-2xl mx-auto", textMuted)}>
-              Join thousands of teams building with Chameleon UI
+              Join {rawDownloads !== null && rawDownloads > 0 ? `${downloads} developers` : "50,000+ developers"} currently building with Chameleon UI
             </p>
           </div>
         </Animated>
@@ -733,7 +858,7 @@ export const EnhancedLandingPage: React.FC<EnhancedLandingPageProps> = ({ onNavi
                   Ready to Build Something Amazing?
                 </h2>
                 <p className={cn("text-xl md:text-2xl max-w-2xl mx-auto", textMuted)}>
-                  Join 50,000+ developers building with Chameleon UI
+                  Join {rawDownloads !== null && rawDownloads > 0 ? "others" : "50,000+ developers"} building with Chameleon UI
                 </p>
 
                 <div className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-6">
@@ -752,7 +877,7 @@ export const EnhancedLandingPage: React.FC<EnhancedLandingPageProps> = ({ onNavi
                 </div>
 
                 <p className={cn("text-sm", textMuted)}>
-                  No credit card required • MIT Licensed • 50K+ downloads
+                  No credit card required • MIT Licensed • {downloads} downloads/mo
                 </p>
               </div>
             </CardContent>

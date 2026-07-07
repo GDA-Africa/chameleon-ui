@@ -1,7 +1,7 @@
 # Chameleon UI — Complete Knowledge Base
 > Machine-readable context file for AI agents, LLMs, and crawlers.
 > URL: https://chameleon.glenhalton.com/context.md
-> Package: @chameleon-ui-lib/react | Version: 1.0.9 | Updated: 2026-05-03
+> Package: @chameleon-ui-lib/react | Version: 1.1.0 | Updated: 2026-05-06
 
 ---
 
@@ -530,3 +530,17 @@ setCustomBrandColor('#e91e63');  // overrides --primary
 | Context (this file)         | https://chameleon.glenhalton.com/context.md       |
 | Component Manifest (JSON)   | https://chameleon.glenhalton.com/manifest.json    |
 | GitHub                      | https://github.com/GDA-Africa/chameleon-ui        |
+
+---
+
+## v2.0 — Agent SDK (added 2026-07-05)
+
+Chameleon is now agent-callable. Key entry points for AI agents:
+
+- **MCP server:** `chameleon mcp` — 23 tools (search_components, get_recipe, compose_from_blocks, set_brand, preview_spec, scaffold_app, ...). Register: `claude mcp add chameleon -- npx -y -p @chameleon-ui-lib/react chameleon mcp`
+- **ChameleonSpec v1:** declarative page JSON (`{ version:1, name, template|blocks[], theme?, mode?, brand? }`) — validate with `chameleon compose <file> --validate-only --json`, render live at `/play?spec=<base64url>`
+- **AppSpec v2:** whole applications — `chameleon new <dir> --app-spec <file>`
+- **Brand pipeline:** `chameleon brand init --primary "#hex"` → pass `brand.config.json` to `<ChameleonProvider brand={...}>`; WCAG AA audit built in
+- **Registry:** `chameleon add @chameleon/<name>` (spec items validated; source items sha256-checked + `--yes`)
+- **Rulesets without MCP:** `chameleon agents init`
+- Full agent guide: `AI_INTEGRATION_GUIDE.md` · JSON CLI contract: `docs/CLI_JSON.md`

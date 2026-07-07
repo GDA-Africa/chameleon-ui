@@ -1,6 +1,6 @@
 # Chameleon UI - AI Integration Guide
 
-> **Version 1.0.9** | **AI-Optimized Component Library**
+> **Version 1.1.0** | **AI-Optimized Component Library**
 
 ## 🤖 Why Chameleon UI for AI Agents?
 
@@ -544,3 +544,50 @@ When generating Chameleon UI code, verify:
 ---
 
 **Built for AI · Optimized for Humans · Chameleon UI 2.0.0**
+
+---
+
+# v2.0 — The Agent SDK
+
+Everything above still works; v2.0 adds a callable surface so agents stop guessing.
+
+## MCP server (the primary integration)
+
+```bash
+claude mcp add chameleon -- npx -y -p @chameleon-ui-lib/react chameleon mcp
+```
+
+23 tools. The canonical flows:
+
+1. **Component**: `search_components("login form")` → `scaffold_component`/`scaffold_template` → `validate_project`
+2. **Page**: `get_recipe("analytics-overview")` → edit props → `validate_spec` → `compose_from_blocks` → `preview_spec` (screenshots + WCAG audit; returns a `/play` URL to show the user)
+3. **Brand**: `extract_brand({url})` → confirm candidates with the user → `set_brand` → `check_brand_contrast`
+4. **Application**: `validate_app_spec` → `scaffold_app` → tell the user `cd <dir> && npm install && npm run dev`
+5. **Registry**: `search_registry` → `add_registry_item` (source items: show the CONFIRM_REQUIRED preview, get approval, then `confirmed:true`)
+
+## ChameleonSpec v1 (pages)
+
+```jsonc
+{ "version": 1, "name": "team-members",
+  "blocks": [{ "component": "stat-card", "props": { "label": "Team", "value": "14" } }],
+  "theme": "glassy", "mode": "dark", "brand": { "primaryColor": "#635BFF" } }
+```
+Flat by design: `template` OR `blocks`, no nesting, no raw JSX. Validation errors are pathed with typo suggestions. Runtime twin: `<RenderSpec spec={...}>` (also `/render?spec=<base64url>` and `/play` on the docs site).
+
+## AppSpec v2 (applications)
+
+```jsonc
+{ "version": 2, "app": { "name": "bakery-crm", "brand": { "primaryColor": "#8B4513" } },
+  "shell": { "nav": "sidebar", "theme": "glassy" },
+  "pages": [{ "route": "/", "title": "Dashboard", "spec": { /* ChameleonSpec v1 */ } }],
+  "dataSlots": [{ "id": "orders", "shape": "table", "mock": true }] }
+```
+`chameleon new <dir> --app-spec app.json` → runnable Vite + React + TS app with router, nav, brand, mock data seams (`// CHAMELEON-DATA`), and agent rulesets baked in.
+
+## Without MCP
+
+`npx chameleon agents init` writes this guide's essentials into CLAUDE.md / AGENTS.md / .cursorrules. Every CLI command speaks `--json` (stable envelope — `docs/CLI_JSON.md`).
+
+## MCP Apps (experimental)
+
+`npm run build:widget` + `CHAMELEON_MCP_APPS=1 chameleon mcp` serves a SEP-1865 widget template: spec-tool results render as live Chameleon UI inside Claude/ChatGPT/VS Code. Spec finalizes 2026-07-28; the bridge adapter is isolated and tolerant of RC shapes.

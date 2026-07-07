@@ -1,9 +1,24 @@
 #!/usr/bin/env node
 
+/**
+ * Chameleon CLI — thin skin over the Chameleon Engine (bin/engine/, F59).
+ * All catalog/scaffold/health logic lives in the engine; this file only parses
+ * arguments and renders engine Results as human (ANSI) or --json output (F58).
+ */
+
 import fs from "fs";
 import path from "path";
 import { spawn } from "child_process";
 import { fileURLToPath } from "url";
+import {
+  COMPONENTS, TEMPLATES, VALID_THEMES,
+  createContext, listCatalog, getInfo, listThemes, readConfig,
+  addComponents, selectBulk, removeComponent, scaffoldTemplate, setTheme, updateComponents, initProject,
+  doctor, diffComponents,
+  validateSpec, scaffoldSpec, listRecipes, getRecipe, agentsInit,
+  brandInit, brandCheck, brandFromUrl, brandFromLogo, previewSpec,
+  listRegistry, addRegistryItem, validateAppSpec, scaffoldApp,
+} from "./engine/index.mjs";
 
 const __filename = fs.realpathSync(fileURLToPath(import.meta.url));
 const __dirname = path.dirname(__filename);
@@ -22,153 +37,36 @@ const c = {
   red:     "\x1b[38;2;248;113;113m",
 };
 
+// ── F58: machine-readable output mode (--json) ──────────────────────────────
+// Envelope: { ok, command, version, data, warnings[], errors[], filesWritten[], nextSteps[] }
+// Documented in docs/CLI_JSON.md. Foundation for the MCP server (F60).
+const JSON_MODE = process.argv.slice(2).includes("--json");
+
 const LIB_ROOT   = path.resolve(__dirname, "..");
 const _pkgJson   = JSON.parse(fs.readFileSync(path.join(LIB_ROOT, "package.json"), "utf8"));
 const VERSION    = _pkgJson.version || "0.0.0";
-const LIB_SRC    = fs.existsSync(path.join(LIB_ROOT, "lib-src"))
-  ? path.join(LIB_ROOT, "lib-src")
-  : path.join(LIB_ROOT, "src", "app", "components", "chameleon");
-const CONFIG_FILE = path.join(process.cwd(), "chameleon.config.json");
+const ctx        = createContext({ cwd: process.cwd(), libRoot: LIB_ROOT });
 
-// Real Component Registry — sourced from atoms.tsx, molecules.tsx, composites.tsx
-const COMPONENTS = {
-  button:              { file: "atoms.tsx",      category: "Atom",      deps: ["@radix-ui/react-slot", "motion"],            variants: ["primary","secondary","ghost","outline"],     desc: "Interactive button with theme adaptation and animations." },
-  input:               { file: "atoms.tsx",      category: "Atom",      deps: [],                                            variants: ["default","error","disabled"],                desc: "Form text input with full theme token support." },
-  badge:               { file: "atoms.tsx",      category: "Atom",      deps: [],                                            variants: ["default","success","warning","error"],       desc: "Compact status/label indicator." },
-  spinner:             { file: "atoms.tsx",      category: "Atom",      deps: [],                                            variants: ["sm","md","lg"],                              desc: "Loading spinner with size variants." },
-  avatar:              { file: "atoms.tsx",      category: "Atom",      deps: [],                                            variants: ["sm","md","lg"],                              desc: "User avatar with image and fallback initials." },
-  toggle:              { file: "atoms.tsx",      category: "Atom",      deps: [],                                            variants: ["default","sm"],                              desc: "Boolean on/off toggle switch." },
-  progress:            { file: "atoms.tsx",      category: "Atom",      deps: [],                                            variants: ["default","animated"],                        desc: "Linear progress bar with animated fill." },
-  tooltip:             { file: "atoms.tsx",      category: "Atom",      deps: [],                                            variants: ["top","bottom","left","right"],               desc: "Contextual hover tooltip for any element." },
-  datepicker:          { file: "atoms.tsx",      category: "Atom",      deps: [],                                            variants: ["single","range"],                            desc: "Date picker supporting single date or date range selection." },
-  card:                { file: "molecules.tsx",  category: "Molecule",  deps: [],                                            variants: ["default","elevated","animated"],             desc: "Versatile content container with header/footer slots." },
-  tabs:                { file: "molecules.tsx",  category: "Molecule",  deps: ["@radix-ui/react-tabs"],                      variants: ["default"],                                  desc: "Tabbed navigation panel." },
-  dialog:              { file: "molecules.tsx",  category: "Molecule",  deps: ["@radix-ui/react-dialog"],                    variants: ["default"],                                  desc: "Accessible modal dialog overlay." },
-  "stat-card":         { file: "molecules.tsx",  category: "Molecule",  deps: [],                                            variants: ["default","trending"],                        desc: "KPI/metric card with trend indicator." },
-  "pricing-card":      { file: "molecules.tsx",  category: "Molecule",  deps: [],                                            variants: ["default","featured"],                        desc: "Pricing tier card with feature list." },
-  alert:               { file: "molecules.tsx",  category: "Molecule",  deps: [],                                            variants: ["info","success","warning","error"],          desc: "Inline alert/notification banner." },
-  separator:           { file: "molecules.tsx",  category: "Molecule",  deps: [],                                            variants: ["horizontal","vertical"],                     desc: "Visual divider line." },
-  breadcrumb:          { file: "molecules.tsx",  category: "Molecule",  deps: [],                                            variants: ["default"],                                  desc: "Hierarchical navigation breadcrumb trail." },
-  select:              { file: "molecules.tsx",  category: "Molecule",  deps: [],                                            variants: ["default","error"],                           desc: "Styled select dropdown." },
-  textarea:            { file: "molecules.tsx",  category: "Molecule",  deps: [],                                            variants: ["default","error"],                           desc: "Multiline text input." },
-  "data-table":        { file: "composites.tsx", category: "Composite", deps: [],                                            variants: ["default","striped"],                         desc: "Sortable, filterable data table with pagination." },
-  "theme-chart":       { file: "composites.tsx", category: "Composite", deps: ["recharts"],                                  variants: ["bar","line","area"],                         desc: "Themed recharts wrapper with full token support." },
-  "command-palette":   { file: "composites.tsx", category: "Composite", deps: ["cmdk"],                                      variants: ["default"],                                  desc: "CMD+K command palette with fuzzy search." },
-  "kanban-board":      { file: "composites.tsx", category: "Composite", deps: ["react-dnd","react-dnd-html5-backend"],       variants: ["default"],                                  desc: "Drag-and-drop kanban board." },
-  timeline:            { file: "composites.tsx", category: "Composite", deps: [],                                            variants: ["default","animated"],                        desc: "Vertical timeline of events." },
-  "file-uploader":     { file: "composites.tsx", category: "Composite", deps: [],                                            variants: ["default","drag-drop"],                       desc: "File upload zone with preview and progress." },
-  "notification-feed": { file: "composites.tsx", category: "Composite", deps: [],                                            variants: ["default"],                                  desc: "Real-time notification feed list." },
-  "multi-step-form":   { file: "composites.tsx", category: "Composite", deps: ["react-hook-form"],                           variants: ["default"],                                  desc: "Wizard-style multi-step form with validation." },
-  "calendar-widget":   { file: "composites.tsx", category: "Composite", deps: ["react-day-picker","date-fns"],               variants: ["default"],                                  desc: "Interactive calendar picker widget." },
-  "media-gallery":     { file: "composites.tsx", category: "Composite", deps: [],                                            variants: ["grid","masonry"],                            desc: "Responsive image/media gallery." },
-};
-
-// Real Template Registry — sourced from templates.tsx, comprehensive-templates.tsx, comprehensive-templates-part2.tsx
-const TEMPLATES = {
-  "auth":               { file: "templates.tsx",                    export: "AuthTemplate",               desc: "Login and signup forms with validation." },
-  "settings":           { file: "templates.tsx",                    export: "SettingsTemplate",            desc: "User settings panel with sections." },
-  "ecommerce":          { file: "templates.tsx",                    export: "EcommerceTemplate",           desc: "Product listing and cart page." },
-  "analytics-dashboard":{ file: "templates.tsx",                    export: "AnalyticsDashboardTemplate",  desc: "KPI dashboard with charts and metrics." },
-  "landing-page":       { file: "comprehensive-templates.tsx",      export: "LandingPageTemplate",         desc: "Full marketing landing page." },
-  "blog-article":       { file: "comprehensive-templates.tsx",      export: "BlogArticleTemplate",         desc: "Article/blog post layout." },
-  "pricing-page":       { file: "comprehensive-templates.tsx",      export: "PricingPageTemplate",         desc: "Pricing tiers with comparison table." },
-  "contact-support":    { file: "comprehensive-templates.tsx",      export: "ContactSupportTemplate",      desc: "Contact form and support FAQ layout." },
-  "user-profile":       { file: "comprehensive-templates-part2.tsx",export: "UserProfileTemplate",         desc: "User profile with avatar, bio and activity." },
-  "admin-dashboard":    { file: "comprehensive-templates-part2.tsx",export: "AdminDashboardTemplate",      desc: "Admin panel with sidebar and data tables." },
-  "ecommerce-product":  { file: "comprehensive-templates-part2.tsx",export: "EcommerceProductTemplate",    desc: "Single product detail page." },
-  "settings-panel":     { file: "comprehensive-templates-part2.tsx",export: "SettingsPanelTemplate",       desc: "Comprehensive settings with nested tabs." },
-  "auth-flow":          { file: "comprehensive-templates-part2.tsx",export: "AuthFlowTemplate",            desc: "Multi-step auth flow (login, 2FA, reset)." },
-  "documentation":      { file: "comprehensive-templates-part2.tsx",export: "DocumentationTemplate",       desc: "Docs layout with sidebar navigation." },
-};
-
-const VALID_THEMES = ["material", "simple", "minimalist", "glassy", "liquid"];
-
-// Helpers
-const log  = (msg) => console.log(msg);
+// ── output helpers ───────────────────────────────────────────────────────────
+const log  = (msg) => { if (!JSON_MODE) console.log(msg); };
 const ok   = (msg) => log(`  ${c.emerald}✔${c.reset} ${c.white}${msg}${c.reset}`);
 const warn = (msg) => log(`  ${c.yellow}⚠${c.reset} ${c.white}${msg}${c.reset}`);
 const fail = (msg) => log(`  ${c.red}✖${c.reset} ${c.white}${msg}${c.reset}`);
 const info = (msg) => log(`  ${c.gray}${msg}${c.reset}`);
-const toPascalCase = (str) => str.split("-").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join("");
 
-function readConfig() {
-  if (!fs.existsSync(CONFIG_FILE)) return null;
-  try { return JSON.parse(fs.readFileSync(CONFIG_FILE, "utf8")); } catch { return null; }
-}
-function writeConfig(cfg) {
-  fs.writeFileSync(CONFIG_FILE, JSON.stringify(cfg, null, 2) + "\n", "utf8");
-}
-function readProjectPkg() {
-  const p = path.join(process.cwd(), "package.json");
-  if (!fs.existsSync(p)) return null;
-  try { return JSON.parse(fs.readFileSync(p, "utf8")); } catch { return null; }
+/** Replay engine events through the human formatters. */
+function renderEvents(events) {
+  for (const e of events) {
+    if      (e.level === "ok")     ok(e.message);
+    else if (e.level === "warn")   warn(e.message);
+    else if (e.level === "error")  fail(e.message);
+    else if (e.level === "info")   info(e.message);
+    else if (e.level === "dim")    log(`  ${c.dim}${e.message}${c.reset}`);
+    else if (e.level === "detail") log(`    ${c.gray}${e.message}${c.reset}`);
+  }
 }
 
 const banner = `\n${c.emerald}▧${c.reset} ${c.bold}${c.white}Chameleon UI${c.reset} ${c.dim}v${VERSION}${c.reset}\n`;
-
-function autoConfigureTailwindVite() {
-  const dir = process.cwd();
-  const viteConf = ["vite.config.ts", "vite.config.js", "vite.config.mjs"].find(f => fs.existsSync(path.join(dir, f)));
-  if (!viteConf) {
-    warn("No Vite config found. Make sure to configure @tailwindcss/vite manually.");
-    return false;
-  }
-
-  const confPath = path.join(dir, viteConf);
-  let content = fs.readFileSync(confPath, "utf8");
-  
-  if (content.includes("@tailwindcss/vite") || content.includes("tailwindcss()")) {
-    ok(`Tailwind v4 plugin already configured in ${viteConf}`);
-    return true;
-  }
-
-  log(`  ${c.dim}Injecting Tailwind v4 Vite plugin into ${viteConf}...${c.reset}`);
-
-  // Inject import
-  if (!content.includes("import tailwindcss")) {
-    const importMatch = [...content.matchAll(/import\s+.*?from\s+['"][^'"]+['"];?/gs)];
-    if (importMatch.length > 0) {
-      const lastImport = importMatch[importMatch.length - 1][0];
-      content = content.replace(lastImport, `${lastImport}\nimport tailwindcss from "@tailwindcss/vite";`);
-    } else {
-      content = `import tailwindcss from "@tailwindcss/vite";\n` + content;
-    }
-  }
-
-  // Inject plugin
-  const pluginsMatch = content.match(/plugins:\s*\[(.*?)\]/s);
-  if (pluginsMatch) {
-    let currentPlugins = pluginsMatch[1].trim();
-    if (currentPlugins && !currentPlugins.endsWith(",")) {
-      currentPlugins += ", ";
-    }
-    const newPlugins = currentPlugins ? `${currentPlugins}tailwindcss()` : `tailwindcss()`;
-    content = content.replace(/plugins:\s*\[.*?\]/s, `plugins: [${newPlugins}]`);
-    
-    fs.writeFileSync(confPath, content, "utf8");
-    ok(`Successfully updated ${viteConf}`);
-    return true;
-  } else {
-    warn(`Could not automatically add tailwindcss() to plugins in ${viteConf}. Add it manually.`);
-    return false;
-  }
-}
-
-function checkCssTailwindImport(configCssPath) {
-  const cssPath = path.join(process.cwd(), configCssPath || "src/index.css");
-  if (fs.existsSync(cssPath)) {
-    let content = fs.readFileSync(cssPath, "utf8");
-    if (!content.includes("@import 'tailwindcss'") && !content.includes('@import "tailwindcss"')) {
-      content = `@import "tailwindcss";\n` + content;
-      fs.writeFileSync(cssPath, content, "utf8");
-      ok(`Injected @import "tailwindcss" into ${configCssPath}`);
-    } else {
-      ok(`Tailwind directives found in ${configCssPath}`);
-    }
-  } else {
-    warn(`CSS entry ${configCssPath} not found. Don't forget to add @import "tailwindcss".`);
-  }
-}
 
 function printHelp() {
   log(banner);
@@ -183,17 +81,22 @@ function printHelp() {
   log(`  ${c.bold}${c.white}THEMING & TEMPLATES${c.reset}`);
   log(`    ${c.emerald}theme${c.reset} ${c.indigo}<name>${c.reset}           Set the active theme`);
   log(`    ${c.emerald}themes${c.reset}                  List all available Chameleon themes`);
-  log(`    ${c.emerald}template${c.reset} ${c.indigo}<name>${c.reset}        Scaffold a full-page template\n`);
+  log(`    ${c.emerald}template${c.reset} ${c.indigo}<name>${c.reset}        Scaffold a full-page template`);
+  log(`    ${c.emerald}recipes${c.reset}                 List composition recipes (stored ChameleonSpecs)`);
+  log(`    ${c.emerald}compose${c.reset} ${c.indigo}<spec|recipe>${c.reset}   Scaffold a page from a spec file or recipe name\n`);
   log(`  ${c.bold}${c.white}UTILS & DIAGNOSTICS${c.reset}`);
   log(`    ${c.emerald}info${c.reset} ${c.indigo}<component>${c.reset}       Show details, props, and deps for a component`);
   log(`    ${c.emerald}doctor${c.reset}                  Check project health and dependencies`);
   log(`    ${c.emerald}diff${c.reset}                    Compare local components to latest library source`);
   log(`    ${c.emerald}update${c.reset}                  Re-sync outdated scaffolded components`);
   log(`    ${c.emerald}config${c.reset}                  Show or manage chameleon.config.json`);
-  log(`    ${c.emerald}dev${c.reset}                     Launch the local component playground\n`);
+  log(`    ${c.emerald}dev${c.reset}                     Launch the local component playground`);
+  log(`    ${c.emerald}mcp${c.reset}                     Start the MCP server for AI agents (stdio)`);
+  log(`    ${c.emerald}agents init${c.reset}             Write Chameleon rulesets for coding agents (CLAUDE.md, ...)\n`);
   log(`  ${c.bold}${c.white}OPTIONS${c.reset}`);
   log(`    ${c.emerald}-h, --help${c.reset}              Show this help message`);
-  log(`    ${c.emerald}-v, --version${c.reset}           Show the version number\n`);
+  log(`    ${c.emerald}-v, --version${c.reset}           Show the version number`);
+  log(`    ${c.emerald}--json${c.reset}                  Machine-readable JSON output (for scripts & AI agents)\n`);
   log(`  ${c.bold}${c.white}EXAMPLES${c.reset}`);
   log(`    $ ${c.emerald}chameleon init${c.reset}`);
   log(`    $ ${c.emerald}chameleon add button${c.reset}`);
@@ -208,82 +111,69 @@ function printHelp() {
 const args = process.argv.slice(2);
 if (args.length === 0 || args[0] === "-h" || args[0] === "--help") { printHelp(); process.exit(0); }
 if (args[0] === "-v" || args[0] === "--version") {
+  if (JSON_MODE) { process.stdout.write(JSON.stringify({ ok: true, command: "version", version: VERSION, data: { cli: VERSION, library: VERSION } }, null, 2) + "\n"); process.exit(0); }
   log(`${c.emerald}Chameleon CLI${c.reset}     v${VERSION}`);
   log(`${c.indigo}Chameleon UI lib${c.reset}   v${VERSION}`);
   process.exit(0);
 }
 
 const cmd   = args[0];
-const item  = args[1];
+const item  = args.slice(1).find(a => !a.startsWith("--"));
 const flags = new Set(args.slice(1).filter(a => a.startsWith("--")));
-
-// ── helper: scaffold a single component and return export info ─────────────
-function scaffoldComponent(key, cfg, opts = {}) {
-  const meta = COMPONENTS[key];
-  if (!meta) return null;
-  const srcFile = path.join(LIB_SRC, meta.file);
-  const outDir  = path.join(process.cwd(), cfg.dir);
-  const outFile = path.join(outDir, `${key}.tsx`);
-  if (!fs.existsSync(srcFile)) { fail(`Source file not found: ${meta.file}`); return null; }
-  fs.mkdirSync(outDir, { recursive: true });
-  let content = fs.readFileSync(srcFile, "utf8");
-  const localDeps = ["context", "utils", "animations", "atoms", "molecules", "composites"];
-  const foundDeps = localDeps.filter(dep => content.includes(`from "./${dep}"`) || content.includes(`from './${dep}'`));
-  content = content.replace(/from\s+['"]\.\/.*?['"]/g, 'from "@chameleon-ui-lib/react"');
-  fs.writeFileSync(outFile, content, "utf8");
-  if (!opts.silent) {
-    ok(`${cfg.dir}/${key}.tsx created`);
-    if (meta.deps.length > 0) info(`External deps: ${meta.deps.join(", ")}`);
-    if (foundDeps.length > 0) info(`Mapped: ${foundDeps.join(", ")} → @chameleon-ui-lib/react`);
-  }
-  return { key, pascalName: toPascalCase(key), file: `${key}.tsx` };
+/** Value flags: `--primary #fff` → getFlagValue("--primary") === "#fff" */
+function getFlagValue(name) {
+  const i = args.indexOf(name);
+  return i !== -1 && args[i + 1] && !args[i + 1].startsWith("--") ? args[i + 1] : undefined;
 }
 
-// ── helper: regenerate barrel index.ts in the components dir ───────────────
-function regenerateBarrel(cfg) {
-  const outDir = path.join(process.cwd(), cfg.dir);
-  if (!fs.existsSync(outDir)) return;
-  const files = fs.readdirSync(outDir).filter(f => f.endsWith(".tsx") && f !== "index.ts");
-  if (files.length === 0) return;
-  const lines = files.map(f => {
-    const name = f.replace(".tsx", "");
-    return `export * from './${name}';`;
-  });
-  const barrel = `// Auto-generated by Chameleon UI CLI — do not edit manually\n${lines.join("\n")}\n`;
-  fs.writeFileSync(path.join(outDir, "index.ts"), barrel, "utf8");
-  ok(`${cfg.dir}/index.ts updated (barrel export for ${files.length} component(s))`);
+// ── F58: JSON envelope emitters ──────────────────────────────────────────────
+function emitJsonRaw(envelope) {
+  process.stdout.write(JSON.stringify(envelope, null, 2) + "\n");
+  process.exit(envelope.ok ? 0 : 1);
+}
+
+/** Convert an engine Result into the stable --json envelope and exit. */
+function finishJson(result, okOverride) {
+  const checks   = result.events.filter(e => ["ok", "warn", "error"].includes(e.level)).map(e => ({ level: e.level, message: e.message }));
+  const warnings = result.events.filter(e => e.level === "warn").map(e => e.message);
+  const errors   = [...result.errors];
+  for (const e of result.events) {
+    if (e.level === "error" && !errors.some(err => err.message === e.message)) {
+      errors.push({ code: "ERROR", message: e.message });
+    }
+  }
+  const okFlag = okOverride !== undefined ? okOverride : result.ok;
+  const envelope = { ok: okFlag, command: cmd, version: VERSION, data: result.data, warnings, errors };
+  if (result.filesWritten.length) envelope.filesWritten = result.filesWritten;
+  if (result.filesDeleted.length) envelope.filesDeleted = result.filesDeleted;
+  if (result.nextSteps.length)    envelope.nextSteps    = result.nextSteps;
+  // doctor exposes its checks in data; other commands surface them here for parity
+  void checks;
+  emitJsonRaw(envelope);
+}
+
+function jsonDie(code, message, extra = {}) {
+  emitJsonRaw({ ok: false, command: cmd, version: VERSION, data: {}, warnings: [], errors: [{ code, message, ...extra }] });
+}
+
+/** Shared human renderings for engine error codes; returns true if handled. */
+function renderCommonError(result) {
+  const err = result.errors[0];
+  if (!err) return false;
+  if (err.code === "NOT_INITIALIZED") { log(`\n${c.yellow}⚠ Run ${c.emerald}chameleon init${c.yellow} first.${c.reset}\n`); return true; }
+  return false;
 }
 
 // ── init ──────────────────────────────────────────────────────────────────────
 if (cmd === "init") {
+  const result = initProject(ctx, { version: VERSION });
+  if (JSON_MODE) finishJson(result);
+  if (!result.ok && result.errors[0]?.code === "NO_PACKAGE_JSON") {
+    log(`\n${c.emerald}➜${c.reset} ${c.indigo}Initializing Chameleon UI in your project...${c.reset}\n`);
+    fail(result.errors[0].message); process.exit(1);
+  }
   log(`\n${c.emerald}➜${c.reset} ${c.indigo}Initializing Chameleon UI in your project...${c.reset}\n`);
-  const pkg = readProjectPkg();
-  if (!pkg) { fail("No package.json found. Run this inside your project root."); process.exit(1); }
-  ok("package.json found");
-
-  const allDeps = { ...pkg.dependencies, ...pkg.devDependencies };
-  if (allDeps["@chameleon-ui-lib/react"]) {
-    ok("@chameleon-ui-lib/react is installed");
-  } else {
-    warn("@chameleon-ui-lib/react not found — run: npm install @chameleon-ui-lib/react");
-  }
-
-  if (fs.existsSync(CONFIG_FILE)) {
-    warn("chameleon.config.json already exists — skipping");
-  } else {
-    writeConfig({ theme: "simple", mode: "light", lang: "en", dir: "src/components/ui", pagesDir: "src/pages", css: "src/styles/theme.css", version: VERSION });
-    ok("chameleon.config.json created");
-  }
-
-  const cfg = readConfig();
-  const outDir = path.join(process.cwd(), cfg.dir);
-  if (!fs.existsSync(outDir)) { fs.mkdirSync(outDir, { recursive: true }); ok(`Created ${cfg.dir}`); }
-  else { ok(`Output directory exists: ${cfg.dir}`); }
-
-  // Auto-configure Tailwind v4
-  autoConfigureTailwindVite();
-  checkCssTailwindImport(cfg.css || "src/index.css");
-
+  renderEvents(result.events);
   log(`\n${c.emerald}✔ Chameleon UI ready!${c.reset}\n`);
   log(`${c.bold}${c.white}Next steps:${c.reset}`);
   log(`  ${c.gray}1.${c.reset} Make sure your CSS entry file starts with:`);
@@ -297,99 +187,115 @@ if (cmd === "init") {
 
 // ── list ──────────────────────────────────────────────────────────────────────
 } else if (cmd === "list") {
+  const catalog = listCatalog();
+  if (JSON_MODE) emitJsonRaw({ ok: true, command: cmd, version: VERSION, data: catalog, warnings: [], errors: [] });
   log(`\n${c.emerald}➜${c.reset} ${c.bold}${c.white}Chameleon UI Component Registry${c.reset}\n`);
   for (const group of ["Atom", "Molecule", "Composite"]) {
-    const members = Object.entries(COMPONENTS).filter(([, v]) => v.category === group);
+    const members = catalog.components.filter(m => m.category === group);
     log(`  ${c.bold}${c.cyan}${group}s (${members.length})${c.reset}`);
-    for (const [name, meta] of members) log(`  ${c.emerald}${name.padEnd(22)}${c.reset}${c.dim}${meta.desc}${c.reset}`);
+    for (const m of members) log(`  ${c.emerald}${m.name.padEnd(22)}${c.reset}${c.dim}${m.description}${c.reset}`);
     log("");
   }
-  log(`  ${c.bold}${c.cyan}Templates (${Object.keys(TEMPLATES).length})${c.reset}`);
-  for (const [name, meta] of Object.entries(TEMPLATES)) log(`  ${c.indigo}${name.padEnd(22)}${c.reset}${c.dim}${meta.desc}${c.reset}`);
+  log(`  ${c.bold}${c.cyan}Templates (${catalog.templates.length})${c.reset}`);
+  for (const m of catalog.templates) log(`  ${c.indigo}${m.name.padEnd(22)}${c.reset}${c.dim}${m.description}${c.reset}`);
   log("");
   info(`Use ${c.emerald}chameleon add <component>${c.gray} or ${c.emerald}chameleon template <name>${c.gray} to scaffold.`);
   log("");
 
 // ── add ───────────────────────────────────────────────────────────────────────
 } else if (cmd === "add") {
-  const cfg = readConfig();
-  if (!cfg) { log(`\n${c.yellow}⚠ Run ${c.emerald}chameleon init${c.yellow} first.${c.reset}\n`); process.exit(1); }
-
-  // ── bulk flags ──────────────────────────────────────────────────────────
-  const bulkMap = {
-    "--all-atoms":      (k, v) => v.category === "Atom",
-    "--all-molecules":  (k, v) => v.category === "Molecule",
-    "--all-composites": (k, v) => v.category === "Composite",
-    "--all":            ()     => true,
-  };
-  const bulkFlag = [...flags].find(f => bulkMap[f]);
+  // F73: remote registry items — `chameleon add @chameleon/<name>` or `--registry <url|file>`
+  const registrySource = getFlagValue("--registry");
+  if (item && (item.startsWith("@") || registrySource)) {
+    const name = item.startsWith("@") ? (item.split("/")[1] || item.slice(1)) : item;
+    const result = await addRegistryItem(ctx, name, { source: registrySource, confirmed: flags.has("--yes") });
+    if (JSON_MODE) finishJson(result);
+    log(`\n${c.emerald}➜${c.reset} ${c.indigo}Installing ${c.white}${name}${c.indigo} from registry...${c.reset}\n`);
+    if (!result.ok) {
+      const err = result.errors[0];
+      if (err.code === "CONFIRM_REQUIRED") {
+        renderEvents(result.events);
+        warn(err.message);
+        for (const f of err.files || []) { log(`\n  ${c.cyan}${f.path}${c.reset} ${c.dim}(${f.bytes} bytes)${c.reset}`); log(`${c.gray}${f.preview.split("\n").slice(0, 8).map(l => "    " + l).join("\n")}${c.reset}`); }
+        log(`\n  ${c.gray}Re-run with ${c.emerald}--yes${c.gray} to install.${c.reset}\n`);
+      } else if (!renderCommonError(result)) { fail(err.message); log(""); }
+      process.exit(1);
+    }
+    renderEvents(result.events);
+    log(`\n${c.emerald}Installed!${c.reset} ${c.gray}${result.nextSteps[0] || ""}${c.reset}\n`);
+    process.exit(0);
+  }
+  const bulkFlag = [...flags].find(f => selectBulk(f));
 
   if (bulkFlag) {
-    const subset = Object.entries(COMPONENTS).filter(([k, v]) => bulkMap[bulkFlag](k, v));
-    log(`\n${c.emerald}➜${c.reset} ${c.indigo}Adding ${subset.length} component(s) to your project...${c.reset}\n`);
-    const added = [];
-    for (const [key] of subset) {
-      const result = scaffoldComponent(key, cfg, { silent: true });
-      if (result) { ok(`${cfg.dir}/${key}.tsx`); added.push(result); }
-    }
-    regenerateBarrel(cfg);
+    const keys = selectBulk(bulkFlag);
+    const result = addComponents(ctx, keys, { bulk: true });
+    if (JSON_MODE) finishJson(result);
+    if (!result.ok) { if (!renderCommonError(result)) fail(result.errors[0].message); process.exit(1); }
+    log(`\n${c.emerald}➜${c.reset} ${c.indigo}Adding ${keys.length} component(s) to your project...${c.reset}\n`);
+    renderEvents(result.events);
+    const added = result.data.added;
     log(`\n${c.emerald}Done!${c.reset} ${c.gray}${added.length} component(s) scaffolded.${c.reset}`);
-    log(`${c.gray}Import all via:  ${c.cyan}import { ${added.slice(0,3).map(r => r.pascalName).join(", ")}${added.length > 3 ? ", ..." : ""} } from '${cfg.dir}'${c.reset}\n`);
+    log(`${c.gray}Import all via:  ${c.cyan}import { ${added.slice(0, 3).map(r => r.export).join(", ")}${added.length > 3 ? ", ..." : ""} } from '${result.data.dir}'${c.reset}\n`);
     process.exit(0);
   }
 
-  // ── single component ────────────────────────────────────────────────────
-  if (!item || item.startsWith("--")) {
+  if (!item) {
+    if (JSON_MODE) jsonDie("MISSING_ARGUMENT", "Missing component name. Usage: chameleon add <component> [--json]");
     log(`\n${c.red}✖ Missing component name${c.reset}\n  ${c.gray}Usage: ${c.emerald}chameleon add ${c.indigo}<component>${c.reset}`);
     log(`  ${c.gray}       ${c.emerald}chameleon add ${c.indigo}--all-atoms${c.gray}  (or --all-molecules, --all-composites, --all)${c.reset}\n`);
     process.exit(1);
   }
-  const key  = item.toLowerCase();
-  const meta = COMPONENTS[key];
-  if (!meta) { log(`\n${c.red}✖ Unknown component: '${item}'${c.reset}`); info(`Run ${c.emerald}chameleon list${c.gray} to see all available components.`); log(""); process.exit(1); }
-  log(`\n${c.emerald}➜${c.reset} ${c.indigo}Adding ${c.white}${key}${c.indigo} to your project...${c.reset}\n`);
-  const result = scaffoldComponent(key, cfg);
-  if (result) {
-    regenerateBarrel(cfg);
-    log(`\n${c.emerald}Ready!${c.reset} ${c.gray}Import: ${c.cyan}import { ${result.pascalName} } from '${cfg.dir}'${c.reset}\n`);
+  const key = item.toLowerCase();
+  if (!COMPONENTS[key]) {
+    if (JSON_MODE) jsonDie("UNKNOWN_COMPONENT", `Unknown component: '${item}'. Run \`chameleon list --json\` for the catalog.`);
+    log(`\n${c.red}✖ Unknown component: '${item}'${c.reset}`); info(`Run ${c.emerald}chameleon list${c.gray} to see all available components.`); log(""); process.exit(1);
   }
+  const result = addComponents(ctx, [key]);
+  if (JSON_MODE) finishJson(result);
+  if (!result.ok) { if (!renderCommonError(result)) { log(""); renderEvents(result.events); log(""); } process.exit(1); }
+  log(`\n${c.emerald}➜${c.reset} ${c.indigo}Adding ${c.white}${key}${c.indigo} to your project...${c.reset}\n`);
+  renderEvents(result.events);
+  log(`\n${c.emerald}Ready!${c.reset} ${c.gray}Import: ${c.cyan}import { ${result.data.added[0].export} } from '${result.data.dir}'${c.reset}\n`);
 
 // ── remove ────────────────────────────────────────────────────────────────────
 } else if (cmd === "remove") {
-  if (!item) { log(`\n${c.red}✖ Missing component name${c.reset}\n  ${c.gray}Usage: ${c.emerald}chameleon remove ${c.indigo}<component>${c.reset}\n`); process.exit(1); }
-  const cfg = readConfig();
-  if (!cfg) { log(`\n${c.yellow}⚠ Run ${c.emerald}chameleon init${c.yellow} first.${c.reset}\n`); process.exit(1); }
-  const key     = item.toLowerCase();
-  const outFile = path.join(process.cwd(), cfg.dir, `${key}.tsx`);
-  log(`\n${c.emerald}➜${c.reset} ${c.red}Removing ${c.white}${key}${c.red}...${c.reset}\n`);
-  if (!fs.existsSync(outFile)) { warn(`${cfg.dir}/${key}.tsx not found — nothing to remove.`); log(""); process.exit(0); }
-  fs.unlinkSync(outFile);
-  ok(`${cfg.dir}/${key}.tsx deleted`);
+  if (!item) {
+    if (JSON_MODE) jsonDie("MISSING_ARGUMENT", "Missing component name. Usage: chameleon remove <component> [--json]");
+    log(`\n${c.red}✖ Missing component name${c.reset}\n  ${c.gray}Usage: ${c.emerald}chameleon remove ${c.indigo}<component>${c.reset}\n`); process.exit(1);
+  }
+  const result = removeComponent(ctx, item);
+  if (JSON_MODE) finishJson(result);
+  if (!result.ok) { renderCommonError(result); process.exit(1); }
+  log(`\n${c.emerald}➜${c.reset} ${c.red}Removing ${c.white}${item.toLowerCase()}${c.red}...${c.reset}\n`);
+  renderEvents(result.events);
+  if (result.data.removed === null) { log(""); process.exit(0); }
   log(`\n${c.emerald}Done.${c.reset} ${c.gray}Component removed cleanly.${c.reset}\n`);
 
 // ── theme ─────────────────────────────────────────────────────────────────────
 } else if (cmd === "theme") {
-  if (!item) { log(`\n${c.red}✖ Missing theme name${c.reset}\n  ${c.gray}Usage: ${c.emerald}chameleon theme ${c.indigo}<name>${c.reset}\n`); process.exit(1); }
-  if (!VALID_THEMES.includes(item)) { log(`\n${c.red}✖ Invalid theme: '${item}'${c.reset}`); info(`Valid: ${VALID_THEMES.join(", ")}`); log(""); process.exit(1); }
-  const cfg = readConfig();
-  if (!cfg) { log(`\n${c.yellow}⚠ Run ${c.emerald}chameleon init${c.yellow} first.${c.reset}\n`); process.exit(1); }
+  if (!item) {
+    if (JSON_MODE) jsonDie("MISSING_ARGUMENT", "Missing theme name. Usage: chameleon theme <name> [--json]", { validThemes: VALID_THEMES });
+    log(`\n${c.red}✖ Missing theme name${c.reset}\n  ${c.gray}Usage: ${c.emerald}chameleon theme ${c.indigo}<name>${c.reset}\n`); process.exit(1);
+  }
+  const result = setTheme(ctx, item);
+  if (JSON_MODE) finishJson(result);
+  if (!result.ok) {
+    const err = result.errors[0];
+    if (err.code === "INVALID_THEME") { log(`\n${c.red}✖ Invalid theme: '${item}'${c.reset}`); info(`Valid: ${VALID_THEMES.join(", ")}`); log(""); }
+    else renderCommonError(result);
+    process.exit(1);
+  }
   log(`\n${c.emerald}➜${c.reset} ${c.indigo}Setting theme to ${c.bold}${c.white}${item}${c.reset}...\n`);
-  cfg.theme = item;
-  writeConfig(cfg);
-  ok(`chameleon.config.json updated → theme: ${item}`);
+  renderEvents(result.events);
   log(`\n${c.emerald}Success!${c.reset} ${c.gray}Now using the ${c.cyan}${item}${c.gray} theme.${c.reset}\n`);
 
 // ── themes ────────────────────────────────────────────────────────────────────
 } else if (cmd === "themes") {
+  const themes = listThemes();
+  if (JSON_MODE) emitJsonRaw({ ok: true, command: cmd, version: VERSION, data: { themes }, warnings: [], errors: [] });
   log(`\n${c.emerald}➜${c.reset} ${c.bold}${c.white}Chameleon UI Themes${c.reset}\n`);
-  const descs = {
-    material:   "Classic Google-inspired elevation, shadows, and ripple effects.",
-    simple:     "Flat, clean, unopinionated — great for custom design systems.",
-    minimalist: "High whitespace, stark contrast, elegant typography.",
-    glassy:     "Translucent frosted glass with backdrop blur — modern iOS/macOS feel.",
-    liquid:     "Organic morphing gradients and fluid animations.",
-  };
-  for (const [name, desc] of Object.entries(descs)) log(`  ${c.cyan}${name.padEnd(14)}${c.reset}${c.dim}${desc}${c.reset}`);
+  for (const t of themes) log(`  ${c.cyan}${t.name.padEnd(14)}${c.reset}${c.dim}${t.description}${c.reset}`);
   log("");
   info(`Use ${c.emerald}chameleon theme <name>${c.gray} to apply.`);
   log("");
@@ -397,253 +303,297 @@ if (cmd === "init") {
 // ── template ──────────────────────────────────────────────────────────────────
 } else if (cmd === "template") {
   if (!item) {
+    if (JSON_MODE) jsonDie("MISSING_ARGUMENT", "Missing template name. Usage: chameleon template <name> [--json]", { available: Object.keys(TEMPLATES) });
     log(`\n${c.red}✖ Missing template name${c.reset}\n  ${c.gray}Usage: ${c.emerald}chameleon template ${c.indigo}<name>${c.reset}\n`);
     log(`  ${c.gray}Available: ${Object.keys(TEMPLATES).join(", ")}${c.reset}\n`);
     process.exit(1);
   }
-  const key  = item.toLowerCase();
-  const meta = TEMPLATES[key];
-  if (!meta) { log(`\n${c.red}✖ Unknown template: '${item}'${c.reset}`); info(`Available: ${Object.keys(TEMPLATES).join(", ")}`); log(""); process.exit(1); }
-  const cfg = readConfig();
-  if (!cfg) { log(`\n${c.yellow}⚠ Run ${c.emerald}chameleon init${c.yellow} first.${c.reset}\n`); process.exit(1); }
-  log(`\n${c.emerald}➜${c.reset} ${c.indigo}Scaffolding template: ${c.white}${key}${c.reset}...\n`);
-  const srcFile = path.join(LIB_SRC, meta.file);
-  const outDir  = path.join(process.cwd(), cfg.pagesDir || "src/pages");
-  const outFile = path.join(outDir, `${key}.tsx`);
-  if (!fs.existsSync(srcFile)) { fail(`Source file not found: ${meta.file}`); process.exit(1); }
-  fs.mkdirSync(outDir, { recursive: true });
-  
-  let content = fs.readFileSync(srcFile, "utf8");
-  const localDeps = ["context", "utils", "animations", "atoms", "molecules", "composites", "auth-components"];
-  const foundDeps = localDeps.filter(dep => content.includes(`from "./${dep}"`) || content.includes(`from './${dep}'`));
-  
-  content = content.replace(/from\s+['"]\.\/.*?['"]/g, 'from "@chameleon-ui-lib/react"');
-  fs.writeFileSync(outFile, content, "utf8");
-
-  ok(`${cfg.pagesDir || "src/pages"}/${key}.tsx created`);
-  ok(`Exported: ${meta.export}`);
-  if (foundDeps.length > 0) info(`Mapped local dependencies to package exports: ${foundDeps.join(", ")}`);
-  log(`\n${c.emerald}Success!${c.reset} ${c.gray}Import: ${c.cyan}import { ${meta.export} } from './pages/${key}'${c.reset}\n`);
+  const result = scaffoldTemplate(ctx, item);
+  if (JSON_MODE) finishJson(result);
+  if (!result.ok) {
+    const err = result.errors[0];
+    if (err.code === "UNKNOWN_TEMPLATE") { log(`\n${c.red}✖ Unknown template: '${item}'${c.reset}`); info(`Available: ${Object.keys(TEMPLATES).join(", ")}`); log(""); }
+    else if (err.code === "SOURCE_NOT_FOUND") { log(`\n${c.emerald}➜${c.reset} ${c.indigo}Scaffolding template: ${c.white}${item.toLowerCase()}${c.reset}...\n`); fail(err.message); }
+    else renderCommonError(result);
+    process.exit(1);
+  }
+  log(`\n${c.emerald}➜${c.reset} ${c.indigo}Scaffolding template: ${c.white}${result.data.template}${c.reset}...\n`);
+  renderEvents(result.events);
+  log(`\n${c.emerald}Success!${c.reset} ${c.gray}Import: ${c.cyan}import { ${result.data.export} } from './pages/${result.data.template}'${c.reset}\n`);
 
 // ── info ──────────────────────────────────────────────────────────────────────
 } else if (cmd === "info") {
-  if (!item) { log(`\n${c.red}✖ Missing component name${c.reset}\n  ${c.gray}Usage: ${c.emerald}chameleon info ${c.indigo}<component>${c.reset}\n`); process.exit(1); }
-  const key  = item.toLowerCase();
-  const meta = COMPONENTS[key] || TEMPLATES[key];
-  if (!meta) { log(`\n${c.red}✖ Unknown item: '${item}'${c.reset}`); info(`Run ${c.emerald}chameleon list${c.gray} to see all available items.`); log(""); process.exit(1); }
-  log(`\n${c.emerald}➜${c.reset} ${c.bold}${c.white}${key}${c.reset}\n`);
-  log(`  ${c.gray}Category:${c.reset}     ${meta.category || "Template"}`);
-  log(`  ${c.gray}Description:${c.reset}  ${meta.desc}`);
-  log(`  ${c.gray}Source file:${c.reset}  src/app/components/chameleon/${meta.file}`);
-  if (meta.variants) log(`  ${c.gray}Variants:${c.reset}     ${meta.variants.join(", ")}`);
-  if (meta.deps)     log(`  ${c.gray}Dependencies:${c.reset} ${meta.deps.length > 0 ? meta.deps.join(", ") : "none (self-contained)"}`);
-  if (meta.export)   log(`  ${c.gray}Export name:${c.reset}  ${meta.export}`);
+  if (!item) {
+    if (JSON_MODE) jsonDie("MISSING_ARGUMENT", "Missing component name. Usage: chameleon info <component> [--json]");
+    log(`\n${c.red}✖ Missing component name${c.reset}\n  ${c.gray}Usage: ${c.emerald}chameleon info ${c.indigo}<component>${c.reset}\n`); process.exit(1);
+  }
+  const data = getInfo(item);
+  if (!data) {
+    if (JSON_MODE) jsonDie("UNKNOWN_ITEM", `Unknown item: '${item}'. Run \`chameleon list --json\` for the catalog.`);
+    log(`\n${c.red}✖ Unknown item: '${item}'${c.reset}`); info(`Run ${c.emerald}chameleon list${c.gray} to see all available items.`); log(""); process.exit(1);
+  }
+  if (JSON_MODE) emitJsonRaw({ ok: true, command: cmd, version: VERSION, data, warnings: [], errors: [] });
+  log(`\n${c.emerald}➜${c.reset} ${c.bold}${c.white}${data.name}${c.reset}\n`);
+  log(`  ${c.gray}Category:${c.reset}     ${data.category}`);
+  log(`  ${c.gray}Description:${c.reset}  ${data.description}`);
+  log(`  ${c.gray}Source file:${c.reset}  ${data.sourceFile}`);
+  if (data.variants)     log(`  ${c.gray}Variants:${c.reset}     ${data.variants.join(", ")}`);
+  if (data.dependencies) log(`  ${c.gray}Dependencies:${c.reset} ${data.dependencies.length > 0 ? data.dependencies.join(", ") : "none (self-contained)"}`);
+  if (data.export)       log(`  ${c.gray}Export name:${c.reset}  ${data.export}`);
   log("");
 
 // ── doctor ────────────────────────────────────────────────────────────────────
 } else if (cmd === "doctor") {
+  const result = doctor(ctx);
+  if (JSON_MODE) finishJson(result, result.data.healthy);
   log(`\n${c.emerald}➜${c.reset} ${c.indigo}Running Chameleon diagnostics...${c.reset}\n`);
-  let issues = 0;
-  
-  const pkg = readProjectPkg();
-  if (pkg) { ok("package.json found"); } else { fail("No package.json found"); issues++; }
-  
-  const cfg = readConfig();
-  if (cfg) { ok(`chameleon.config.json found (theme: ${cfg.theme}, mode: ${cfg.mode})`); } else { warn("No chameleon.config.json — run chameleon init"); issues++; }
-  
-  if (pkg) {
-    const allDeps = { ...pkg.dependencies, ...pkg.devDependencies };
-    if (allDeps["@chameleon-ui-lib/react"]) { ok("@chameleon-ui-lib/react installed"); } else { warn("@chameleon-ui-lib/react not in package.json"); issues++; }
-  }
-  
-  if (fs.existsSync(path.join(process.cwd(), "node_modules"))) { ok("node_modules present"); } else { fail("node_modules not found — run npm install"); issues++; }
-  
-  // 1. Check Bundler / Tailwind config
-  const viteConfigJs = path.join(process.cwd(), "vite.config.js");
-  const viteConfigTs = path.join(process.cwd(), "vite.config.ts");
-  const viteConfig = fs.existsSync(viteConfigTs) ? viteConfigTs : (fs.existsSync(viteConfigJs) ? viteConfigJs : null);
-  
-  const twFiles = ["tailwind.config.js","tailwind.config.ts","tailwind.config.mjs"];
-  const hasTwConfig = twFiles.some(f => fs.existsSync(path.join(process.cwd(), f)));
-  
-  let hasTwVitePlugin = false;
-  if (viteConfig) {
-    const vc = fs.readFileSync(viteConfig, 'utf8');
-    if (vc.includes('@tailwindcss/vite')) {
-      hasTwVitePlugin = true;
-    }
-  }
-
-  if (hasTwConfig || hasTwVitePlugin) { 
-    ok("Tailwind CSS configured"); 
-  } else { 
-    warn("No Tailwind CSS config found (no tailwind.config or @tailwindcss/vite in vite.config)"); 
-    issues++; 
-  }
-
-  // 2. Check missing CSS import
-  if (cfg && cfg.css) {
-    const cssPath = path.join(process.cwd(), cfg.css);
-    if (fs.existsSync(cssPath)) {
-      const cssContent = fs.readFileSync(cssPath, 'utf8');
-      if (cssContent.includes('@chameleon-ui-lib/react/styles')) {
-        ok(`Library CSS imported correctly in ${cfg.css}`);
-      } else {
-        warn(`Library CSS not imported in ${cfg.css}. Add: @import "@chameleon-ui-lib/react/styles";`);
-        issues++;
-      }
-
-      // F27: Check @import ordering — no rules must precede @import lines
-      const lines = cssContent.split('\n');
-      let firstRuleLine = -1;
-      let firstImportAfterRule = -1;
-      for (let i = 0; i < lines.length; i++) {
-        const t = lines[i].trim();
-        if (!t || t.startsWith('/*') || t.startsWith('*') || t.startsWith('//')) continue;
-        if (t.startsWith('@import')) {
-          if (firstRuleLine !== -1 && firstImportAfterRule === -1) {
-            firstImportAfterRule = i + 1;
-          }
-        } else {
-          if (firstRuleLine === -1) firstRuleLine = i + 1;
-        }
-      }
-      if (firstImportAfterRule !== -1) {
-        warn(`CSS @import ordering issue in ${cfg.css} (line ${firstImportAfterRule}): @import must precede all other rules. PostCSS will warn about this.`);
-        info(`  Fix: move all @import lines to the very top of ${cfg.css}`);
-        issues++;
-      } else {
-        ok(`CSS @import order is correct in ${cfg.css}`);
-      }
-    } else {
-      warn(`Configured CSS file not found: ${cfg.css}`);
-      issues++;
-    }
-  }
-
-  // 3 & 4. Check generated components (unresolved deps & lint risks)
-  if (cfg) {
-    const outDir = path.join(process.cwd(), cfg.dir);
-    if (fs.existsSync(outDir)) {
-      ok(`Components directory exists: ${cfg.dir}`);
-      
-      const scaffolded = fs.readdirSync(outDir).filter(f => f.endsWith(".tsx") || f.endsWith(".ts"));
-      let unresolvedPaths = [];
-      let lintRisks = [];
-
-      for (const t of scaffolded) {
-        const fullPath = path.join(outDir, t);
-        const code = fs.readFileSync(fullPath, "utf8");
-        
-        // Find local imports like: import { ... } from "./atoms"
-        const importRegex = /from\s+["'](\.\/[^"']+)["']/g;
-        let match;
-        while ((match = importRegex.exec(code)) !== null) {
-          const importPath = match[1];
-          // Simplistic check for .ts or .tsx file existence
-          const targetPathBase = path.join(outDir, importPath);
-          if (!fs.existsSync(targetPathBase + ".tsx") && !fs.existsSync(targetPathBase + ".ts")) {
-            unresolvedPaths.push({ file: t, import: importPath });
-          }
-        }
-        
-        // Lint risks
-        if (code.includes(" as any") || code.includes(": any") || code.includes("@ts-ignore")) {
-          lintRisks.push(t);
-        }
-      }
-      
-      if (unresolvedPaths.length === 0) {
-        ok("All local cross-component imports resolved");
-      } else {
-        warn(`Found unresolved local imports in ${unresolvedPaths.length} file(s)`);
-        unresolvedPaths.forEach(up => log(`    ${c.gray}${up.file} -> ${up.import}${c.reset}`));
-        issues++;
-      }
-      
-      if (lintRisks.length === 0) {
-        ok("No explicit lint-risk patterns found in generated code");
-      } else {
-        warn(`Found lint-risk patterns (any/ts-ignore) in: ${lintRisks.join(", ")}`);
-        issues++;
-      }
-
-    } else {
-      warn(`Components directory missing: ${cfg.dir} — run chameleon add`);
-    }
-  }
-
-  if (issues === 0) { log(`\n${c.emerald}All checks passed!${c.reset} ${c.gray}Your project is healthy.${c.reset}\n`); }
-  else { log(`\n${c.yellow}${issues} issue(s) found.${c.reset} ${c.gray}Address the warnings above.${c.reset}\n`); }
+  renderEvents(result.events);
+  if (result.data.issues === 0) { log(`\n${c.emerald}All checks passed!${c.reset} ${c.gray}Your project is healthy.${c.reset}\n`); }
+  else { log(`\n${c.yellow}${result.data.issues} issue(s) found.${c.reset} ${c.gray}Address the warnings above.${c.reset}\n`); }
 
 // ── diff ──────────────────────────────────────────────────────────────────────
 } else if (cmd === "diff") {
+  const result = diffComponents(ctx);
+  if (JSON_MODE) finishJson(result);
   log(`\n${c.emerald}➜${c.reset} ${c.indigo}Comparing local components to library source...${c.reset}\n`);
-  const cfg = readConfig();
-  if (!cfg) { log(`\n${c.yellow}⚠ Run ${c.emerald}chameleon init${c.yellow} first.${c.reset}\n`); process.exit(1); }
-  const outDir = path.join(process.cwd(), cfg.dir);
-  if (!fs.existsSync(outDir)) { info(`No scaffolded components found in ${cfg.dir}`); log(""); process.exit(0); }
-  const localFiles = fs.readdirSync(outDir).filter(f => f.endsWith(".tsx"));
-  if (localFiles.length === 0) { info(`No scaffolded components found in ${cfg.dir}`); log(""); process.exit(0); }
-  let diffCount = 0;
-  for (const file of localFiles) {
-    const key  = file.replace(".tsx","").toLowerCase();
-    const meta = COMPONENTS[key];
-    if (!meta) continue;
-    const localContent  = fs.readFileSync(path.join(outDir, file), "utf8");
-    let sourceContent = fs.existsSync(path.join(LIB_SRC, meta.file)) ? fs.readFileSync(path.join(LIB_SRC, meta.file), "utf8") : null;
-    if (!sourceContent) continue;
-    
-    // Apply the same rewrite before comparing
-    sourceContent = sourceContent.replace(/from\s+['"]\.\/.*?['"]/g, 'from "@chameleon-ui-lib/react"');
-
-    if (localContent === sourceContent) { ok(`${file} — up to date`); }
-    else { warn(`${file} — differs from library source`); diffCount++; }
-  }
-  if (diffCount === 0) { log(`\n${c.emerald}All components are in sync.${c.reset}\n`); }
-  else { log(`\n${c.yellow}${diffCount} component(s) out of sync.${c.reset} ${c.gray}Run ${c.emerald}chameleon update${c.gray} to fix.${c.reset}\n`); }
+  if (!result.ok) { renderCommonError(result); process.exit(1); }
+  renderEvents(result.events);
+  if (result.data.components.length === 0) { log(""); process.exit(0); }
+  if (result.data.outOfSync === 0) { log(`\n${c.emerald}All components are in sync.${c.reset}\n`); }
+  else { log(`\n${c.yellow}${result.data.outOfSync} component(s) out of sync.${c.reset} ${c.gray}Run ${c.emerald}chameleon update${c.gray} to fix.${c.reset}\n`); }
 
 // ── update ────────────────────────────────────────────────────────────────────
 } else if (cmd === "update") {
+  const result = updateComponents(ctx);
+  if (JSON_MODE) finishJson(result);
   log(`\n${c.emerald}➜${c.reset} ${c.indigo}Updating scaffolded components...${c.reset}\n`);
-  const cfg = readConfig();
-  if (!cfg) { log(`\n${c.yellow}⚠ Run ${c.emerald}chameleon init${c.yellow} first.${c.reset}\n`); process.exit(1); }
-  const outDir = path.join(process.cwd(), cfg.dir);
-  if (!fs.existsSync(outDir)) { info(`No scaffolded components found in ${cfg.dir}`); log(""); process.exit(0); }
-  const localFiles = fs.readdirSync(outDir).filter(f => f.endsWith(".tsx"));
-  let updated = 0;
-  for (const file of localFiles) {
-    const key  = file.replace(".tsx","").toLowerCase();
-    const meta = COMPONENTS[key] || TEMPLATES[key]; // Actually templates might not be in dir, but if they are, handle them
-    if (!meta) continue;
-    const localPath  = path.join(outDir, file);
-    const sourcePath = path.join(LIB_SRC, meta.file);
-    if (!fs.existsSync(sourcePath)) continue;
-    const localContent  = fs.readFileSync(localPath, "utf8");
-    let sourceContent = fs.readFileSync(sourcePath, "utf8");
-    
-    // Apply the same rewrite used in add/template
-    sourceContent = sourceContent.replace(/from\s+['"]\.\/.*?['"]/g, 'from "@chameleon-ui-lib/react"');
-    
-    if (localContent !== sourceContent) { fs.writeFileSync(localPath, sourceContent, "utf8"); ok(`Updated ${file}`); updated++; }
-    else { info(`${file} already up to date`); }
+  if (!result.ok) { renderCommonError(result); process.exit(1); }
+  renderEvents(result.events);
+  if (result.data.updated.length === 0 && result.data.upToDate.length === 0) { log(""); process.exit(0); }
+  if (result.data.updated.length === 0) { log(`\n${c.emerald}Everything is already up to date.${c.reset}\n`); }
+  else { log(`\n${c.emerald}Update complete!${c.reset} ${c.gray}${result.data.updated.length} component(s) updated.${c.reset}\n`); }
+
+// ── recipes ───────────────────────────────────────────────────────────────────
+} else if (cmd === "recipes") {
+  const recipes = listRecipes();
+  if (JSON_MODE) emitJsonRaw({ ok: true, command: cmd, version: VERSION, data: { recipes }, warnings: [], errors: [] });
+  log(`\n${c.emerald}➜${c.reset} ${c.bold}${c.white}Chameleon Composition Recipes${c.reset} ${c.dim}(stored ChameleonSpecs)${c.reset}\n`);
+  for (const rcp of recipes) log(`  ${c.emerald}${rcp.name.padEnd(20)}${c.reset}${c.dim}${rcp.description}${c.reset}`);
+  log("");
+  info(`Use ${c.emerald}chameleon compose <recipe>${c.gray} to scaffold, or ${c.emerald}chameleon compose <recipe> --json${c.gray} for the spec.`);
+  log("");
+
+// ── compose ───────────────────────────────────────────────────────────────────
+} else if (cmd === "compose") {
+  if (!item) {
+    if (JSON_MODE) jsonDie("MISSING_ARGUMENT", "Missing spec. Usage: chameleon compose <spec-file.json | recipe-name> [--json]");
+    log(`\n${c.red}✖ Missing spec${c.reset}\n  ${c.gray}Usage: ${c.emerald}chameleon compose ${c.indigo}<spec-file.json | recipe-name>${c.reset}\n`);
+    log(`  ${c.gray}Recipes: ${listRecipes().map(r => r.name).join(", ")}${c.reset}\n`);
+    process.exit(1);
   }
-  if (updated === 0) { log(`\n${c.emerald}Everything is already up to date.${c.reset}\n`); }
-  else { log(`\n${c.emerald}Update complete!${c.reset} ${c.gray}${updated} component(s) updated.${c.reset}\n`); }
+  let spec;
+  const recipe = getRecipe(item);
+  if (recipe) {
+    spec = recipe.spec;
+  } else if (fs.existsSync(path.resolve(process.cwd(), item))) {
+    try { spec = JSON.parse(fs.readFileSync(path.resolve(process.cwd(), item), "utf8")); }
+    catch {
+      if (JSON_MODE) jsonDie("INVALID_SPEC", `Could not parse JSON from '${item}'.`);
+      log(`\n${c.red}✖ Could not parse JSON from '${item}'${c.reset}\n`); process.exit(1);
+    }
+  } else {
+    if (JSON_MODE) jsonDie("UNKNOWN_RECIPE", `'${item}' is neither a recipe nor a spec file.`, { recipes: listRecipes().map(r => r.name) });
+    log(`\n${c.red}✖ '${item}' is neither a recipe nor a spec file${c.reset}`);
+    info(`Recipes: ${listRecipes().map(r => r.name).join(", ")}`); log(""); process.exit(1);
+  }
+  if (flags.has("--validate-only")) {
+    const v = validateSpec(spec);
+    if (JSON_MODE) emitJsonRaw({ ok: v.valid, command: cmd, version: VERSION, data: v, warnings: [], errors: v.valid ? [] : [{ code: "INVALID_SPEC", message: `Spec failed validation with ${v.errors.length} error(s).`, validationErrors: v.errors }] });
+    log(`\n${c.emerald}➜${c.reset} ${c.indigo}Validating spec...${c.reset}\n`);
+    if (v.valid) { ok("Spec is valid"); log(""); process.exit(0); }
+    for (const e of v.errors) fail(`${e.path}: ${e.message}${e.suggestion ? ` (did you mean: ${e.suggestion}?)` : ""}`);
+    log(""); process.exit(1);
+  }
+  const result = scaffoldSpec(ctx, spec);
+  if (JSON_MODE) finishJson(result);
+  log(`\n${c.emerald}➜${c.reset} ${c.indigo}Composing ${c.white}${spec?.name ?? item}${c.indigo} from spec...${c.reset}\n`);
+  if (!result.ok) {
+    if (!renderCommonError(result)) {
+      const err = result.errors[0];
+      fail(err.message);
+      for (const e of err.validationErrors || []) fail(`${e.path}: ${e.message}${e.suggestion ? ` (did you mean: ${e.suggestion}?)` : ""}`);
+    }
+    log(""); process.exit(1);
+  }
+  renderEvents(result.events);
+  log(`\n${c.emerald}Success!${c.reset} ${c.gray}${result.nextSteps[0] || ""}${c.reset}\n`);
 
 // ── config ────────────────────────────────────────────────────────────────────
 } else if (cmd === "config") {
-  const cfg = readConfig();
-  if (!cfg) { log(`\n${c.yellow}⚠ No chameleon.config.json found.${c.reset}`); info(`Run ${c.emerald}chameleon init${c.gray} to create one.`); log(""); process.exit(1); }
-  log(`\n${c.emerald}➜${c.reset} ${c.bold}${c.white}chameleon.config.json${c.reset} ${c.dim}(${CONFIG_FILE})${c.reset}\n`);
+  const cfg = readConfig(ctx);
+  if (!cfg) {
+    if (JSON_MODE) jsonDie("NOT_INITIALIZED", "No chameleon.config.json found. Run `chameleon init` to create one.");
+    log(`\n${c.yellow}⚠ No chameleon.config.json found.${c.reset}`); info(`Run ${c.emerald}chameleon init${c.gray} to create one.`); log(""); process.exit(1);
+  }
+  if (JSON_MODE) emitJsonRaw({ ok: true, command: cmd, version: VERSION, data: { config: cfg, path: ctx.configFile }, warnings: [], errors: [] });
+  log(`\n${c.emerald}➜${c.reset} ${c.bold}${c.white}chameleon.config.json${c.reset} ${c.dim}(${ctx.configFile})${c.reset}\n`);
   const fieldColor = { theme: c.cyan, mode: c.cyan, lang: c.cyan, dir: c.indigo, pagesDir: c.indigo, css: c.indigo, version: c.gray };
   for (const [key, val] of Object.entries(cfg)) log(`  ${(fieldColor[key] || c.white)}${key.padEnd(12)}${c.reset}${c.white}${val}${c.reset}`);
   log("");
   info(`Edit ${c.emerald}chameleon.config.json${c.gray} directly, or use ${c.emerald}chameleon theme <name>${c.gray} to change the theme.`);
   log("");
 
+// ── new (AppSpec v2 → full application) ──────────────────────────────────────
+} else if (cmd === "new") {
+  const specFile = getFlagValue("--app-spec");
+  if (!item || !specFile) {
+    if (JSON_MODE) jsonDie("MISSING_ARGUMENT", "Usage: chameleon new <dir> --app-spec <appspec.json> [--json]");
+    log(`\n${c.red}✖ Missing arguments${c.reset}\n  ${c.gray}Usage: ${c.emerald}chameleon new ${c.indigo}<dir>${c.gray} --app-spec ${c.indigo}<appspec.json>${c.reset}\n`); process.exit(1);
+  }
+  let appSpec;
+  try { appSpec = JSON.parse(fs.readFileSync(path.resolve(process.cwd(), specFile), "utf8")); }
+  catch { if (JSON_MODE) jsonDie("INVALID_APP_SPEC", `Could not parse JSON from '${specFile}'.`); log(`\n${c.red}✖ Could not parse JSON from '${specFile}'${c.reset}\n`); process.exit(1); }
+  if (flags.has("--validate-only")) {
+    const v = validateAppSpec(appSpec);
+    if (JSON_MODE) emitJsonRaw({ ok: v.valid, command: cmd, version: VERSION, data: v, warnings: [], errors: v.valid ? [] : [{ code: "INVALID_APP_SPEC", message: `${v.errors.length} error(s).`, validationErrors: v.errors }] });
+    log(`\n${c.emerald}➜${c.reset} ${c.indigo}Validating app spec...${c.reset}\n`);
+    if (v.valid) { ok("App spec is valid"); log(""); process.exit(0); }
+    for (const e of v.errors) fail(`${e.path}: ${e.message}`);
+    log(""); process.exit(1);
+  }
+  const result = scaffoldApp(LIB_ROOT, appSpec, item, { version: VERSION });
+  if (JSON_MODE) finishJson(result);
+  log(`\n${c.emerald}➜${c.reset} ${c.indigo}Scaffolding application ${c.white}${appSpec?.app?.name ?? item}${c.indigo}...${c.reset}\n`);
+  if (!result.ok) {
+    const err = result.errors[0];
+    fail(err.message);
+    for (const e of err.validationErrors || []) fail(`${e.path}: ${e.message}`);
+    log(""); process.exit(1);
+  }
+  renderEvents(result.events);
+  log(`\n${c.emerald}App ready!${c.reset}`);
+  for (const s of result.nextSteps) info(s);
+  log("");
+
+// ── registry ──────────────────────────────────────────────────────────────────
+} else if (cmd === "registry") {
+  const result = await listRegistry(getFlagValue("--registry"));
+  if (JSON_MODE) finishJson(result);
+  log(`\n${c.emerald}➜${c.reset} ${c.bold}${c.white}Chameleon Registry${c.reset}\n`);
+  if (!result.ok) { fail(result.errors[0].message); log(""); process.exit(1); }
+  log(`  ${c.dim}${result.data.registry}${c.reset}\n`);
+  for (const it of result.data.items) {
+    log(`  ${it.type === "spec" ? c.emerald : c.yellow}${it.name.padEnd(22)}${c.reset}${c.dim}[${it.type}] ${it.description}${c.reset}`);
+  }
+  log("");
+  info(`Install with ${c.emerald}chameleon add @chameleon/<name>${c.gray} (source items need ${c.emerald}--yes${c.gray} after review).`);
+  log("");
+
+// ── preview ───────────────────────────────────────────────────────────────────
+} else if (cmd === "preview") {
+  if (!item) {
+    if (JSON_MODE) jsonDie("MISSING_ARGUMENT", "Usage: chameleon preview <spec-file.json | recipe-name> [--base-url http://localhost:5173] [--themes all] [--json]");
+    log(`\n${c.red}✖ Missing spec${c.reset}\n  ${c.gray}Usage: ${c.emerald}chameleon preview ${c.indigo}<spec-file.json | recipe-name>${c.gray} [--base-url ...] [--themes all]${c.reset}\n`); process.exit(1);
+  }
+  let spec;
+  const recipe = getRecipe(item);
+  if (recipe) spec = recipe.spec;
+  else if (fs.existsSync(path.resolve(process.cwd(), item))) {
+    try { spec = JSON.parse(fs.readFileSync(path.resolve(process.cwd(), item), "utf8")); }
+    catch { if (JSON_MODE) jsonDie("INVALID_SPEC", `Could not parse JSON from '${item}'.`); log(`\n${c.red}✖ Could not parse JSON from '${item}'${c.reset}\n`); process.exit(1); }
+  } else {
+    if (JSON_MODE) jsonDie("UNKNOWN_RECIPE", `'${item}' is neither a recipe nor a spec file.`);
+    log(`\n${c.red}✖ '${item}' is neither a recipe nor a spec file${c.reset}\n`); process.exit(1);
+  }
+  const result = await previewSpec(ctx, spec, {
+    baseUrl: getFlagValue("--base-url") || "http://localhost:5173",
+    themes: [getFlagValue("--themes") || "current"],
+  });
+  if (JSON_MODE) finishJson(result);
+  log(`\n${c.emerald}➜${c.reset} ${c.indigo}Previewing ${c.white}${spec?.name ?? item}${c.indigo} (${result.data?.level ?? "static"} audit)...${c.reset}\n`);
+  if (!result.ok) {
+    fail(result.errors[0].message);
+    for (const e of result.errors[0].validationErrors || []) fail(`${e.path}: ${e.message}${e.suggestion ? ` (did you mean: ${e.suggestion}?)` : ""}`);
+    log(""); process.exit(1);
+  }
+  renderEvents(result.events);
+  log(`\n${c.emerald}Preview ready.${c.reset} ${c.gray}Playground: ${c.cyan}${result.data.playUrl}${c.reset}\n`);
+
+// ── brand ─────────────────────────────────────────────────────────────────────
+} else if (cmd === "brand") {
+  const sub = item;
+  const usage = () => {
+    if (JSON_MODE) jsonDie("MISSING_ARGUMENT", "Usage: chameleon brand <init|check|from-url|from-logo> [options] [--json]");
+    log(`\n${c.red}✖ Unknown brand subcommand${c.reset}`);
+    log(`  ${c.gray}Usage: ${c.emerald}chameleon brand init ${c.indigo}--primary #hex${c.gray} [--secondary #hex] [--accent #hex] [--font Name] [--radius 0.75rem]${c.reset}`);
+    log(`  ${c.gray}       ${c.emerald}chameleon brand check${c.reset}`);
+    log(`  ${c.gray}       ${c.emerald}chameleon brand from-url ${c.indigo}<url>${c.reset}`);
+    log(`  ${c.gray}       ${c.emerald}chameleon brand from-logo ${c.indigo}<logo.svg>${c.reset}\n`);
+    process.exit(1);
+  };
+  const renderBrandResult = (result, intro, outro) => {
+    if (JSON_MODE) finishJson(result);
+    log(`\n${c.emerald}➜${c.reset} ${c.indigo}${intro}${c.reset}\n`);
+    if (!result.ok && result.errors[0] && !result.events.length) { fail(result.errors[0].message); log(""); process.exit(1); }
+    renderEvents(result.events);
+    if (!result.ok) { log(`\n${c.yellow}${result.errors[0]?.message || "Check failed."}${c.reset}\n`); process.exit(1); }
+    log(`\n${c.emerald}${outro}${c.reset}`);
+    for (const s of result.nextSteps) info(s);
+    log("");
+  };
+  if (sub === "init") {
+    const result = brandInit(ctx, {
+      primaryColor: getFlagValue("--primary"),
+      secondaryColor: getFlagValue("--secondary"),
+      accentColor: getFlagValue("--accent"),
+      fontFamily: getFlagValue("--font"),
+      radius: getFlagValue("--radius"),
+    });
+    renderBrandResult(result, "Initializing brand tokens...", "Brand ready!");
+  } else if (sub === "check") {
+    renderBrandResult(brandCheck(ctx), "Auditing brand contrast (WCAG AA)...", "All brand pairs pass AA.");
+  } else if (sub === "from-url") {
+    const url = args.slice(2).find(a => !a.startsWith("--"));
+    if (!url) usage();
+    const result = await brandFromUrl(url);
+    if (JSON_MODE) finishJson(result);
+    log(`\n${c.emerald}➜${c.reset} ${c.indigo}Extracting brand candidates from ${c.white}${url}${c.indigo}...${c.reset}\n`);
+    if (!result.ok) { fail(result.errors[0].message); log(""); process.exit(1); }
+    for (const cc of result.data.colorCandidates) log(`  ${c.cyan}${cc.color}${c.reset}  ${c.dim}×${cc.occurrences} (${cc.sources.join(", ")})${c.reset}`);
+    if (result.data.fontCandidates.length) log(`\n  ${c.gray}Fonts:${c.reset} ${result.data.fontCandidates.join(", ")}`);
+    log(""); for (const s of result.nextSteps) info(s); log("");
+  } else if (sub === "from-logo") {
+    const file = args.slice(2).find(a => !a.startsWith("--"));
+    if (!file) usage();
+    const result = brandFromLogo(ctx, file);
+    if (JSON_MODE) finishJson(result);
+    log(`\n${c.emerald}➜${c.reset} ${c.indigo}Extracting brand candidates from ${c.white}${file}${c.indigo}...${c.reset}\n`);
+    if (!result.ok) { fail(result.errors[0].message); log(""); process.exit(1); }
+    for (const cc of result.data.colorCandidates) log(`  ${c.cyan}${cc.color}${c.reset}  ${c.dim}×${cc.occurrences}${c.reset}`);
+    log(""); for (const s of result.nextSteps) info(s); log("");
+  } else usage();
+
+// ── agents ────────────────────────────────────────────────────────────────────
+} else if (cmd === "agents") {
+  if (item !== "init") {
+    if (JSON_MODE) jsonDie("MISSING_ARGUMENT", "Usage: chameleon agents init [--json]");
+    log(`\n${c.red}✖ Unknown subcommand${c.reset}\n  ${c.gray}Usage: ${c.emerald}chameleon agents init${c.reset}\n`); process.exit(1);
+  }
+  const result = agentsInit(ctx, { version: VERSION });
+  if (JSON_MODE) finishJson(result);
+  log(`\n${c.emerald}➜${c.reset} ${c.indigo}Writing Chameleon agent rulesets...${c.reset}\n`);
+  if (!result.ok) { renderCommonError(result); process.exit(1); }
+  renderEvents(result.events);
+  log(`\n${c.emerald}Done!${c.reset} ${c.gray}Coding agents in this project now know the Chameleon catalog and workflow.${c.reset}\n`);
+
+// ── mcp ───────────────────────────────────────────────────────────────────────
+} else if (cmd === "mcp") {
+  // Start the MCP server (F60). stdout must stay clean for JSON-RPC.
+  await import("./mcp-server.mjs");
+
 // ── dev ───────────────────────────────────────────────────────────────────────
 } else if (cmd === "dev") {
+  if (JSON_MODE) jsonDie("INTERACTIVE_COMMAND", "`chameleon dev` launches an interactive dev server and does not support --json.");
   log(`\n${c.emerald}➜${c.reset} ${c.indigo}Starting Chameleon UI playground...${c.reset}\n`);
   const viteBin = path.join(LIB_ROOT, "node_modules", ".bin", "vite");
   if (!fs.existsSync(viteBin)) { fail(`Vite not found at ${viteBin}`); process.exit(1); }
@@ -656,6 +606,7 @@ if (cmd === "init") {
 
 // ── unknown ───────────────────────────────────────────────────────────────────
 } else {
+  if (JSON_MODE) jsonDie("UNKNOWN_COMMAND", `Unknown command: '${cmd}'. Run \`chameleon --help\` for valid commands.`);
   log(`\n${c.red}✖ Unknown command: '${cmd}'${c.reset}`);
   info(`Run ${c.emerald}chameleon --help${c.gray} for a list of valid commands.`);
   log("");

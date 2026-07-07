@@ -1,9 +1,45 @@
+# 2.0.0-alpha.1 — The Agent SDK (2026-07-05)
+
+Six releases of roadmap in one arc (Phases 11–16 → v2.0). Chameleon becomes the
+tool surface AI agents call. Full details: `NEXUS_ROADMAP_v2.0.md`, `docs/MIGRATION_v2.md`.
+
+- **MCP server** (`chameleon mcp`) — zero-dep JSON-RPC/stdio, 23 tools
+- **ChameleonSpec v1** — validated declarative pages; 10 recipes; `chameleon compose`; `RenderSpec` runtime
+- **AppSpec v2** — `chameleon new <dir> --app-spec` scaffolds runnable apps (router, nav, brand, mock data seams)
+- **Brand pipeline** — `chameleon brand init/check/from-url/from-logo`; `ChameleonProvider brand` prop; WCAG AA audit
+- **Preview & playground** — `chameleon preview`, `/render` + `/play` routes, visual-regression CI (experimental)
+- **Registry** — `chameleon add @chameleon/<name>`; spec vs source trust split, sha256 integrity, `--yes` confirm
+- **Agent rulesets** — `chameleon agents init`; `--json` on every command; engine extracted to `bin/engine/` (`./engine` export)
+- **MCP Apps widget** (experimental, SEP-1865) — `npm run build:widget` + `CHAMELEON_MCP_APPS=1`
+- Deprecated: `customBrandColor` (use `brand` prop; removal in v3)
+
 # Changelog
 
 All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [1.1.0] - 2026-05-06
+
+### Added
+- **`NotificationCenter`** — app-wide transient toast system with `NotificationCenterProvider` + `useNotificationCenter` hook. Supports typed variants (`success`, `info`, `warning`, `error`), rich payloads (`title`, `message`, `duration`, `persistent`, `action`), configurable position, bulk `mark all read` / `clear all` controls, and dismiss-on-click behaviour.
+- **`NotificationInbox`** — dedicated actionable inbox composite with search, status/type filters, unread-only toggle, per-item actions, and read/archive state management. Architecturally separate from `NotificationCenter` to distinguish transient popups from persistent, actionable notifications.
+- **`MultiStepForm` API hardening** — controlled and uncontrolled data flow support (`value`, `initialData`, `onChange`), external step control (`currentStep`, `initialStep`, `onStepChange`), optional per-step validation hooks, custom navigation labels, and graceful empty-step fallback handling.
+- **Auth flow controlled mode** — all auth components in `auth-components.tsx` now support both internal form state and externally controlled values (`value` / `defaultValue` / `onChange`) without breaking existing call sites.
+- **Auth form slot overrides** — slot-level `classNames` and `styles` props across all auth forms for fine-grained per-element customization (inputs, action buttons, submit buttons, etc.).
+- **Composite docs directory page** — `composite-showcase.tsx` rebuilt as a searchable docs-directory with expandable panels, import path, minimal/full examples, full props tables, and copy-for-AI context — matching the component docs UX.
+- **Hooks & Utils docs directory** — `hooks-utils-docs.tsx` standardised to the same docs-directory format as component/composite pages: search, kind filters, expandable entries, API tables, and copy-for-AI panel.
+- **9 legacy composites added to AI manifest** (`ThemeChart`, `CommandPalette`, `KanbanBoard`, `Timeline`, `FileUploader`, `NotificationFeed`, `MultiStepForm`, `CalendarWidget`, `MediaGallery`) — all now appear in the composite docs directory and are discoverable by AI agents.
+
+### Changed
+- **`composite-showcase.tsx`** now sources entries from `COMPOSITES_MANIFEST` (composites-specific manifest) instead of the root AI manifest, ensuring composites appear correctly in the directory with their dedicated composite-manifest metadata.
+- **`component-docs-directory-page.tsx`** scoped to atoms and molecules only; composite docs moved to the dedicated composite showcase page.
+- **`styleConfig` propagation completed** — all 6 templates in `comprehensive-templates-part2.tsx` (`UserProfile`, `AdminDashboard`, `EcommerceProduct`, `SettingsPanel`, `AuthFlow`, `Documentation`) now fully honour the `styleConfig` prop for headings, stats, profile/user data, danger actions, and side-nav/page header customisation.
+
+### Fixed
+- **CI install failure (`ERR_PNPM_FETCH_404`)** — added targeted `pnpm.overrides` to pin `@types/estree@1.0.8`, `exsolve@1.0.8`, and `string.prototype.trimstart@1.0.8` to prevent npm 404s for corrupted transitive lockfile entries.
+- **Composite docs empty state** (`Showing 0 of 0`) — composite showcase now correctly reads from `COMPOSITES_MANIFEST` instead of the root manifest.
 
 ## [1.0.9] - 2026-05-03
 

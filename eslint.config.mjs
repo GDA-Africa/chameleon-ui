@@ -11,6 +11,8 @@ export default ts.config(
     ignores: [
       "dist",
       "dist-app",
+      "dist-widget",
+      "lib-src",
       "node_modules",
       "dist-ssr",
       "scripts",

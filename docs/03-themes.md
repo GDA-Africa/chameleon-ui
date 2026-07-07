@@ -7,6 +7,10 @@ purpose: Tokens, CSS variables, the 5 design languages, dark mode contracts.
 
 ## The 5 themes at a glance
 
+Chameleon UI comes with 5 distinct design languages out of the box. These aren't just color swaps - they change spacing, typography, border radii, shadows, and interaction patterns.
+
+You can preview and compare all themes interactively using the **Theme Visualizer** component `import { ThemeVisualizer } from '@chameleon-ui/react'` or at `/theme-visualizer` on the documentation site.
+
 | Theme | Personality | Hallmarks |
 |-------|-------------|-----------|
 | `material` | Google Material Design 3 | Elevation shadows, uppercase button text, sharp 0.25rem radius, `#6200ee` purple. Buttons have a layered shadow that lifts on hover. Inputs are bottom-bordered (no box). |

@@ -218,6 +218,10 @@ Optional: Brief supporting detail (1-2 sentences max).
 
 ### [bug-fix] Typed template `styleConfig` must be verified for runtime usage
 
+### [gotcha] AnimatePresence exit requires async test assertions
+
+**2026-05-04** — Components using `AnimatePresence` can keep removed items in the DOM briefly during exit animations, so immediate `queryByText(...).not.toBeInTheDocument()` checks may fail. Prefer `waitFor` around disappearance assertions in RTL tests for filtered/dismissed composite items.
+
 **2026-05-04** — Several templates had valid `styleConfig` typings but still used `void styleConfig` internally, so overrides were silently ignored at runtime. For composite-first work, always verify both type acceptance and actual template-level pass-through behavior.
 
 ### [pattern] Auth forms should expose dual-mode state + slot styling APIs
@@ -235,3 +239,99 @@ Optional: Brief supporting detail (1-2 sentences max).
 ### [package] v1.0.9 lock drift introduced unpublished transitive patch versions
 
 **2026-05-04** — A broad lock/version bump drift set several transitive packages to non-existent `1.0.9` releases (`@types/estree`, `exsolve`, `string.prototype.trimstart`), causing CI `ERR_PNPM_FETCH_404` failures. Fix by pinning these via `pnpm.overrides` to `1.0.8` and regenerating the lock with `corepack pnpm install --lockfile-only` before rerunning frozen install.
+
+### [bug-fix] Composite docs can drift when manifests ignore legacy exported composites
+
+**2026-05-04** — `CompositeShowcase` is powered by `composites/ai-manifest.ts`, so legacy composites exported from `composites.tsx` (for example `MultiStepForm`, `ThemeChart`, and `CalendarWidget`) vanish from frontend docs unless they are explicitly mirrored in that manifest. Keep docs parity by syncing manifest entries with all public composite exports and adding a regression test for key visibility.
+
+### [pattern] App-wide notifications should use provider + fixed viewport
+
+**2026-05-04** — For Chameleon’s workshop shell, the most reliable global notification pattern is `NotificationCenterProvider` at app root plus a single fixed `NotificationCenter` viewport rendered once near the root. Feature code should only call `useNotificationCenter()` methods (`success/info/warning/error/notify`) so notifications remain globally consistent and theme-aware.
+
+### [architecture] NotificationPanel composes NotificationInbox — never duplicates its logic
+
+**2026-05-06** — The `NotificationPanel` full-page template wraps `NotificationInbox` with `showStats={false}` and category pre-filtered `notifications=` instead of reimplementing search/filter logic. It owns the stats strip, category sidebar, and TopBar externally. This avoids duplication and keeps NotificationInbox independently usable.
+
+### [pattern] TopBar dropdown for notifications requires `notificationDropdownItems: NotificationInboxItem[]` (rich type), not the legacy `notifications: Notification[]` prop
+
+**2026-05-06** — The old `notifications: Notification[]` prop on TopBar is kept for backward-compat badge count only. To get the built-in mini-inbox dropdown, pass `notificationDropdownItems` (full `NotificationInboxItem[]`) and set `showNotificationDropdown`. The bell toggles the dropdown when richItems.length > 0; otherwise it falls back to calling `onNotificationClick()`.
+
+### [pattern] Snooze implemented as local `Record<string,number>` map — not a new status value
+
+**2026-05-06** — NotificationInbox snooze uses `useState<Record<string, number>>` mapping item.id → epoch ms, filtered in the existing `useMemo`. No new "snoozed" status enum was added to avoid breaking the status filter logic or the `NotificationInboxItem.status` union type.
+
+### [architecture] Agent SDK vision = MCP tool surface, not an in-library AI
+
+**2026-07-05** — Decision (Phases 11–12, `NEXUS_PLAN_v1.2.0.md`): the "agent can say 'create a login form' and Chameleon dispatches it" vision is delivered by exposing an MCP server (`packages/mcp`) over a shared engine extracted from the CLI (`lib-src/engine/`) — the agent supplies NL understanding, Chameleon supplies callable tools. Brand customization ships as a token layer (`chameleon brand`, extends F34 `customBrandColor`) that composes with the 5 themes rather than adding a 6th.
+
+### [convention] MCP and CLI must share one engine — never fork scaffold logic
+
+**2026-07-05** — F59 extracts catalog/scaffold/health into `lib-src/engine/`; both `bin/chameleon.js` and the MCP server are thin skins over it. Any future machine interface (HTTP, plugin) must also consume the engine, not reimplement FS ops.
+
+### [architecture] ChameleonSpec is the keystone of the v2.0 roadmap — everything produces or consumes specs
+
+**2026-07-05** — Roadmap decision (`NEXUS_ROADMAP_v2.0.md`, Phases 11–16): a declarative, manifest-validated page spec (v1) / app spec (v2) is the shared contract for recipes (F61), MCP compose tools (F60), preview/audit (F67), playground links (F68), MCP Apps chat widgets (F70/71), registry items (F72), and `chameleon new` (F75). Spec v1 stays deliberately flat — template + composite slots + props, no arbitrary nesting, no raw JSX; expressiveness pressure is signal for v2 design, not v1 patches.
+
+### [gotcha] MCP Apps (SEP-1865) finalizes 2026-07-28 — Phase 14 spike may need to jump the queue
+
+**2026-07-05** — MCP Apps is the first official MCP extension (sandboxed iframe templates, JSON-RPC/postMessage bridge, hosts: ChatGPT/Claude/Goose/VS Code). One audited `renderSpec` widget template fits its prefetch/security-review model unusually well. Early libraries win tutorial mindshare — re-check host support and consider running the F70 spike alongside Phase 12/13 rather than strictly after.
+
+### [pattern] --json mode implemented as global collectors + per-command emitJson, not a parallel code path
+
+**2026-07-05** — F58: `ok/warn/fail` helpers collect into `jsonOut` when `--json` is set (human output silenced via no-op `log`), each command branch ends with `emitJson(data)` and error exits use `jsonDie(code, message)`. Keeps one code path per command. When F59 extracts the engine, the engine should return these structures directly and both skins format them.
+
+### [gotcha] Repo node_modules are macOS-installed — vitest fails on Linux with rollup MODULE_NOT_FOUND
+
+**2026-07-05** — `@rollup/rollup-linux-x64-gnu` native binary is absent because deps were installed on darwin-arm64. Cross-platform sandboxes must reinstall deps or skip vitest; `tsc --noEmit` and eslint work fine.
+
+### [architecture] Engine lives in bin/engine/, NOT lib-src/engine/ — lib-src is build-generated
+
+**2026-07-05** — F59 deviation from the phase plan: `lib-src/` is gitignored and regenerated by `scripts/build-src.mjs`, so committed engine source would be deleted. `bin/engine/` is committed, already in the package.json `files` whitelist, and needs no build step. Consumers import via the `./engine` subpath export.
+
+### [pattern] Engine Result events are replayed by skins — never print inside the engine
+
+**2026-07-05** — Engine functions return `{ ok, data, events: [{level, message}], filesWritten, filesDeleted, nextSteps, errors: [{code, message}] }`. Event levels: ok/warn/error/info/dim/detail. The CLI replays events through its ANSI formatters (byte-identical human output, verified by golden diff); `--json` maps events→checks/warnings and errors pass through. New engine features must emit events, not console.log — otherwise the MCP server (F60) will leak text onto stdio and corrupt the JSON-RPC stream.
+
+### [architecture] MCP server is zero-dep and in-package (bin/mcp-server.mjs), not packages/mcp + SDK
+
+**2026-07-05** — F60 deviation: the phase plan called for `packages/mcp` with `@modelcontextprotocol/sdk`. Shipped instead as a ~200-line zero-dependency JSON-RPC/stdio server inside the react package, launched via `chameleon mcp` — no workspace wiring, no SDK version churn, ships with the existing tarball. If richer MCP features are needed (resources, prompts, HTTP transport), wrap the same engine in an SDK-based `@chameleon-ui-lib/mcp` package then.
+
+### [gotcha] Sandbox tsc takes >45s — run via nohup setsid to a log file and poll
+
+**2026-07-05** — `npx tsc --noEmit` on this repo exceeds the 45s bash timeout in the Cowork sandbox. Plain `&` backgrounding dies with the call (each bash is a fresh session); `nohup setsid bash -c '... > /tmp/log' &` survives and can be polled. Same trick applies to any long-running validation.
+
+### [pattern] Recipe specs must use only verified component props
+
+**2026-07-05** — Generated pages must pass consumer strict TS. Before adding a recipe, grep the component's props interface in source (e.g. Timeline events need `date`/`status`, not `time`/`type` — caught during F61). A future manifest-derived prop validator (Phase 11 wrap-up) will automate this.
+
+### [gotcha] CORRECTION: nohup/setsid does NOT survive between sandbox bash calls
+
+**2026-07-05** — Supersedes the earlier tsc entry: background jobs (even nohup+setsid) are killed when the sandbox bash session ends — the log files stay empty. For long validations in the sandbox, either scope the check (e.g. `npx tsc --noEmit --ignoreConfig --strict <changed-file>` for isolated files) or defer full `tsc/vitest` to a local run. Full-project tsc was green at F59; only isolated-checked files changed after.
+
+### [gotcha] ai-manifest.ts only covers 12 of 29 components — vision doc's "manifest completeness ✅" was stale
+
+**2026-07-05** — `check:manifest` (new CI gate) found 17 components without ai-manifest entries and a DatePicker export-name mismatch the day it landed. Backfill tracked as F77; until then the manifest check warns (CI flips to `--strict` after). Lesson: claimed-done features need executable checks, not checklist ticks.
+
+### [pattern] Registry export-name overrides: use componentExport(), never toPascalCase() directly
+
+**2026-07-05** — `toPascalCase("datepicker")` = "Datepicker" but the real export is `DatePicker`. Registry entries may carry `exportName`; `componentExport(key)` resolves override-or-PascalCase. All engine codegen and import hints must go through it.
+
+### [architecture] Phases 12–16 shipped as one implementation arc; releases remain staged decisions
+
+**2026-07-05** — All v2.0 roadmap code landed on version 2.0.0-alpha.1 in six commits (brand ff38216, preview 038d7d8, apps 752093e, registry 576c383, appspec 0700c7b, docs 952eb74). Whether to publish as staged 1.2→2.0 tags or a single 2.0.0 is a release-time decision after local validation.
+
+### [gotcha] scaffoldSpec must mkdir the components dir — masked whenever init ran first
+
+**2026-07-05** — Found by the bakery-crm E2E: block-spec scaffolding wrote into cfg.dir without creating it. Any engine function that writes into cfg-relative paths must mkdirSync first; don't rely on initProject having run.
+
+### [gotcha] MCP Apps bridge shapes are RC-era guesses until hosts are tested
+
+**2026-07-05** — src/widget's specFromMessage tolerates several candidate message shapes and the server exposes both `ui/template` and `openai/outputTemplate` meta. After SEP-1865 finalizes (2026-07-28), test in Claude + ChatGPT and delete the shapes that don't exist.
+
+### [architecture] Brand = full derived palette (deriveBrandPalette), not primary/secondary swaps
+
+**2026-07-05** — The original visualizer only overrode --primary/--secondary, so the site never looked branded (static background/accent/muted, hardcoded ambient hexes in Glassy/LiquidBackground). Fix: `deriveBrandPalette(brand, mode)` in utils.ts generates all 14 tokens with brand-tinted neutrals; the provider applies it for both the `brand` prop and the runtime `brandOverride` (visualizer); ambient backgrounds take a `tint` prop. Any future token must be added to deriveBrandPalette or it will stay unbranded.
+
+### [pattern] brandOverride in context = walk-the-platform branding
+
+**2026-07-05** — The visualizer's "Apply to entire site" sets `brandOverride` in ThemeContext; because the whole workshop lives inside one provider, every demo page rebrands and stays branded while navigating. Copy surfaces (spec JSON export) embed the brand so agents receive it. Session-scoped by design (no persistence) — consider localStorage if users ask.

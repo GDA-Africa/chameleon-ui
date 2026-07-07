@@ -1559,15 +1559,35 @@ export const NotificationFeed: React.FC<{
 
 // ─── 8. MULTI-STEP FORM ───────────────────────────────────────────────────────
 
-interface FormStep {
+export interface MultiStepFormRenderContext {
+  data: Record<string, unknown>;
+  setData: React.Dispatch<React.SetStateAction<Record<string, unknown>>>;
+  currentStep: number;
+  totalSteps: number;
+}
+
+export interface FormStep {
   id: string;
   title: string;
   description?: string;
-  fields: React.ReactNode;
+  fields: React.ReactNode | ((context: MultiStepFormRenderContext) => React.ReactNode);
+  validate?: (data: Record<string, unknown>) => boolean | string;
 }
 
-interface MultiStepFormProps {
+export interface MultiStepFormProps {
   steps: FormStep[];
+  value?: Record<string, unknown>;
+  initialData?: Record<string, unknown>;
+  onChange?: (data: Record<string, unknown>) => void;
+  currentStep?: number;
+  initialStep?: number;
+  onStepChange?: (stepIndex: number) => void;
+  allowStepNavigation?: boolean;
+  backLabel?: string;
+  nextLabel?: string;
+  completeLabel?: string;
+  completeDisabled?: boolean;
+  onBack?: (stepIndex: number, data: Record<string, unknown>) => void;
   onComplete?: (data: Record<string, unknown>) => void;
   animated?: boolean;
   className?: string;
@@ -1575,19 +1595,81 @@ interface MultiStepFormProps {
 
 export const MultiStepForm: React.FC<MultiStepFormProps> = ({
   steps,
+  value,
+  initialData = {},
+  onChange,
+  currentStep,
+  initialStep = 0,
+  onStepChange,
+  allowStepNavigation = true,
+  backLabel = "Back",
+  nextLabel = "Next",
+  completeLabel = "Complete",
+  completeDisabled = false,
+  onBack,
   onComplete,
   animated = true,
   className,
 }) => {
   const { cardClass, theme, buttonPrimary, textPrimary, textMuted } = useThemeClasses();
-  const [current, setCurrent] = useState(0);
+  const safeInitialStep = Math.min(Math.max(initialStep, 0), Math.max(steps.length - 1, 0));
+  const [internalCurrent, setInternalCurrent] = useState(safeInitialStep);
+  const [internalData, setInternalData] = useState<Record<string, unknown>>(initialData);
+  const [validationError, setValidationError] = useState<string | null>(null);
   const [direction, setDirection] = useState(1);
   const preset = animationPresets[theme];
 
-  const goTo = (idx: number) => {
-    setDirection(idx > current ? 1 : -1);
-    setCurrent(idx);
-  };
+  const data = value ?? internalData;
+  const current = currentStep ?? internalCurrent;
+
+  const setData = useCallback(
+    (update: React.SetStateAction<Record<string, unknown>>) => {
+      if (value !== undefined) {
+        const nextData =
+          typeof update === "function"
+            ? (update as (prev: Record<string, unknown>) => Record<string, unknown>)(value)
+            : update;
+        onChange?.(nextData);
+        return;
+      }
+
+      setInternalData((prev) => {
+        const nextData =
+          typeof update === "function"
+            ? (update as (prev: Record<string, unknown>) => Record<string, unknown>)(prev)
+            : update;
+        onChange?.(nextData);
+        return nextData;
+      });
+    },
+    [onChange, value],
+  );
+
+  const goTo = useCallback(
+    (idx: number) => {
+      if (steps.length === 0) return;
+
+      const clamped = Math.min(Math.max(idx, 0), steps.length - 1);
+      if (clamped === current) return;
+
+      setDirection(clamped > current ? 1 : -1);
+      setValidationError(null);
+
+      if (currentStep === undefined) {
+        setInternalCurrent(clamped);
+      }
+      onStepChange?.(clamped);
+    },
+    [current, currentStep, onStepChange, steps.length],
+  );
+
+  if (steps.length === 0) {
+    return (
+      <div className={cn(cardClass, "p-6", className)}>
+        <p className={cn("text-sm", textMuted)}>No steps were provided to `MultiStepForm`.</p>
+      </div>
+    );
+  }
 
   const step = steps[current]!;
   const isFirst = current === 0;
@@ -1598,6 +1680,35 @@ export const MultiStepForm: React.FC<MultiStepFormProps> = ({
     center: { opacity: 1, x: 0 },
     exit: (dir: number) => ({ opacity: 0, x: dir > 0 ? -40 : 40 }),
   };
+
+  const handleNext = () => {
+    const result = step.validate?.(data);
+    if (result === false) {
+      setValidationError("Please complete this step before continuing.");
+      return;
+    }
+    if (typeof result === "string" && result.trim().length > 0) {
+      setValidationError(result);
+      return;
+    }
+
+    setValidationError(null);
+    if (isLast) {
+      onComplete?.(data);
+      return;
+    }
+    goTo(current + 1);
+  };
+
+  const renderedFields =
+    typeof step.fields === "function"
+      ? step.fields({
+          data,
+          setData,
+          currentStep: current,
+          totalSteps: steps.length,
+        })
+      : step.fields;
 
   return (
     <div className={cn(cardClass, "overflow-hidden", className)}>
@@ -1611,9 +1722,14 @@ export const MultiStepForm: React.FC<MultiStepFormProps> = ({
             {steps.map((s, i) => (
               <button
                 key={s.id}
-                onClick={() => goTo(i)}
+                onClick={() => {
+                  if (!allowStepNavigation) return;
+                  goTo(i);
+                }}
+                disabled={!allowStepNavigation}
                 className={cn(
                   "h-1.5 rounded-full transition-all duration-300",
+                  !allowStepNavigation && "cursor-not-allowed",
                   i === current
                     ? "bg-[var(--primary)] w-6"
                     : i < current
@@ -1654,15 +1770,21 @@ export const MultiStepForm: React.FC<MultiStepFormProps> = ({
             exit="exit"
             transition={preset.enter.transition}
           >
-            {step.fields}
+            {renderedFields}
           </motion.div>
         </AnimatePresence>
+        {validationError && (
+          <p className="mt-3 text-sm font-medium text-rose-500">{validationError}</p>
+        )}
       </div>
 
       {/* Footer */}
       <div className="p-6 pt-0 flex justify-between gap-3">
         <button
-          onClick={() => goTo(current - 1)}
+          onClick={() => {
+            goTo(current - 1);
+            onBack?.(Math.max(current - 1, 0), data);
+          }}
           disabled={isFirst}
           className={cn(
             "px-4 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-30",
@@ -1671,19 +1793,20 @@ export const MultiStepForm: React.FC<MultiStepFormProps> = ({
               : "bg-[var(--muted)] text-[var(--muted-foreground)] hover:text-[var(--foreground)]",
           )}
         >
-          <ArrowLeft className="w-4 h-4 inline mr-1" /> Back
+          <ArrowLeft className="w-4 h-4 inline mr-1" /> {backLabel}
         </button>
         <button
-          onClick={() => (isLast ? onComplete?.({}) : goTo(current + 1))}
+          onClick={handleNext}
+          disabled={isLast && completeDisabled}
           className={cn("px-6 py-2 rounded-lg text-sm font-bold transition-all", buttonPrimary)}
         >
           {isLast ? (
             <>
-              <Check className="w-4 h-4 inline mr-1" /> Complete
+              <Check className="w-4 h-4 inline mr-1" /> {completeLabel}
             </>
           ) : (
             <>
-              Next <ArrowRight className="w-4 h-4 inline ml-1" />
+              {nextLabel} <ArrowRight className="w-4 h-4 inline ml-1" />
             </>
           )}
         </button>

@@ -214,6 +214,37 @@ const validateEmail = (email: string): boolean => {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 };
 
+const shouldUsePositionalLoginSubmit = (submitHandler: AuthLoginFormProps["onSubmit"]): boolean => {
+  if (!submitHandler) return false;
+
+  const source = Function.prototype.toString.call(submitHandler);
+  const paramsMatch = source.match(/\(([^)]*)\)/);
+  const rawParams = paramsMatch?.[1];
+  if (!rawParams) return false;
+
+  const params = rawParams
+    .split(",")
+    .map((param) => param.trim())
+    .filter(Boolean)
+    .map((param) =>
+      param
+        .replace(/^\.\.\./, "")
+        .replace(/=.*/, "")
+        .replace(/\/\*.*?\*\//g, "")
+        .trim()
+        .toLowerCase(),
+    );
+
+  if (params.length < 2) return false;
+
+  const first = params[0] ?? "";
+  const second = params[1] ?? "";
+  const firstLooksLikeEmail = ["email", "e"].includes(first);
+  const secondLooksLikePassword = ["password", "pass", "pwd", "p"].includes(second);
+
+  return firstLooksLikeEmail && secondLooksLikePassword;
+};
+
 const validatePassword = (
   password: string,
 ): {
@@ -414,8 +445,9 @@ export const LoginForm: React.FC<AuthLoginFormProps> = ({
     try {
       let result: AuthResponse | undefined;
       if (onSubmit) {
+        const usePositionalSubmit = shouldUsePositionalLoginSubmit(onSubmit);
         result =
-          onSubmit.length >= 2
+          usePositionalSubmit
             ? await (onSubmit as (email: string, password: string) => Promise<AuthResponse>)(
                 values.email,
                 values.password,

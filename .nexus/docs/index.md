@@ -16,20 +16,18 @@ last_updated: "2026-05-04"
 **Framework:** React 18.3 + Vite 6.3 (TypeScript 6.0)
 **Package Manager:** pnpm (yarn supported via lock-compat scripts)
 **Created:** 2026-04-04
-**Latest Release:** v1.0.9 (2026-05-03)
+**Latest Release:** v1.1.0 (2026-05-06) · Notification overhaul in progress (2026-05-06)
 **Working Tree:** dirty — agent ruleset files (`CLAUDE.md`, `.clinerules`, `.cursorrules`, `.windsurfrules`, `AGENTS.md`) and v1.0.9 composite plan are uncommitted
-**Status:** 🟡 v1.0.9 shipped · v1.0.9 composite-first architecture **in progress (Phase 4 implementation complete, publish pending)**
+**Status:** � v1.1.0 shipped · Notification system, MultiStepForm hardening, Auth controlled mode, composite/hooks docs directory UX, full styleConfig propagation
 
 ---
 
 ## 🎯 Current Objective
 
-**Current Phase:** Phase 9 — **Composite-First Architecture (v1.0.9)** — � Phase 4 implementation complete
-**Active Task:** Phase 4.6 release operation pending (`git tag` + publish) after owner approval
-**Blocked:** None
-**Next Up:** Decide release action for v1.0.9 (tag/publish) and run optional consumer smoke test before publish.
-
-> **Note:** the original "Phase 9" planning bullets (test coverage expansion, Liquid light mode audit, `--all-templates` CLI flag) have been folded into the v1.0.9 plan or deferred to v1.1 — see "What's Next" below.
+**Current Phase:** ALL PHASES 11–16 IMPLEMENTED — v2.0.0-alpha.1 (2026-07-05) — see `NEXUS_ROADMAP_v2.0.md`
+**Active Task:** None — release gate is Halton's local validation
+**Blocked:** 2.0.0 release awaits local: `npx tsc --noEmit && yarn test && yarn lint && npm run verify:consumer && npm run build:widget` + real-agent E2E (Claude Code + MCP) + visual baselines (`npx playwright test tests/visual --update-snapshots`)
+**Next Up:** Local validation → decide release strategy (single 2.0.0 vs staged 1.2→2.0 tags) → publish. Backlog: F77 manifest backfill (flip CI --strict), MCP Apps re-check after 2026-07-28 spec final, raster from-logo, Liquid light-mode audit
 
 ---
 
@@ -116,12 +114,39 @@ last_updated: "2026-05-04"
 | F42 | Mobile `min-h-dvh` white-space fix | P1   | ✅ Done    | 8  | v1.0.7 — switches outer wrapper to actual visual viewport |
 | F43 | Collapsible sidebar navigation  | P2       | ✅ Done    | 8  | v1.0.7 (`b7ade33`) — sidebar collapse for desktop        |
 | F44 | TypeScript 6 + lockfile CI fix  | P0       | ✅ Done    | 8  | `b0d8c23` — disabled rollupTypes (api-extractor TS5/6 mismatch), restored corrupted transitive deps |
-| F45 | Composite-First Architecture (v1.0.9) | P0 | � In Progress | 9 | Phases 1–4 implementation artifacts delivered locally; publish/tag step pending |
+| F45 | Composite-First Architecture (v1.0.9) | P0 | ✅ Done | 9 | Phases 1–4 complete; shipped in v1.0.9 |
 | F46 | Composite registry + types | P0   | ✅ Done | 9  | Implemented under `src/app/components/chameleon/composites/` (`types.ts`, per-composite files, `index.ts`) |
 | F47 | Templates accept `styleConfig` prop | P0  | ✅ Done | 9  | Typed style config contracts in `template-styles.ts`; templates accept optional `styleConfig` |
 | F48 | Composite unit tests (80%+ coverage target) | P1 | ✅ Done | 9 | Composite import/reuse/unit tests present; suite passing |
 | F49 | `COMPOSITES.md` + API/TYPES/MIGRATION docs | P1 | ✅ Done | 9 | Added `COMPOSITES.md`, `docs/COMPOSITES_API.md`, `docs/TYPES.md`, `docs/MIGRATION_v1.0.9.md`, README/CLAUDE updates |
 | F50 | Subpath exports `/composites`, `/templates`, `/types` | P1 | ✅ Done | 9 | Added subpath exports in `package.json` |
+| F51 | NotificationCenter (toast system) | P0 | ✅ Done | 10 | v1.1.0 — provider/hook API, typed variants, position control, rich payloads |
+| F52 | NotificationInbox (actionable inbox) | P1 | ✅ Done | 10 | v1.1.0 — search, filters, unread toggle, read/archive state |
+| F53 | MultiStepForm API hardening | P1 | ✅ Done | 10 | v1.1.0 — controlled/uncontrolled data, external step control, per-step validation |
+| F54 | Auth controlled mode + slot overrides | P1 | ✅ Done | 10 | v1.1.0 — `value`/`onChange`/`defaultValue` + `classNames`/`styles` slot props |
+| F55 | Composite docs directory page | P1 | ✅ Done | 10 | v1.1.0 — searchable expandable docs matching component docs UX |
+| F56 | Hooks & Utils docs directory | P1 | ✅ Done | 10 | v1.1.0 — standardised directory format with search, API tables, AI copy |
+| F57 | Full `styleConfig` propagation (part2 templates) | P0 | ✅ Done | 10 | v1.1.0 — all 6 templates in `comprehensive-templates-part2.tsx` wired |
+| F58 | `--json` output mode for CLI | P0 | ✅ Done | 11 | 2026-07-05 — envelope on all 13 commands + version, structured error codes, `docs/CLI_JSON.md` |
+| F59 | Shared engine extraction (`bin/engine/`) | P0 | ✅ Done | 11 | 2026-07-05 — registry/catalog/scaffold/health/core modules, `./engine` subpath export, CLI is a thin skin; golden-diff parity verified |
+| F60 | Chameleon MCP server | P0 | ✅ Done | 11 | 2026-07-05 — zero-dep JSON-RPC/stdio server (`bin/mcp-server.mjs`), 13 tools, `chameleon mcp` launch; `@chameleon-ui-lib/mcp` wrapper package deferred |
+| F61 | ChameleonSpec v1 + recipes-as-specs | P0 | ✅ Done | 11 | 2026-07-05 — `spec.mjs` validate/scaffold, 10 recipes, `chameleon compose`/`recipes`; `renderSpec` (React runtime) deferred to F66 prep |
+| F62 | `chameleon brand` token pipeline | P0 | ✅ Done | 12 | 2026-07-05 — engine/brand.mjs + Provider brand prop + CLI brand init/check |
+| F63 | MCP brand tools + agent docs refresh | P1 | ✅ Done | 12 | 2026-07-05 — MCP set_brand/get_brand/check_brand_contrast/extract_brand + AI docs refresh |
+| F64 | `chameleon agents init` | P1 | ✅ Done | 11 | 2026-07-05 — writes/refreshes marker block in CLAUDE.md, AGENTS.md, .cursorrules; idempotent, preserves user content |
+| F65 | Brand extraction `from-url`/`from-logo` | P1 | ✅ Done | 12 | 2026-07-05 — from-url (HTML+CSS candidates w/ provenance) + from-logo (SVG) |
+| F66 | `/render?spec=` route | P0 | ✅ Done | 13 | 2026-07-05 — /render route, base64url spec param, bare canvas |
+| F67 | `preview(spec)` MCP tool | P0 | ✅ Done | 13 | 2026-07-05 — previewSpec: static audit always, Playwright screenshots when available; CLI+MCP |
+| F68 | `/play?spec=` playground links | P1 | ✅ Done | 13 | 2026-07-05 — /play playground: theme/mode switchers, copy spec/CLI, share URLs |
+| F69 | Visual regression CI | P2 | ✅ Done | 13 | 2026-07-05 — tests/visual matrix + visual.yml (continue-on-error until baselines committed) |
+| F70 | MCP Apps spike (SEP-1865) | P0 | ✅ Done | 14 | 2026-07-05 — widget spike shipped as src/widget (standalone #fragment testing works) |
+| F71 | `@chameleon-ui-lib/apps` package | P0 | ✅ Done | 14 | 2026-07-05 — actions field + resources/read template, gated CHAMELEON_MCP_APPS=1 (spec final 07-28) |
+| F72 | Registry format + first-party registry | P1 | ✅ Done | 15 | 2026-07-05 — registry.json v1, public/registry.json seeded (10 recipes), build:registry |
+| F73 | `chameleon add` remote items | P1 | ✅ Done | 15 | 2026-07-05 — add @chameleon/<name>; spec-validated vs sha256+--yes source items; tamper-tested |
+| F74 | AppSpec v2 | P0 | ✅ Done | 16 | 2026-07-05 — validateAppSpec: routes, embedded v1 specs, mock-only dataSlots |
+| F75 | `scaffold_app` + `chameleon new` | P0 | ✅ Done | 16 | 2026-07-05 — chameleon new + scaffold_app; bakery-crm E2E: 21 files, 3 routes, brand wired |
+| F76 | v2.0 breaking cleanups + migration | P0 | ✅ Done | 16 | 2026-07-05 — customBrandColor deprecated, MIGRATION_v2.md; destructive cleanups deferred to v3 |
+| F77 | ai-manifest.ts backfill (17 components) | P1 | 📋 Planned | 11.x | Found by `check:manifest` — spinner, avatar, toggle, tooltip, separator, breadcrumb, textarea + 10 composites lack entries; flip CI to `--strict` after |
 
 ---
 
@@ -180,6 +205,124 @@ last_updated: "2026-05-04"
 ---
 
 ## 🔄 Progress Log
+
+### 2026-07-05 — Website updated for v2.0 (`f714343`)
+- ✅ New "Agent SDK" workshop page (Sparkles icon, v2.0 badge): MCP registration, 5-step agent flow, spec examples, 23-tool grouped reference, /play links
+- ✅ Landing: Agent SDK highlighted feature card + 3 new comparison rows; index.html meta/og lead with the agent story; context.md v2 section for crawlers
+- 🖥️ Deploy is local (deploy.sh needs the macOS build env): `npm run build:app` + deploy after validation
+
+### 2026-07-05 — Phases 12–16 implemented: v2.0.0-alpha.1 (`ff38216`…`952eb74`)
+- ✅ Phase 12 brand: `engine/brand.mjs` (WCAG math, from-url/from-svg-logo candidates), `ChameleonProvider brand` prop, CLI `brand`, 4 MCP tools. Verified: init/check/extraction incl. local-server from-url; honest AA failures (#FF6B35 on white = 2.56:1)
+- ✅ Phase 13 preview: `/render` + `/play` routes (base64url spec param), `previewSpec` (static always / Playwright when available), `specUrl` share links, visual CI matrix (continue-on-error until baselines)
+- ✅ Phase 14 MCP Apps (EXPERIMENTAL): `src/widget` bridge-tolerant RenderSpec host, spec `actions` → tools/call, resources/read template gated `CHAMELEON_MCP_APPS=1`, `build:widget` inliner. Bridge shapes unverifiable until hosts tested — revisit after 2026-07-28
+- ✅ Phase 15 registry: spec-vs-source trust split, sha256 integrity, `--yes` confirm flow, provenance in config, `public/registry.json` seeded. Verified incl. tamper refusal
+- ✅ Phase 16 capstone: AppSpec v2 + `chameleon new`/`scaffold_app` — bakery-crm E2E: 21 files, 3 routes, sidebar shell, brand wired, agent rulesets. `customBrandColor` deprecated, `MIGRATION_v2.md`. Bug fixed en route: scaffoldSpec missing mkdir on fresh projects
+- ✅ Docs/frontend: README agent headline, AI_INTEGRATION_GUIDE v2 section, llms.txt agent surface, CLI docs page +8 v2.0 command cards ("AI Agents" category), CHANGELOG, version 2.0.0-alpha.1
+- 🧪 Sandbox-verified: every CLI/MCP/engine path above, eslint, isolated strict tsc per changed file, catalog gate. NOT verifiable here: vitest, full build, widget build, Playwright visual, real hosts
+
+### 2026-07-05 — Phase 11 wrap-up: RenderSpec runtime + catalog gate + consumer checks (`7a2e8e4`)
+- ✅ `render-spec.tsx`: live React runtime for ChameleonSpec v1 — `RenderSpec` renders template or block specs; unknown refs render inline `role="alert"` error boxes (agents screenshotting via F67 see failures). `SPEC_COMPONENTS`/`SPEC_TEMPLATES` mirror the engine registry; exported from the library entry
+- ✅ `scripts/check-manifest.mjs` + CI step (`check:manifest`): registry ↔ source exports ↔ runtime maps ↔ recipes consistency. Immediately caught real drift: 17 components missing from `ai-manifest.ts` (→ F77, warnings until backfill; `--strict` flips CI) and the DatePicker export-name mismatch
+- ✅ fix: `componentExport()` registry override — `chameleon add datepicker` now hints `DatePicker` (was `Datepicker`)
+- ✅ `verify:consumer` extended: `/engine` subpath check, CLI `--json` envelope check, MCP server initialize/tools/search smoke test against the packed tarball
+- ✅ `render-spec.test.tsx`: runtime↔registry mirror test + render + inline-error tests
+- 🧪 Validated in sandbox: catalog check green, eslint green, `render-spec.tsx` strict-tsc green in isolation, MCP + CLI datepicker fix verified live. **Run locally before release:** `npx tsc --noEmit && yarn test && yarn lint && npm run verify:consumer`
+
+### 2026-07-05 — F60 + F61 + F64 shipped: the agent surface is live
+- ✅ F61 ChameleonSpec v1: `bin/engine/spec.mjs` — `validateSpec` (pathed errors + typo suggestions via prefix matching), `scaffoldSpec` (template specs copy templates under the spec name; block specs scaffold components + generate a composed page). `bin/engine/recipes.mjs`: 10 stored specs using verified component props (StatCard/DataTable/KanbanBoard/Timeline APIs checked against source). CLI: `chameleon recipes`, `chameleon compose <spec-file|recipe> [--validate-only]`
+- ✅ F60 MCP server: `bin/mcp-server.mjs` — zero-dependency JSON-RPC 2.0/stdio implementation (initialize, tools/list, tools/call, ping), 13 tools over the engine. Launch: `chameleon mcp`. Registration: `claude mcp add chameleon -- npx -y -p @chameleon-ui-lib/react chameleon mcp`. DEVIATION from plan: no `packages/mcp` + SDK — zero-dep in-package server avoids pnpm-workspace/SDK-install complexity; wrapper package can come later (logged in knowledge.md)
+- ✅ F64 agents init: `chameleon agents init` writes a condensed catalog + workflow block between `<!-- chameleon:start/end -->` markers in CLAUDE.md / AGENTS.md / .cursorrules; idempotent refresh, never touches user content
+- ✅ Verified: MCP smoke test end-to-end (initialize → search "login form" → get_recipe → compose_from_blocks → files written → validate_project); spec harness 10/10; eslint green; commits `136e64b`, agents-init commit follows
+- 📋 Remaining for v1.2.0: `verify:consumer` MCP check, manifest CI check, `renderSpec` React runtime, real-agent E2E, release
+- ▶️ Next session: run `yarn test` locally (vitest can't run in the Linux sandbox), then Phase 11 wrap-up items
+
+### 2026-07-05 — F59 shipped: shared engine extraction (`bin/engine/`)
+- ✅ Engine modules: `registry.mjs` (catalog data, single source of truth), `catalog.mjs` (list/info/themes + `searchCatalog` for F60), `scaffold.mjs` (init/add/remove/template/theme/update), `health.mjs` (doctor/diff), `core.mjs` (Result shape, config I/O)
+- ✅ Engine contract: functions never print or `process.exit`; return `{ ok, data, events, filesWritten, filesDeleted, nextSteps, errors }` — CLI replays `events` through ANSI formatters, `--json` maps them to the F58 envelope. MCP server (F60) consumes the same Results
+- ✅ `bin/chameleon.js` rewritten as thin skin (~350 lines of logic removed); `./engine` subpath export added to package.json
+- ✅ Location deviation from plan: `bin/engine/` not `lib-src/engine/` (lib-src is gitignored + build-generated — logged in knowledge.md)
+- ✅ Verified: golden-output diff across 30 command runs (human + JSON + exit codes) — byte-identical except two additive JSON fields (`data.dir`, bulk `externalDependencies`); 22-assertion engine harness green; eslint + `tsc --noEmit` green; vitest suite added (`__tests__/engine.test.ts`, run locally)
+- ▶️ Next: F61 — ChameleonSpec v1 (zod schema from manifest, `renderSpec`/`scaffoldSpec`, recipes-as-specs)
+
+### 2026-07-05 — F58 shipped: `--json` machine-readable CLI output
+- ✅ All 13 commands + `--version` emit a stable envelope: `{ ok, command, version, data, warnings, errors, filesWritten, filesDeleted, nextSteps }`
+- ✅ Structured error codes (`NOT_INITIALIZED`, `UNKNOWN_COMPONENT`, `INVALID_THEME`, …); exit 0/1 mirrors `ok`; `doctor` sets `ok` = healthy
+- ✅ Human output byte-identical without the flag; `item` arg parsing now flag-safe (`add --json button` works)
+- ✅ `docs/CLI_JSON.md` documents the contract; help text updated
+- ✅ Smoke-tested all commands incl. error paths in a temp project; `tsc --noEmit` + eslint green (vitest not runnable in Linux sandbox — macOS-installed rollup native binary; suite doesn't cover the CLI)
+- ▶️ Next: F59 — extract `lib-src/engine/` so CLI and MCP server share one code path
+
+### 2026-07-05 — v2.0 Roadmap approved: six releases, six flagships (Phases 11–16)
+- ✅ `NEXUS_ROADMAP_v2.0.md` — master arc v1.2.0 → v2.0.0; ChameleonSpec as keystone
+- ✅ Six phase plans in `.nexus/plans/phase-11…16-*.md`; backlog extended to F76
+- ✅ F61 revised: composition recipes → full ChameleonSpec v1 (spec format reshapes F60 tool contracts)
+- 🧭 Flagships: MCP server → brand → render/verify/share → MCP Apps (SEP-1865, finalizes 2026-07-28) → registry → AppSpec/`chameleon new`
+- ▶️ Execution started: F58 `--json` CLI output mode
+
+### 2026-07-05 — Agent SDK plan approved (Phases 11–12)
+- ✅ Wrote `NEXUS_PLAN_v1.2.0.md` — MCP server (v1.2.0) + brand pipeline (v1.3.0)
+- ✅ Backlog extended F58–F63; Current Objective set to Phase 11
+- 🧭 Reframe: Chameleon becomes the *tool surface* agents call (MCP), not an AI itself — manifest, CLI, and composites already cover most of the vision; missing layers are a machine-callable interface and a persisted brand-token pipeline
+
+### 2026-05-06 — Notification system overhaul (post-v1.1.0)
+- ✅ Enhanced `NotificationCenterItem`: added `actions[]` array (backward-compat `action` kept), `priority` (critical/high/medium/low), `avatar`, `avatarFallback`, `icon` override
+- ✅ Enhanced `NotificationInboxItem`: added `category` (10 types), `priority`, `avatar`, `avatarFallback`, `snoozedUntil`
+- ✅ New types: `NotificationPriority`, `NotificationInboxCategory`, `NotificationPanelProps`
+- ✅ Upgraded `TopBarProps`: `showNotificationDropdown`, `notificationDropdownItems`, `onViewAllNotifications`, `dropdownMaxItems`
+- ✅ Overhauled `NotificationCenter.tsx`: priority ring styles, avatar/initials/custom-icon rendering, multi-action buttons
+- ✅ Overhauled `NotificationInbox.tsx`: priority border styles, avatar display, snooze (1h/tomorrow/1week), expandable long messages, bulk actions (mark all read / archive all), stats row
+- ✅ Upgraded `TopBar.tsx`: built-in bell dropdown showing mini-inbox (last 5 unread), MiniNotificationRow sub-component, Escape/outside-click dismiss
+- ✅ NEW `NotificationPanel.tsx`: full-page template with TopBar + stats strip + category sidebar (10 categories) + enhanced NotificationInbox. Pre-populated with 20 demo notifications covering all 10 modern use cases
+- ✅ Added `NotificationPanel` export in `composites/index.ts`
+- ✅ Added `NotificationPanel` to `template-showcase.tsx` as template #11
+- ✅ Added `notifications` page to `App.tsx` sidebar nav; Bell button in header navigates to full panel
+- ✅ Updated `ai-manifest.ts` for all 3 notification components
+- ✅ Tests: 12 test files, 87 tests — all passing
+- ✅ TypeScript strict: 0 errors
+
+### 2026-05-06 — Release v1.1.0 🎉
+- ✅ `package.json` version bumped `1.0.9` → `1.1.0`
+- ✅ `CHANGELOG.md` updated with full [1.1.0] entry (NotificationCenter, NotificationInbox, MultiStepForm API, Auth controlled mode, composite/hooks docs directory, styleConfig propagation, CI lockfile fix)
+- ✅ All consumer-facing version strings synced: `enhanced-landing.tsx`, `ai-manifest.ts`, `public/context.md`, `public/llms.txt`, `docs/00-index.md`, `docs/01-overview.md`, `AI_INTEGRATION_GUIDE.md`
+- ✅ Quality gates passed: typecheck (0 errors), 68 tests passed, lint clean, build successful
+- ✅ NEXUS brain updated: status matrix, current objective, progress log
+- ✅ Git commit `chore: release v1.1.0`, tag `v1.1.0` pushed → triggers CI publish
+
+### 2026-05-04 — Notification architecture split (toast vs inbox) completed
+- ✅ Refactored `NotificationCenter` into a strict transient toast system (one-off popups) with app-wide provider/hook API, typed state (`loading/success/error`), position control, timeout behavior, and closable handling
+- ✅ Added a separate actionable `NotificationInbox` module in `src/app/components/chameleon/composites/NotificationInbox.tsx` with search, status/type filters, unread-only toggle, item actions, and read/archive state management
+- ✅ Synced frontend discoverability/docs:
+	- Added `NotificationInbox` export in `src/app/components/chameleon/composites/index.ts`
+	- Updated composite manifest entries in `src/app/components/chameleon/composites/ai-manifest.ts` to document the two distinct notification paradigms
+	- Updated App sidebar composite count in `src/app/App.tsx` (`36` → `37`)
+- ✅ Added/updated test coverage:
+	- New `src/app/components/chameleon/__tests__/composites/notification-inbox.test.tsx`
+	- Updated export coverage in `src/app/components/chameleon/__tests__/composites/imports.test.ts`
+- ✅ Validation gates passed: `npm run typecheck`, `npm run test`, `npm run lint`
+
+### 2026-05-04 — App-wide NotificationCenter composite shipped
+- ✅ Added `NotificationCenter` system in `src/app/components/chameleon/composites/NotificationCenter.tsx` with:
+	- Provider + hook API (`NotificationCenterProvider`, `useNotificationCenter`)
+	- Global viewport component (`NotificationCenter`) with position control and typed variants (`success`, `info`, `warning`, `error`)
+	- Rich notification payload support (`title`, `message`, `duration`, `persistent`, `action`, `read`)
+	- Bulk controls (`mark all read`, `clear all`) and dismiss controls
+- ✅ Added typed contracts to `src/app/components/chameleon/composites/types.ts` for all NotificationCenter entities/props
+- ✅ Wired app-wide display in `src/app/App.tsx` by mounting `NotificationCenterProvider` and `NotificationCenter`, and integrated real triggers from Workshop actions (AI briefing copy success/failure + demo bell)
+- ✅ Updated frontend docs surfaces:
+	- Composite docs manifest entry in `src/app/components/chameleon/composites/ai-manifest.ts`
+	- AI docs summary in `src/app/components/chameleon/ai-docs-page.tsx`
+	- Sidebar composite badge count in `src/app/App.tsx` (`35` → `36`)
+- ✅ Added tests:
+	- `src/app/components/chameleon/__tests__/composites/notification-center.test.tsx`
+	- Extended export coverage in `src/app/components/chameleon/__tests__/composites/imports.test.ts`
+- ✅ Validation gates passed: `npm run typecheck`, `npm run test`, `npm run lint`
+
+### 2026-05-04 — Composite docs parity + MultiStepForm API hardening
+- ✅ Upgraded `MultiStepForm` API in `composites.tsx` with controlled/uncontrolled data support (`value`, `initialData`, `onChange`), step control (`currentStep`, `initialStep`, `onStepChange`), optional per-step validation, custom nav labels, and empty-step fallback handling
+- ✅ Added 9 missing legacy composites to `src/app/components/chameleon/composites/ai-manifest.ts` (`ThemeChart`, `CommandPalette`, `KanbanBoard`, `Timeline`, `FileUploader`, `NotificationFeed`, `MultiStepForm`, `CalendarWidget`, `MediaGallery`) so they appear in frontend composite docs
+- ✅ Updated sidebar composites badge in `src/app/App.tsx` from `26` → `35` to match documented inventory
+- ✅ Added regression tests in `src/app/components/chameleon/__tests__/composites/multi-step-form.test.tsx` for new MultiStepForm behavior and docs visibility
+- ✅ Validation gates passed: `npm run typecheck`, `npm run test`, `npm run lint`
 
 ### 2026-04-04 — Project Created
 - ✅ Scaffolded with NEXUS CLI (React + Vite, cloud-first)

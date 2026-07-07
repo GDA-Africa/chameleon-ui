@@ -24,6 +24,9 @@
     "noUncheckedIndexedAccess": true,
     "forceConsistentCasingInFileNames": true,
 
+    /* Types */
+    "types": ["node"],
+
     /* Interop */
     "esModuleInterop": true,
     "skipLibCheck": true,

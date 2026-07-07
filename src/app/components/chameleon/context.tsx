@@ -1,5 +1,11 @@
 import React, { createContext, useContext, useState, ReactNode, useMemo, useCallback } from "react";
-import { generateVariations, getContrastColor } from "./utils";
+import { generateVariations, getContrastColor, mixHex, hexToRgb, deriveBrandPalette } from "./utils";
+
+/** "r,g,b" string for rgba() interpolation in ambient backgrounds. */
+const rgbStr = (hex: string): string => {
+  const c = hexToRgb(hex);
+  return c ? `${c.r},${c.g},${c.b}` : "124,58,237";
+};
 
 export type ChameleonTheme = "material" | "simple" | "minimalist" | "glassy" | "liquid";
 export type ChameleonMode = "light" | "dark";
@@ -12,7 +18,11 @@ interface ThemeContextType {
   setMode: (mode: ChameleonMode) => void;
   lang: ChameleonLang;
   setLang: (lang: ChameleonLang) => void;
+  /** @deprecated since v1.3.0 — use the `brand` prop on ChameleonProvider (removed in v3). */
   customBrandColor: string | null;
+  /** Runtime brand override (Theme Visualizer "apply to site") — wins over the `brand` prop. */
+  brandOverride: ChameleonBrand | null;
+  setBrandOverride: (brand: ChameleonBrand | null) => void;
   setCustomBrandColor: (color: string | null) => void;
   // Intensity controls (0-100)
   glassyIntensity: number;
@@ -216,9 +226,10 @@ const themeTokens: Record<
 
 // ─── Theme Ambient Backgrounds ───────────────────────────────────────────────
 
-const GlassyBackground: React.FC<{ mode: ChameleonMode; intensity: number }> = React.memo(({
+const GlassyBackground: React.FC<{ mode: ChameleonMode; intensity: number; tint?: string | null }> = React.memo(({
   mode,
   intensity,
+  tint,
 }) => {
   // Memoize computed values so orb styles only change when intensity actually changes
   const { spreadSize, baseOpacity } = React.useMemo(() => ({
@@ -226,8 +237,19 @@ const GlassyBackground: React.FC<{ mode: ChameleonMode; intensity: number }> = R
     baseOpacity: 0.1 + (intensity / 100) * 0.08,
   }), [intensity]);
 
-  const orbs = React.useMemo(() =>
-    mode === "light"
+  const orbs = React.useMemo(() => {
+    // Brand tint: the ambient blend becomes the customer's hue, not our purple.
+    if (tint) {
+      const c1 = rgbStr(tint);
+      const c2 = rgbStr(mixHex(tint, mode === "light" ? "#3b82f6" : "#1d4ed8", 0.45));
+      const c3 = rgbStr(mixHex(tint, mode === "light" ? "#ffffff" : "#000000", 0.35));
+      return [
+        { x: "12%", y: "18%", size: 8, color: c1, opacity: baseOpacity * 1.2, delay: "0s" },
+        { x: "72%", y: "12%", size: 8, color: c2, opacity: baseOpacity, delay: "-6s" },
+        { x: "48%", y: "62%", size: 8, color: c3, opacity: baseOpacity * 0.8, delay: "-12s" },
+      ];
+    }
+    return mode === "light"
       ? [
           { x: "12%", y: "18%", size: 8, color: "168,85,247", opacity: baseOpacity * 1.2, delay: "0s" },
           { x: "72%", y: "12%", size: 8, color: "59,130,246", opacity: baseOpacity, delay: "-6s" },
@@ -237,8 +259,8 @@ const GlassyBackground: React.FC<{ mode: ChameleonMode; intensity: number }> = R
           { x: "15%", y: "15%", size: 8, color: "124,58,237", opacity: baseOpacity * 1.2, delay: "0s" },
           { x: "75%", y: "10%", size: 8, color: "29,78,216", opacity: baseOpacity, delay: "-6s" },
           { x: "45%", y: "65%", size: 8, color: "190,24,93", opacity: baseOpacity * 0.9, delay: "-12s" },
-        ],
-  [mode, baseOpacity]);
+        ];
+  }, [mode, baseOpacity, tint]);
 
   return (
     <div
@@ -247,7 +269,10 @@ const GlassyBackground: React.FC<{ mode: ChameleonMode; intensity: number }> = R
       // backdrop-filters on sidebar/header don't have to re-sample through it
       style={{ contain: "paint", isolation: "isolate" } as React.CSSProperties}
     >
-      <div className={`absolute inset-0 ${mode === "dark" ? "bg-[#0d0a1a]" : "bg-[#e5dbff]"}`} />
+      <div
+        className="absolute inset-0"
+        style={{ background: tint ? (mode === "dark" ? mixHex("#0b0718", tint, 0.26) : mixHex("#ffffff", tint, 0.16)) : mode === "dark" ? "#0d0a1a" : "#e5dbff" }}
+      />
 
       {orbs.map((orb, i) => (
         <div
@@ -277,14 +302,23 @@ const GlassyBackground: React.FC<{ mode: ChameleonMode; intensity: number }> = R
   );
 });
 
-const LiquidBackground: React.FC<{ mode: ChameleonMode; intensity: number }> = React.memo(({
+const LiquidBackground: React.FC<{ mode: ChameleonMode; intensity: number; tint?: string | null }> = React.memo(({
   mode,
   intensity,
+  tint,
 }) => {
   const { spreadSize, baseOpacity } = React.useMemo(() => ({
     spreadSize: 100 + (intensity / 100) * 50, // 100-150px spread
     baseOpacity: mode === "dark" ? 0.25 + (intensity / 100) * 0.15 : 0.12 + (intensity / 100) * 0.1,
   }), [intensity, mode]);
+
+  const tinted = tint
+    ? [
+        { c1: rgbStr(mode === "dark" ? mixHex(tint, "#000000", 0.45) : tint), c2: rgbStr(mixHex(tint, "#ffffff", 0.3)) },
+        { c1: rgbStr(mixHex(tint, mode === "dark" ? "#1e1b4b" : "#4f46e5", 0.4)), c2: rgbStr(mixHex(tint, "#ffffff", 0.15)) },
+        { c1: rgbStr(mode === "dark" ? mixHex(tint, "#000000", 0.6) : mixHex(tint, "#9333ea", 0.3)), c2: rgbStr(mixHex(tint, mode === "dark" ? "#ffffff" : "#c084fc", 0.25)) },
+      ]
+    : null;
 
   const blobs =
     mode === "light"
@@ -353,7 +387,10 @@ const LiquidBackground: React.FC<{ mode: ChameleonMode; intensity: number }> = R
       style={{ contain: "paint", isolation: "isolate" } as React.CSSProperties}
     >
       {/* Base layer */}
-      <div className={`absolute inset-0 ${mode === "dark" ? "bg-[#030014]" : "bg-[#f5f0ff]"}`} />
+      <div
+        className="absolute inset-0"
+        style={{ background: tint ? (mode === "dark" ? mixHex("#030014", tint, 0.2) : mixHex("#ffffff", tint, 0.12)) : mode === "dark" ? "#030014" : "#f5f0ff" }}
+      />
 
       {/* Organic blobs — box-shadow glow, static borderRadius, transform-only animation */}
       {blobs.map((blob, i) => (
@@ -367,7 +404,7 @@ const LiquidBackground: React.FC<{ mode: ChameleonMode; intensity: number }> = R
             height: 10,
             borderRadius: blob.radius,
             background: "transparent",
-            boxShadow: `0 0 ${spreadSize}px ${spreadSize}px rgba(${blob.color1},${baseOpacity}), 0 0 ${spreadSize * 0.6}px ${spreadSize * 0.4}px rgba(${blob.color2},${baseOpacity * 0.6})`,
+            boxShadow: `0 0 ${spreadSize}px ${spreadSize}px rgba(${tinted?.[i]?.c1 ?? blob.color1},${baseOpacity}), 0 0 ${spreadSize * 0.6}px ${spreadSize * 0.4}px rgba(${tinted?.[i]?.c2 ?? blob.color2},${baseOpacity * 0.6})`,
             transform: "translate(-50%, -50%) translateZ(0)",
             animationDelay: blob.delay,
             animationDuration: blob.duration,
@@ -391,21 +428,38 @@ const LiquidBackground: React.FC<{ mode: ChameleonMode; intensity: number }> = R
 
 // ─── Provider ────────────────────────────────────────────────────────────────
 
+/**
+ * Brand tokens (F62) — persisted in brand.config.json by `chameleon brand init`
+ * and passed here. Composes with all 5 themes: the theme keeps its physics and
+ * surfaces, the brand supplies hue, type, and radius.
+ */
+export interface ChameleonBrand {
+  primaryColor: string;
+  secondaryColor?: string;
+  accentColor?: string;
+  fontFamily?: string;
+  radius?: string;
+}
+
 export function ChameleonProvider({
   children,
   initialTheme = "simple",
   initialMode = "light",
   initialLang = "en",
+  brand = null,
 }: {
   children: ReactNode;
   initialTheme?: ChameleonTheme;
   initialMode?: ChameleonMode;
   initialLang?: ChameleonLang;
+  brand?: ChameleonBrand | null;
 }) {
   const [theme, setTheme] = useState<ChameleonTheme>(initialTheme);
   const [mode, setMode] = useState<ChameleonMode>(initialMode);
   const [lang, setLang] = useState<ChameleonLang>(initialLang);
   const [customBrandColor, setCustomBrandColor] = useState<string | null>(null);
+  const [brandOverride, setBrandOverride] = useState<ChameleonBrand | null>(null);
+  const activeBrand = brandOverride ?? brand;
   const [glassyIntensity, setGlassyIntensity] = useState<number>(70); // 0-100
   const [liquidIntensity, setLiquidIntensity] = useState<number>(60); // 0-100
 
@@ -424,6 +478,14 @@ export function ChameleonProvider({
       vars["--secondary-foreground"] = getContrastColor(varsSecondary);
     }
 
+    // Apply brand tokens (F62) — FULL derived palette including brand-tinted
+    // neutrals (background/card/muted/border), so the whole surface rebrands.
+    // brandOverride (Theme Visualizer) wins over the `brand` prop; both win
+    // over customBrandColor (deprecated).
+    if (activeBrand?.primaryColor) {
+      Object.assign(vars, deriveBrandPalette(activeBrand, mode));
+    }
+
     // Apply intensity-based adjustments for glassy theme
     if (theme === "glassy") {
       const blurAmount = 16 + (glassyIntensity / 100) * 16; // 16-32px
@@ -431,7 +493,7 @@ export function ChameleonProvider({
     }
 
     return vars as React.CSSProperties;
-  }, [theme, mode, glassyIntensity, customBrandColor]);
+  }, [theme, mode, glassyIntensity, customBrandColor, activeBrand]);
 
   // Apply dark class to document root for Tailwind dark mode
   React.useEffect(() => {
@@ -453,6 +515,8 @@ export function ChameleonProvider({
         setLang,
         customBrandColor,
         setCustomBrandColor,
+        brandOverride,
+        setBrandOverride,
         glassyIntensity,
         setGlassyIntensity,
         liquidIntensity,
@@ -460,14 +524,14 @@ export function ChameleonProvider({
       }}
     >
       {/* Ambient backgrounds with intensity controls */}
-      {theme === "glassy" && <GlassyBackground mode={mode} intensity={glassyIntensity} />}
-      {theme === "liquid" && <LiquidBackground mode={mode} intensity={liquidIntensity} />}
+      {theme === "glassy" && <GlassyBackground mode={mode} intensity={glassyIntensity} tint={activeBrand?.primaryColor ?? customBrandColor} />}
+      {theme === "liquid" && <LiquidBackground mode={mode} intensity={liquidIntensity} tint={activeBrand?.primaryColor ?? customBrandColor} />}
 
       <div
         data-chameleon-theme={theme}
         data-chameleon-mode={mode}
         className="contents"
-        style={cssVars}
+        style={activeBrand?.fontFamily ? { ...cssVars, fontFamily: `"${activeBrand.fontFamily}", system-ui, sans-serif` } : cssVars}
       >
         {children}
       </div>

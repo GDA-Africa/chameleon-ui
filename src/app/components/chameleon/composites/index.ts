@@ -38,6 +38,13 @@ export { LoadingState } from "./LoadingState";
 export { ErrorBoundaryComposite } from "./ErrorBoundaryComposite";
 export { ModalComposite } from "./ModalComposite";
 export { ToastComposite } from "./ToastComposite";
+export { NotificationInbox } from "./NotificationInbox";
+export { NotificationPanel } from "./NotificationPanel";
+export {
+	NotificationCenterProvider,
+	NotificationCenter,
+	useNotificationCenter,
+} from "./NotificationCenter";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 export type * from "./types";

@@ -1,8 +1,8 @@
 ---
 title: Chameleon UI Knowledge Base
 audience: AI coding agents
-version: 1.0.9
-last_updated: 2026-05-01
+version: 1.1.0
+last_updated: 2026-05-06
 ---
 
 # Chameleon UI — Knowledge Base for AI Agents
