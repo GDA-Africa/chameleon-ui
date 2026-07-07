@@ -78,7 +78,7 @@ function Swatch({ name, hex, on }: { name: string; hex: string; on: string }) {
       <div className="w-9 h-9 rounded-lg shrink-0 border" style={{ background: hex, borderColor: label === "#ffffff" ? "rgba(255,255,255,0.2)" : "rgba(0,0,0,0.12)" }} />
       <div className="min-w-0">
         <div className="text-xs font-bold" style={{ color: label }}>{name}</div>
-        <div className="text-[10px] font-mono" style={{ color: label, opacity: 0.6 }}>{hex}</div>
+        <div className="text-[10px] font-mono truncate" style={{ color: label, opacity: 0.6 }}>{hex}</div>
       </div>
     </div>
   );
@@ -152,13 +152,13 @@ export function ThemeVisualizer() {
   );
 
   return (
-    <div className="max-w-6xl mx-auto px-6 py-10 space-y-8">
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-10 space-y-6 sm:space-y-8">
       {/* Header */}
-      <div className="flex flex-wrap items-center gap-4 justify-between">
+      <div className="flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-3 sm:gap-4 sm:justify-between">
         <div className="flex items-center gap-3">
-          <Palette className="w-8 h-8 text-[var(--primary)]" />
+          <Palette className="w-7 h-7 sm:w-8 sm:h-8 text-[var(--primary)] shrink-0" />
           <div>
-            <h1 className={cn("text-3xl font-black", textPrimary)}>Theme Visualizer</h1>
+            <h1 className={cn("text-2xl sm:text-3xl font-black", textPrimary)}>Theme Visualizer</h1>
             <p className={cn("text-sm", textMuted)}>Set your brand once — the whole platform becomes your design system.</p>
           </div>
         </div>
@@ -172,7 +172,7 @@ export function ThemeVisualizer() {
 
       {/* The pitch */}
       <Card>
-        <CardContent className="p-4 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm">
+        <CardContent className="p-3 sm:p-4 flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-1.5 sm:gap-x-6 sm:gap-y-2 text-xs sm:text-sm">
           <span className={cn("font-black", textPrimary)}><Sparkles className="w-4 h-4 inline mr-1 text-[var(--primary)]" />How it works:</span>
           <span className={textMuted}>1 · Pick your brand</span>
           <span className={textMuted}>2 · Apply — every demo, template & composite on the site rebrands</span>
@@ -180,10 +180,10 @@ export function ThemeVisualizer() {
         </CardContent>
       </Card>
 
-      <div className="grid lg:grid-cols-5 gap-6">
+      <div className="grid lg:grid-cols-5 gap-4 sm:gap-6">
         {/* Controls */}
         <Card className="lg:col-span-2">
-          <CardContent className="p-5 space-y-5">
+          <CardContent className="p-4 sm:p-5 space-y-5">
             <div className="space-y-2">
               <label className={cn("text-[10px] font-black uppercase tracking-widest", textMuted)}>Presets</label>
               <div className="flex flex-wrap gap-2">
@@ -231,7 +231,7 @@ export function ThemeVisualizer() {
               </div>
             </div>
 
-            <div className="flex gap-2 pt-2">
+            <div className="flex flex-wrap gap-2 pt-2">
               <Button animated onClick={() => setBrandOverride(draft)} className="flex-1 font-black">
                 <Wand2 className="w-4 h-4 mr-2" />
                 {applied ? "Update site brand" : "Apply to entire site"}
@@ -250,12 +250,12 @@ export function ThemeVisualizer() {
 
         {/* Palette + audit */}
         <Card className="lg:col-span-3">
-          <CardContent className="p-5 space-y-5">
-            <div className="grid sm:grid-cols-2 gap-6">
+          <CardContent className="p-4 sm:p-5 space-y-5">
+            <div className="grid sm:grid-cols-2 gap-4 sm:gap-6">
               {([["Light mode", light], ["Dark mode", dark]] as const).map(([label, vars]) => (
                 <div key={label} className="space-y-3">
                   <div className={cn("text-[10px] font-black uppercase tracking-widest", textMuted)}>{label}</div>
-                  <div className="grid grid-cols-2 gap-2.5 rounded-xl border border-[var(--border)] p-3" style={{ background: vars["--background"] }}>
+                  <div className="grid grid-cols-1 min-[420px]:grid-cols-2 gap-2.5 rounded-xl border border-[var(--border)] p-3" style={{ background: vars["--background"] }}>
                     {["--primary", "--secondary", "--accent", "--card", "--muted", "--border", "--foreground", "--muted-foreground"].map((k) => (
                       <Swatch key={k} name={k.replace("--", "")} hex={vars[k]!} on={vars["--background"]!} />
                     ))}
@@ -274,8 +274,8 @@ export function ThemeVisualizer() {
               <div className="grid sm:grid-cols-2 gap-x-6 gap-y-1">
                 {audit.map((r) => (
                   <div key={r.pair} className="flex items-center justify-between text-xs py-1 border-b border-[var(--border)]/50">
-                    <span className={textMuted}>{r.pair}</span>
-                    <span className={cn("font-mono font-bold", r.ratio >= r.required ? "text-emerald-500" : "text-amber-500")}>
+                    <span className={cn("min-w-0 truncate pr-2", textMuted)}>{r.pair}</span>
+                    <span className={cn("font-mono font-bold shrink-0 whitespace-nowrap", r.ratio >= r.required ? "text-emerald-500" : "text-amber-500")}>
                       {r.ratio.toFixed(2)}:1 {r.ratio >= r.required ? "✓" : `< ${r.required}`}
                     </span>
                   </div>
@@ -288,21 +288,21 @@ export function ThemeVisualizer() {
 
       {/* Exports */}
       <Card>
-        <CardContent className="p-5 space-y-4">
+        <CardContent className="p-4 sm:p-5 space-y-4">
           <div className="flex flex-wrap items-center gap-3 justify-between">
             <div className="flex items-center gap-2">
               <Bot className="w-5 h-5 text-[var(--primary)]" />
               <span className={cn("font-black", textPrimary)}>Take it with you</span>
               <span className={cn("text-sm", textMuted)}>— for your stylesheet, your repo, or your AI agent</span>
             </div>
-            <div className="flex flex-wrap gap-2">
+            <div className="grid grid-cols-2 sm:flex sm:flex-wrap gap-2 w-full sm:w-auto">
               <CopyButton text={brandPaletteToCss(draft)} label="CSS variables" />
               <CopyButton text={brandJson} label="brand.config.json" />
               <CopyButton text={cliCmd} label="CLI command" />
               <CopyButton text={specSnippet} label="Agent spec (JSON)" />
             </div>
           </div>
-          <pre className="p-4 rounded-xl bg-black/90 text-emerald-300 text-xs overflow-x-auto leading-relaxed">
+          <pre className="p-3 sm:p-4 rounded-xl bg-black/90 text-emerald-300 text-[10px] sm:text-xs overflow-x-auto leading-relaxed">
             <code>{`${cliCmd}
 # → brand.config.json + chameleon-brand.css + WCAG audit
 # agents: pass "brand" in any ChameleonSpec, or <ChameleonProvider brand={...}>`}</code>
@@ -312,14 +312,14 @@ export function ThemeVisualizer() {
 
       {/* Live preview — real components through RenderSpec */}
       <div className="space-y-3">
-        <div className="flex items-center gap-2">
-          <Eye className="w-5 h-5 text-[var(--primary)]" />
+        <div className="flex flex-wrap items-center gap-2">
+          <Eye className="w-5 h-5 text-[var(--primary)] shrink-0" />
           <h2 className={cn("text-xl font-black", textPrimary)}>Live preview</h2>
           <span className={cn("text-sm", textMuted)}>
             real components via ChameleonSpec — {applied ? "your brand is applied" : "hit Apply to see your brand"}
           </span>
         </div>
-        <div className="rounded-2xl border border-[var(--border)] overflow-hidden" style={{ background: "var(--background)" }}>
+        <div className="rounded-2xl border border-[var(--border)] overflow-x-auto" style={{ background: "var(--background)" }}>
           <RenderSpec spec={PREVIEW_SPEC} />
         </div>
         <p className={cn("text-xs pb-8", textMuted)}>
